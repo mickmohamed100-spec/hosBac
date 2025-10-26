@@ -840,6 +840,8 @@
                     <div class="nav-icon" data-view="exams">📝</div>
                     <div class="nav-icon" data-view="search">🔍</div>
                     <div class="nav-icon" data-view="profile">👤</div>
+                    <!-- Icône Admin - visible seulement pour les administrateurs -->
+                    <div class="nav-icon" id="admin-icon" data-view="admin" style="display: none;">👑</div>
                 </div>
             </div>
         </header>
@@ -956,6 +958,33 @@
                 </div>
                 
                 <button id="logout-btn" class="auth-btn" style="margin-top: 2rem;">Se Déconnecter</button>
+            </div>
+
+            <!-- Vue Admin -->
+            <div id="admin-view" class="view">
+                <h1 class="view-title">Panneau d'Administration</h1>
+                
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-users">0</div>
+                        <div class="stat-label">Utilisateurs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-exams">0</div>
+                        <div class="stat-label">Épreuves</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="pending-exams-count">0</div>
+                        <div class="stat-label">En attente</div>
+                    </div>
+                </div>
+                
+                <div class="pending-exams">
+                    <h3>Épreuves en attente d'approbation</h3>
+                    <div id="pending-exams-list">
+                        <!-- Les épreuves en attente seront chargées ici -->
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -1191,36 +1220,6 @@
         </div>
     </div>
 
-    <!-- Panneau d'administration (visible seulement pour les admins) -->
-    <div id="admin-panel" class="popup-overlay">
-        <div class="popup-content">
-            <button class="popup-close">&times;</button>
-            <h2 class="popup-title">Panneau d'Administration</h2>
-            
-            <div class="admin-stats">
-                <div class="stat-card">
-                    <div class="stat-value" id="total-users">0</div>
-                    <div class="stat-label">Utilisateurs</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="total-exams">0</div>
-                    <div class="stat-label">Épreuves</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="pending-exams-count">0</div>
-                    <div class="stat-label">En attente</div>
-                </div>
-            </div>
-            
-            <div class="pending-exams">
-                <h3>Épreuves en attente d'approbation</h3>
-                <div id="pending-exams-list">
-                    <!-- Les épreuves en attente seront chargées ici -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Configuration Firebase
         const firebaseConfig = {
@@ -1262,12 +1261,12 @@
         const transferPopup = document.getElementById('transfer-popup');
         const termsPopup = document.getElementById('terms-popup');
         const privacyPopup = document.getElementById('privacy-popup');
-        const adminPanel = document.getElementById('admin-panel');
         const logoutBtn = document.getElementById('logout-btn');
         const profileForm = document.getElementById('profile-form');
         const termsLink = document.getElementById('terms-link');
         const privacyLink = document.getElementById('privacy-link');
         const popupCloseButtons = document.querySelectorAll('.popup-close');
+        const adminIcon = document.getElementById('admin-icon');
 
         // Initialisation de l'application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1445,6 +1444,9 @@
                         case 'profile':
                             loadProfileData();
                             break;
+                        case 'admin':
+                            loadAdminPanel();
+                            break;
                     }
                 });
             });
@@ -1546,21 +1548,32 @@
             });
         });
 
-        // Fonctions utilitaires
+        // Fonction CORRIGÉE pour vérifier le rôle admin
         function checkUserRole() {
             if (!currentUser) return;
+            
+            console.log("Vérification du rôle pour l'utilisateur:", currentUser.uid);
             
             db.collection('users').doc(currentUser.uid).get()
                 .then(doc => {
                     if (doc.exists) {
                         const userData = doc.data();
-                        isAdmin = userData.role === 'admin';
+                        console.log("Données utilisateur:", userData);
                         
-                        // Afficher l'icône admin si l'utilisateur est admin
+                        // CORRECTION : Vérification correcte du rôle admin
+                        isAdmin = userData.role === 'admin';
+                        console.log("Est admin?", isAdmin);
+                        
+                        // Afficher ou cacher l'icône admin
                         if (isAdmin) {
-                            const profileIcon = document.querySelector('.nav-icon[data-view="profile"]');
-                            profileIcon.innerHTML = '👑';
+                            adminIcon.style.display = 'block';
+                            console.log("Icône admin affichée");
+                        } else {
+                            adminIcon.style.display = 'none';
+                            console.log("Icône admin cachée");
                         }
+                    } else {
+                        console.log("Document utilisateur non trouvé");
                     }
                 })
                 .catch(error => {
@@ -1572,10 +1585,6 @@
             loadRecentExams();
             loadNotifications();
             loadProfileData();
-            
-            if (isAdmin) {
-                loadAdminPanel();
-            }
         }
 
         function loadRecentExams() {
@@ -1678,6 +1687,7 @@
                         
                         if (type === 'sujet') {
                             fileUrl = exam.fichier_sujet;
+                            window.open(fileUrl, '_blank');
                         } else if (type === 'corrige') {
                             // Vérifier si l'utilisateur a assez de points
                             db.collection('users').doc(currentUser.uid).get()
@@ -1714,11 +1724,7 @@
                                     window.open(fileUrl, '_blank');
                                     showNotification('Corrigé téléchargé avec succès (2 points déduits)', 'success');
                                 });
-                            
-                            return;
                         }
-                        
-                        window.open(fileUrl, '_blank');
                     }
                 })
                 .catch(error => {
@@ -1997,7 +2003,15 @@
             }, 1000);
         }
 
+        // CORRECTION : Fonction pour charger le panneau d'administration
         function loadAdminPanel() {
+            if (!isAdmin) {
+                showNotification('Accès non autorisé', 'error');
+                return;
+            }
+            
+            console.log("Chargement du panneau d'administration");
+            
             // Charger les statistiques
             db.collection('users').get()
                 .then(querySnapshot => {
@@ -2172,4 +2186,4 @@
         document.head.appendChild(style);
     </script>
 </body>
-</html>
+    </html>
