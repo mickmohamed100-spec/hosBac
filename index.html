@@ -481,6 +481,7 @@
             padding: 1.5rem;
             box-shadow: var(--shadow);
             transition: var(--transition);
+            position: relative;
         }
 
         .exam-card:hover {
@@ -502,6 +503,7 @@
         .exam-actions {
             display: flex;
             gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .exam-btn {
@@ -512,6 +514,7 @@
             cursor: pointer;
             transition: var(--transition);
             text-align: center;
+            min-width: 120px;
         }
 
         .download-btn {
@@ -531,6 +534,32 @@
         .transfer-btn:hover {
             background: var(--secondary-blue);
             color: var(--white);
+        }
+
+        .favorite-btn {
+            background: transparent;
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .favorite-btn.active {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .delete-btn {
+            background: var(--error);
+            color: var(--white);
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        .author-link {
+            color: var(--secondary-blue);
+            cursor: pointer;
+            text-decoration: underline;
         }
 
         /* Styles pour le profil */
@@ -713,6 +742,22 @@
             cursor: pointer;
         }
 
+        /* Styles pour les résultats de recherche */
+        .search-results {
+            margin-top: 1.5rem;
+        }
+
+        .search-result-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-blue);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-result-item:hover {
+            background: var(--light-blue);
+        }
+
         /* Animations */
         @keyframes slideUp {
             from { transform: translateY(50px); opacity: 0; }
@@ -740,6 +785,14 @@
             
             .form-row {
                 flex-direction: column;
+            }
+            
+            .exam-actions {
+                flex-direction: column;
+            }
+            
+            .exam-btn {
+                min-width: 100%;
             }
         }
     </style>
@@ -873,15 +926,35 @@
                 <div class="exam-filters">
                     <select id="filter-class" class="filter-select">
                         <option value="">Toutes les classes</option>
-                        <!-- Options de classes seront ajoutées dynamiquement -->
+                        <option value="6ème">6ème</option>
+                        <option value="5ème">5ème</option>
+                        <option value="4ème">4ème</option>
+                        <option value="3ème">3ème</option>
+                        <option value="2nd">2nd</option>
+                        <option value="1ère">1ère</option>
+                        <option value="Terminale">Terminale</option>
                     </select>
                     <select id="filter-subject" class="filter-select">
                         <option value="">Toutes les matières</option>
-                        <!-- Options de matières seront ajoutées dynamiquement -->
+                        <option value="Mathématique">Mathématique</option>
+                        <option value="Français">Français</option>
+                        <option value="Histoire-géographie">Histoire-géographie</option>
+                        <option value="Allemand">Allemand</option>
+                        <option value="Économie">Économie</option>
+                        <option value="T-bad">T-bad</option>
+                        <option value="Espagnol">Espagnol</option>
+                        <option value="Anglais">Anglais</option>
+                        <option value="SVT">SVT</option>
+                        <option value="PCT">PCT</option>
+                        <option value="Droit">Droit</option>
                     </select>
                     <select id="filter-series" class="filter-select">
                         <option value="">Toutes les séries</option>
-                        <!-- Options de séries seront ajoutées dynamiquement -->
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="G">G</option>
                     </select>
                     <input type="text" id="search-exams" class="search-bar" placeholder="Rechercher une épreuve...">
                     <button id="add-exam-btn" class="add-exam-btn">➕ Ajouter une épreuve</button>
@@ -896,7 +969,7 @@
                 <h1 class="view-title">Recherche</h1>
                 <div class="card">
                     <input type="text" id="global-search" class="search-bar" placeholder="Rechercher des épreuves, utilisateurs...">
-                    <div id="search-results">
+                    <div id="search-results" class="search-results">
                         <!-- Les résultats de recherche seront chargés ici -->
                     </div>
                 </div>
@@ -1033,7 +1106,16 @@
                 </div>
                 <div class="form-group">
                     <label for="exam-classe">Classe</label>
-                    <input type="text" id="exam-classe" required>
+                    <select id="exam-classe" required>
+                        <option value="">Sélectionnez une classe</option>
+                        <option value="6ème">6ème</option>
+                        <option value="5ème">5ème</option>
+                        <option value="4ème">4ème</option>
+                        <option value="3ème">3ème</option>
+                        <option value="2nd">2nd</option>
+                        <option value="1ère">1ère</option>
+                        <option value="Terminale">Terminale</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="exam-serie">Série</label>
@@ -1075,7 +1157,7 @@
             <button class="popup-close">&times;</button>
             <h2 class="popup-title">Transférer l'épreuve</h2>
             <div class="form-group">
-                <input type="text" id="user-search" class="search-bar" placeholder="Rechercher un utilisateur...">
+                <input type="text" id="user-search" class="search-bar" placeholder="Rechercher un utilisateur par email...">
             </div>
             <div id="search-results-list">
                 <!-- Les résultats de recherche d'utilisateurs seront chargés ici -->
@@ -1243,6 +1325,7 @@
         // Variables globales
         let currentUser = null;
         let isAdmin = false;
+        let userData = null;
 
         // Éléments DOM
         const splashScreen = document.getElementById('splash-screen');
@@ -1267,6 +1350,12 @@
         const privacyLink = document.getElementById('privacy-link');
         const popupCloseButtons = document.querySelectorAll('.popup-close');
         const adminIcon = document.getElementById('admin-icon');
+        const filterClass = document.getElementById('filter-class');
+        const filterSubject = document.getElementById('filter-subject');
+        const filterSeries = document.getElementById('filter-series');
+        const searchExams = document.getElementById('search-exams');
+        const globalSearch = document.getElementById('global-search');
+        const searchResults = document.getElementById('search-results');
 
         // Initialisation de l'application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1468,6 +1557,7 @@
                     .then(() => {
                         currentUser = null;
                         isAdmin = false;
+                        userData = null;
                         app.style.display = 'none';
                         authScreen.style.display = 'flex';
                         showNotification('Déconnexion réussie', 'success');
@@ -1508,19 +1598,23 @@
                 });
             });
 
-            // Configuration de l'upload Cloudinary
+            // Configuration de l'upload Cloudinary CORRIGÉE
             const sujetUploadWidget = cloudinary.createUploadWidget({
                 cloudName: cloudName,
                 uploadPreset: uploadPreset,
                 sources: ['local'],
                 multiple: false,
-                resourceType: 'raw',
+                resourceType: 'raw', // CORRECTION: Utilisation de 'raw' pour les PDF
                 clientAllowedFormats: ['pdf'],
                 maxFileSize: 5000000 // 5MB
             }, (error, result) => {
                 if (!error && result && result.event === 'success') {
                     document.getElementById('exam-sujet-url').value = result.info.secure_url;
                     document.getElementById('sujet-upload').innerHTML = `<p>Fichier sujet téléchargé: ${result.info.original_filename}</p>`;
+                    console.log('URL du sujet:', result.info.secure_url);
+                } else if (error) {
+                    console.error('Erreur upload Cloudinary:', error);
+                    showNotification('Erreur lors du téléchargement du fichier', 'error');
                 }
             });
 
@@ -1529,13 +1623,17 @@
                 uploadPreset: uploadPreset,
                 sources: ['local'],
                 multiple: false,
-                resourceType: 'raw',
+                resourceType: 'raw', // CORRECTION: Utilisation de 'raw' pour les PDF
                 clientAllowedFormats: ['pdf'],
                 maxFileSize: 5000000 // 5MB
             }, (error, result) => {
                 if (!error && result && result.event === 'success') {
                     document.getElementById('exam-corrige-url').value = result.info.secure_url;
                     document.getElementById('corrige-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
+                    console.log('URL du corrigé:', result.info.secure_url);
+                } else if (error) {
+                    console.error('Erreur upload Cloudinary:', error);
+                    showNotification('Erreur lors du téléchargement du fichier', 'error');
                 }
             });
 
@@ -1546,9 +1644,20 @@
             document.getElementById('corrige-upload').addEventListener('click', () => {
                 corrigeUploadWidget.open();
             });
+
+            // Gestionnaires pour les filtres d'examens
+            filterClass.addEventListener('change', applyFilters);
+            filterSubject.addEventListener('change', applyFilters);
+            filterSeries.addEventListener('change', applyFilters);
+            searchExams.addEventListener('input', debounce(applyFilters, 300));
+
+            // Gestionnaire pour la recherche globale
+            globalSearch.addEventListener('input', debounce(() => {
+                performGlobalSearch(globalSearch.value);
+            }, 300));
         });
 
-        // Fonction CORRIGÉE pour vérifier le rôle admin
+        // Fonction pour vérifier le rôle admin
         function checkUserRole() {
             if (!currentUser) return;
             
@@ -1557,10 +1666,10 @@
             db.collection('users').doc(currentUser.uid).get()
                 .then(doc => {
                     if (doc.exists) {
-                        const userData = doc.data();
+                        userData = doc.data();
                         console.log("Données utilisateur:", userData);
                         
-                        // CORRECTION : Vérification correcte du rôle admin
+                        // Vérification correcte du rôle admin
                         isAdmin = userData.role === 'admin';
                         console.log("Est admin?", isAdmin);
                         
@@ -1643,9 +1752,79 @@
                 });
         }
 
+        function applyFilters() {
+            const classFilter = filterClass.value;
+            const subjectFilter = filterSubject.value;
+            const seriesFilter = filterSeries.value;
+            const searchText = searchExams.value.toLowerCase();
+            
+            const examsContainer = document.getElementById('exams-list');
+            examsContainer.innerHTML = '<p>Filtrage des épreuves...</p>';
+            
+            let query = db.collection('epreuves').where('status', '==', 'approved');
+            
+            // Appliquer les filtres
+            if (classFilter) {
+                query = query.where('classe', '==', classFilter);
+            }
+            
+            if (subjectFilter) {
+                query = query.where('matiere', '==', subjectFilter);
+            }
+            
+            if (seriesFilter) {
+                query = query.where('serie', '==', seriesFilter);
+            }
+            
+            query.get()
+                .then(querySnapshot => {
+                    examsContainer.innerHTML = '';
+                    
+                    if (querySnapshot.empty) {
+                        examsContainer.innerHTML = '<p>Aucune épreuve trouvée avec ces critères.</p>';
+                        return;
+                    }
+                    
+                    let filteredExams = [];
+                    
+                    querySnapshot.forEach(doc => {
+                        const exam = doc.data();
+                        exam.id = doc.id;
+                        
+                        // Filtrer par texte de recherche
+                        if (searchText) {
+                            if (exam.nom_epreuve.toLowerCase().includes(searchText) || 
+                                exam.matiere.toLowerCase().includes(searchText) ||
+                                exam.classe.toLowerCase().includes(searchText)) {
+                                filteredExams.push(exam);
+                            }
+                        } else {
+                            filteredExams.push(exam);
+                        }
+                    });
+                    
+                    if (filteredExams.length === 0) {
+                        examsContainer.innerHTML = '<p>Aucune épreuve trouvée avec ces critères.</p>';
+                        return;
+                    }
+                    
+                    filteredExams.forEach(exam => {
+                        const examCard = createExamCard(exam, exam.id);
+                        examsContainer.appendChild(examCard);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du filtrage des épreuves:', error);
+                    examsContainer.innerHTML = '<p>Erreur lors du filtrage des épreuves.</p>';
+                });
+        }
+
         function createExamCard(exam, examId) {
             const card = document.createElement('div');
             card.className = 'exam-card';
+            
+            // Vérifier si l'épreuve est dans les favoris
+            const isFavorite = userData && userData.favorites && userData.favorites.includes(examId);
             
             card.innerHTML = `
                 <h3 class="exam-name">${exam.nom_epreuve}</h3>
@@ -1653,12 +1832,16 @@
                     <p>Matière: ${exam.matiere}</p>
                     <p>Classe: ${exam.classe}</p>
                     <p>Série: ${exam.serie}</p>
-                    <p>Publié par: ${exam.auteurNom || 'Utilisateur'}</p>
+                    <p>Publié par: <span class="author-link" data-author-id="${exam.auteurId}">${exam.auteurNom || 'Utilisateur'}</span></p>
                 </div>
                 <div class="exam-actions">
                     <button class="exam-btn download-btn" data-exam-id="${examId}" data-type="sujet">Télécharger le sujet</button>
                     ${exam.fichier_corrige ? `<button class="exam-btn download-btn" data-exam-id="${examId}" data-type="corrige">Télécharger le corrigé (2 points)</button>` : ''}
                     <button class="exam-btn transfer-btn" data-exam-id="${examId}">Transférer</button>
+                    <button class="exam-btn favorite-btn ${isFavorite ? 'active' : ''}" data-exam-id="${examId}">
+                        ${isFavorite ? '❤️' : '🤍'} Favori
+                    </button>
+                    ${isAdmin ? `<button class="exam-btn delete-btn" data-exam-id="${examId}">Supprimer</button>` : ''}
                 </div>
             `;
             
@@ -1675,6 +1858,24 @@
                 openTransferPopup(examId);
             });
             
+            const favoriteBtn = card.querySelector('.favorite-btn');
+            favoriteBtn.addEventListener('click', () => {
+                toggleFavorite(examId, favoriteBtn);
+            });
+            
+            if (isAdmin) {
+                const deleteBtn = card.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', () => {
+                    deleteExam(examId);
+                });
+            }
+            
+            // Gestionnaire pour le lien de l'auteur
+            const authorLink = card.querySelector('.author-link');
+            authorLink.addEventListener('click', () => {
+                viewUserProfile(exam.auteurId);
+            });
+            
             return card;
         }
 
@@ -1687,7 +1888,12 @@
                         
                         if (type === 'sujet') {
                             fileUrl = exam.fichier_sujet;
-                            window.open(fileUrl, '_blank');
+                            // CORRECTION: Ouverture directe de l'URL Cloudinary
+                            if (fileUrl) {
+                                window.open(fileUrl, '_blank');
+                            } else {
+                                showNotification('Erreur: URL du fichier non disponible', 'error');
+                            }
                         } else if (type === 'corrige') {
                             // Vérifier si l'utilisateur a assez de points
                             db.collection('users').doc(currentUser.uid).get()
@@ -1701,7 +1907,8 @@
                                     
                                     // Déduire les points
                                     db.collection('users').doc(currentUser.uid).update({
-                                        points: firebase.firestore.FieldValue.increment(-2)
+                                        points: firebase.firestore.FieldValue.increment(-2),
+                                        examsDownloaded: firebase.firestore.FieldValue.increment(1)
                                     });
                                     
                                     // Ajouter des points à l'auteur
@@ -1714,15 +1921,20 @@
                                         db.collection('notifications').add({
                                             userId: exam.auteurId,
                                             type: 'economy',
-                                            message: `Vous avez reçu +2 points de ${userData.prenom} ${userData.nom}`,
+                                            message: `Vous avez reçu +2 points de ${userData.prenom} ${userData.nom} pour le téléchargement de votre corrigé`,
                                             read: false,
                                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                                         });
                                     }
                                     
                                     fileUrl = exam.fichier_corrige;
-                                    window.open(fileUrl, '_blank');
-                                    showNotification('Corrigé téléchargé avec succès (2 points déduits)', 'success');
+                                    // CORRECTION: Ouverture directe de l'URL Cloudinary
+                                    if (fileUrl) {
+                                        window.open(fileUrl, '_blank');
+                                        showNotification('Corrigé téléchargé avec succès (2 points déduits)', 'success');
+                                    } else {
+                                        showNotification('Erreur: URL du corrigé non disponible', 'error');
+                                    }
                                 });
                         }
                     }
@@ -1733,16 +1945,126 @@
                 });
         }
 
+        function toggleFavorite(examId, button) {
+            if (!userData) return;
+            
+            const isCurrentlyFavorite = userData.favorites && userData.favorites.includes(examId);
+            
+            let newFavorites = userData.favorites ? [...userData.favorites] : [];
+            
+            if (isCurrentlyFavorite) {
+                // Retirer des favoris
+                newFavorites = newFavorites.filter(id => id !== examId);
+                button.classList.remove('active');
+                button.innerHTML = '🤍 Favori';
+                showNotification('Épreuve retirée des favoris', 'success');
+            } else {
+                // Ajouter aux favoris
+                newFavorites.push(examId);
+                button.classList.add('active');
+                button.innerHTML = '❤️ Favori';
+                showNotification('Épreuve ajoutée aux favoris', 'success');
+            }
+            
+            // Mettre à jour Firestore
+            db.collection('users').doc(currentUser.uid).update({
+                favorites: newFavorites
+            })
+            .then(() => {
+                // Mettre à jour les données locales
+                userData.favorites = newFavorites;
+            })
+            .catch(error => {
+                console.error('Erreur lors de la mise à jour des favoris:', error);
+                showNotification('Erreur lors de la mise à jour des favoris', 'error');
+            });
+        }
+
+        function deleteExam(examId) {
+            if (!isAdmin) {
+                showNotification('Action non autorisée', 'error');
+                return;
+            }
+            
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette épreuve ?')) {
+                db.collection('epreuves').doc(examId).delete()
+                .then(() => {
+                    showNotification('Épreuve supprimée avec succès', 'success');
+                    // Recharger les épreuves
+                    if (document.getElementById('exams-view').classList.contains('active')) {
+                        loadAllExams();
+                    }
+                    if (document.getElementById('home-view').classList.contains('active')) {
+                        loadRecentExams();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la suppression:', error);
+                    showNotification('Erreur lors de la suppression de l\'épreuve', 'error');
+                });
+            }
+        }
+
+        function viewUserProfile(authorId) {
+            // Stocker l'ID de l'auteur à afficher
+            sessionStorage.setItem('viewingUserId', authorId);
+            
+            // Rediriger vers la vue profil
+            document.querySelector('.nav-icon[data-view="profile"]').click();
+            
+            // Charger les données du profil de l'auteur
+            loadUserProfile(authorId);
+        }
+
+        function loadUserProfile(userId) {
+            if (userId === currentUser.uid) {
+                // C'est le profil de l'utilisateur connecté
+                loadProfileData();
+                return;
+            }
+            
+            db.collection('users').doc(userId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const userProfile = doc.data();
+                        
+                        // Mettre à jour l'affichage du profil
+                        document.getElementById('profile-avatar').textContent = 
+                            userProfile.prenom ? userProfile.prenom.charAt(0).toUpperCase() : 'U';
+                        document.getElementById('profile-name').textContent = 
+                            `${userProfile.prenom} ${userProfile.nom}`;
+                        document.getElementById('profile-email').textContent = userProfile.email;
+                        document.getElementById('profile-class').textContent = 
+                            `Classe: ${userProfile.classe || 'Non définie'}`;
+                        
+                        document.getElementById('points-balance').textContent = userProfile.points || 0;
+                        document.getElementById('exams-uploaded').textContent = userProfile.examsUploaded || 0;
+                        document.getElementById('exams-downloaded').textContent = userProfile.examsDownloaded || 0;
+                        
+                        // Cacher le formulaire de modification et les favoris pour les autres utilisateurs
+                        document.getElementById('profile-form').style.display = 'none';
+                        document.getElementById('favorites-list').style.display = 'none';
+                        document.querySelector('.card .card-title:last-child').style.display = 'none';
+                        
+                        showNotification(`Profil de ${userProfile.prenom} ${userProfile.nom}`, 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement du profil:', error);
+                    showNotification('Erreur lors du chargement du profil', 'error');
+                });
+        }
+
         function openTransferPopup(examId) {
             transferPopup.style.display = 'flex';
             
             // Stocker l'ID de l'épreuve pour le transfert
             transferPopup.setAttribute('data-exam-id', examId);
             
-            // Gestionnaire pour la recherche d'utilisateurs
+            // Gestionnaire pour la recherche d'utilisateurs par email
             const userSearch = document.getElementById('user-search');
             userSearch.addEventListener('input', debounce(() => {
-                searchUsers(userSearch.value);
+                searchUsersByEmail(userSearch.value);
             }, 300));
             
             // Gestionnaire pour l'envoi du transfert
@@ -1759,7 +2081,7 @@
             });
         }
 
-        function searchUsers(query) {
+        function searchUsersByEmail(query) {
             const resultsContainer = document.getElementById('search-results-list');
             resultsContainer.innerHTML = '<p>Recherche en cours...</p>';
             
@@ -1769,8 +2091,8 @@
             }
             
             db.collection('users')
-                .where('nom', '>=', query)
-                .where('nom', '<=', query + '\uf8ff')
+                .where('email', '>=', query)
+                .where('email', '<=', query + '\uf8ff')
                 .limit(10)
                 .get()
                 .then(querySnapshot => {
@@ -1788,7 +2110,7 @@
                             userElement.className = 'user-result';
                             userElement.setAttribute('data-user-id', doc.id);
                             userElement.innerHTML = `
-                                <p>${user.prenom} ${user.nom} - ${user.ecole || ''}</p>
+                                <p>${user.prenom} ${user.nom} - ${user.email}</p>
                             `;
                             
                             userElement.addEventListener('click', () => {
@@ -1819,7 +2141,7 @@
                         return db.collection('notifications').add({
                             userId: recipientId,
                             type: 'transfer',
-                            message: `${currentUser.displayName || 'Un utilisateur'} vous a transféré l'épreuve "${exam.nom_epreuve}"`,
+                            message: `${userData.prenom} ${userData.nom} vous a transféré l'épreuve "${exam.nom_epreuve}"`,
                             examId: examId,
                             read: false,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1849,6 +2171,9 @@
                 return;
             }
             
+            // CORRECTION: Déterminer le statut en fonction du rôle
+            const status = isAdmin ? 'approved' : 'pending';
+            
             // Récupérer les informations de l'utilisateur
             db.collection('users').doc(currentUser.uid).get()
                 .then(userDoc => {
@@ -1864,7 +2189,7 @@
                         fichier_corrige: fichier_corrige || null,
                         auteurId: currentUser.uid,
                         auteurNom: `${userData.prenom} ${userData.nom}`,
-                        status: 'pending',
+                        status: status, // CORRECTION: Utilisation du statut approprié
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
@@ -1873,7 +2198,12 @@
                     addExamForm.reset();
                     document.getElementById('sujet-upload').innerHTML = '<p>Cliquez pour télécharger le fichier sujet</p>';
                     document.getElementById('corrige-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
-                    showNotification('Épreuve soumise avec succès, en attente d\'approbation', 'success');
+                    
+                    if (isAdmin) {
+                        showNotification('Épreuve publiée avec succès', 'success');
+                    } else {
+                        showNotification('Épreuve soumise avec succès, en attente d\'approbation', 'success');
+                    }
                 })
                 .catch(error => {
                     console.error('Erreur lors de la soumission de l\'épreuve:', error);
@@ -1906,6 +2236,7 @@
                         let icon = '🔔';
                         if (notification.type === 'economy') icon = '💰';
                         else if (notification.type === 'transfer') icon = '📤';
+                        else if (notification.type === 'submission') icon = '📝';
                         
                         notificationElement.innerHTML = `
                             <div class="notification-icon">${icon}</div>
@@ -1922,9 +2253,8 @@
                             link.className = 'exam-btn download-btn';
                             link.style.marginTop = '0.5rem';
                             link.addEventListener('click', () => {
-                                // Rediriger vers la vue des examens et afficher l'épreuve
+                                // Rediriger vers la vue des examens
                                 document.querySelector('.nav-icon[data-view="exams"]').click();
-                                // Ici, on pourrait aussi filtrer pour afficher cette épreuve spécifique
                             });
                             
                             notificationElement.querySelector('.notification-content').appendChild(link);
@@ -1940,10 +2270,19 @@
         }
 
         function loadProfileData() {
+            // Vérifier si nous visualisons le profil d'un autre utilisateur
+            const viewingUserId = sessionStorage.getItem('viewingUserId');
+            if (viewingUserId && viewingUserId !== currentUser.uid) {
+                loadUserProfile(viewingUserId);
+                sessionStorage.removeItem('viewingUserId');
+                return;
+            }
+            
+            // Afficher le profil de l'utilisateur connecté
             db.collection('users').doc(currentUser.uid).get()
                 .then(doc => {
                     if (doc.exists) {
-                        const userData = doc.data();
+                        userData = doc.data();
                         
                         // Mettre à jour l'affichage du profil
                         document.getElementById('profile-avatar').textContent = 
@@ -1962,14 +2301,19 @@
                         document.getElementById('edit-nom').value = userData.nom || '';
                         document.getElementById('edit-prenom').value = userData.prenom || '';
                         document.getElementById('edit-classe').value = userData.classe || '';
+                        
+                        // Afficher le formulaire et les favoris
+                        document.getElementById('profile-form').style.display = 'block';
+                        document.getElementById('favorites-list').style.display = 'grid';
+                        document.querySelector('.card .card-title:last-child').style.display = 'block';
+                        
+                        // Charger les favoris
+                        loadFavorites();
                     }
                 })
                 .catch(error => {
                     console.error('Erreur lors du chargement du profil:', error);
                 });
-            
-            // Charger les favoris
-            loadFavorites();
         }
 
         function updateProfile() {
@@ -1996,14 +2340,128 @@
             const favoritesContainer = document.getElementById('favorites-list');
             favoritesContainer.innerHTML = '<p>Chargement des favoris...</p>';
             
-            // Ici, vous devriez avoir une collection "favorites" dans Firestore
-            // Pour l'exemple, nous allons simuler le chargement
-            setTimeout(() => {
+            if (!userData || !userData.favorites || userData.favorites.length === 0) {
                 favoritesContainer.innerHTML = '<p>Aucun favori pour le moment.</p>';
-            }, 1000);
+                return;
+            }
+            
+            // Charger les épreuves favorites
+            const favoritePromises = userData.favorites.map(examId => 
+                db.collection('epreuves').doc(examId).get()
+            );
+            
+            Promise.all(favoritePromises)
+                .then(docs => {
+                    favoritesContainer.innerHTML = '';
+                    
+                    let hasFavorites = false;
+                    
+                    docs.forEach(doc => {
+                        if (doc.exists) {
+                            const exam = doc.data();
+                            const examCard = createExamCard(exam, doc.id);
+                            favoritesContainer.appendChild(examCard);
+                            hasFavorites = true;
+                        }
+                    });
+                    
+                    if (!hasFavorites) {
+                        favoritesContainer.innerHTML = '<p>Aucun favori pour le moment.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des favoris:', error);
+                    favoritesContainer.innerHTML = '<p>Erreur lors du chargement des favoris.</p>';
+                });
         }
 
-        // CORRECTION : Fonction pour charger le panneau d'administration
+        function performGlobalSearch(query) {
+            if (!query) {
+                searchResults.innerHTML = '';
+                return;
+            }
+            
+            searchResults.innerHTML = '<p>Recherche en cours...</p>';
+            
+            // Recherche d'épreuves
+            const examsPromise = db.collection('epreuves')
+                .where('status', '==', 'approved')
+                .where('nom_epreuve', '>=', query)
+                .where('nom_epreuve', '<=', query + '\uf8ff')
+                .limit(10)
+                .get();
+            
+            // Recherche d'utilisateurs par nom/prénom
+            const usersPromise = db.collection('users')
+                .where('nom', '>=', query)
+                .where('nom', '<=', query + '\uf8ff')
+                .limit(10)
+                .get();
+            
+            Promise.all([examsPromise, usersPromise])
+                .then(([examsSnapshot, usersSnapshot]) => {
+                    searchResults.innerHTML = '';
+                    
+                    let hasResults = false;
+                    
+                    // Afficher les épreuves trouvées
+                    if (!examsSnapshot.empty) {
+                        const examsTitle = document.createElement('h3');
+                        examsTitle.textContent = 'Épreuves';
+                        searchResults.appendChild(examsTitle);
+                        
+                        examsSnapshot.forEach(doc => {
+                            const exam = doc.data();
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'search-result-item';
+                            resultItem.innerHTML = `
+                                <p><strong>${exam.nom_epreuve}</strong> - ${exam.matiere} - ${exam.classe}</p>
+                                <small>Publié par: ${exam.auteurNom}</small>
+                            `;
+                            resultItem.addEventListener('click', () => {
+                                // Rediriger vers la vue des examens
+                                document.querySelector('.nav-icon[data-view="exams"]').click();
+                            });
+                            searchResults.appendChild(resultItem);
+                            hasResults = true;
+                        });
+                    }
+                    
+                    // Afficher les utilisateurs trouvés
+                    if (!usersSnapshot.empty) {
+                        const usersTitle = document.createElement('h3');
+                        usersTitle.textContent = 'Utilisateurs';
+                        usersTitle.style.marginTop = '1.5rem';
+                        searchResults.appendChild(usersTitle);
+                        
+                        usersSnapshot.forEach(doc => {
+                            const user = doc.data();
+                            if (doc.id !== currentUser.uid) { // Exclure l'utilisateur actuel
+                                const resultItem = document.createElement('div');
+                                resultItem.className = 'search-result-item';
+                                resultItem.innerHTML = `
+                                    <p><strong>${user.prenom} ${user.nom}</strong> - ${user.email}</p>
+                                    <small>${user.ecole || ''} - ${user.classe || ''}</small>
+                                `;
+                                resultItem.addEventListener('click', () => {
+                                    viewUserProfile(doc.id);
+                                });
+                                searchResults.appendChild(resultItem);
+                                hasResults = true;
+                            }
+                        });
+                    }
+                    
+                    if (!hasResults) {
+                        searchResults.innerHTML = '<p>Aucun résultat trouvé.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la recherche:', error);
+                    searchResults.innerHTML = '<p>Erreur lors de la recherche.</p>';
+                });
+        }
+
         function loadAdminPanel() {
             if (!isAdmin) {
                 showNotification('Accès non autorisé', 'error');
