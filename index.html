@@ -354,17 +354,11 @@
             color: var(--primary-blue);
             cursor: pointer;
             transition: var(--transition);
-            padding: 0.5rem;
-            border-radius: 50%;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
         }
 
         .contact-icon:hover {
             color: var(--secondary-blue);
             transform: translateY(-2px);
-            background: var(--light-blue);
         }
 
         .footer-links {
@@ -376,13 +370,10 @@
             color: var(--text-dark);
             cursor: pointer;
             transition: var(--transition);
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
         }
 
         .footer-link:hover {
             color: var(--primary-blue);
-            background: var(--light-blue);
         }
 
         /* Styles pour les cartes */
@@ -415,12 +406,6 @@
             gap: 1rem;
             padding: 1rem;
             border-bottom: 1px solid var(--light-blue);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .notification-item:hover {
-            background: var(--light-blue);
         }
 
         .notification-icon {
@@ -539,15 +524,6 @@
 
         .download-btn:hover {
             background: var(--secondary-blue);
-        }
-
-        .view-btn {
-            background: var(--success);
-            color: var(--white);
-        }
-
-        .view-btn:hover {
-            background: #0da271;
         }
 
         .transfer-btn {
@@ -1093,7 +1069,7 @@
                     <a href="https://www.facebook.com/profile.php?id=61579985138308" target="_blank" class="contact-icon">📘</a>
                     <a href="https://wa.me/qr/73EC225KOITDD1" target="_blank" class="contact-icon">📱</a>
                     <a href="mailto:mickaelpcs14@gmail.com" class="contact-icon">✉️</a>
-                    <a href="tel:+2290198860752" class="contact-icon">📞</a>
+                    <span class="contact-icon">📞 +229 01 98 86 07 52</span>
                 </div>
                 <div class="footer-links">
                     <div class="footer-link" id="terms-link">Conditions Générales d'Utilisation</div>
@@ -1622,13 +1598,13 @@
                 });
             });
 
-            // Configuration CORRIGÉE de l'upload Cloudinary
+            // Configuration de l'upload Cloudinary CORRIGÉE
             const sujetUploadWidget = cloudinary.createUploadWidget({
                 cloudName: cloudName,
                 uploadPreset: uploadPreset,
                 sources: ['local'],
                 multiple: false,
-                resourceType: 'raw', // CORRECTION: resourceType en 'raw' pour les PDF
+                resourceType: 'raw', // CORRECTION: Utilisation de 'raw' pour les PDF
                 clientAllowedFormats: ['pdf'],
                 maxFileSize: 5000000 // 5MB
             }, (error, result) => {
@@ -1647,7 +1623,7 @@
                 uploadPreset: uploadPreset,
                 sources: ['local'],
                 multiple: false,
-                resourceType: 'raw', // CORRECTION: resourceType en 'raw' pour les PDF
+                resourceType: 'raw', // CORRECTION: Utilisation de 'raw' pour les PDF
                 clientAllowedFormats: ['pdf'],
                 maxFileSize: 5000000 // 5MB
             }, (error, result) => {
@@ -1720,13 +1696,12 @@
             loadProfileData();
         }
 
-        // CORRECTION: Filtrage côté client pour les épreuves approuvées
         function loadRecentExams() {
             const recentExamsContainer = document.getElementById('recent-exams');
             recentExamsContainer.innerHTML = '<p>Chargement des épreuves récentes...</p>';
             
             db.collection('epreuves')
-                .where('status', '==', 'approved') // CORRECTION: Filtre côté client
+                .where('status', '==', 'approved')
                 .orderBy('createdAt', 'desc')
                 .limit(10)
                 .get()
@@ -1750,13 +1725,12 @@
                 });
         }
 
-        // CORRECTION: Filtrage côté client pour les épreuves approuvées
         function loadAllExams() {
             const examsContainer = document.getElementById('exams-list');
             examsContainer.innerHTML = '<p>Chargement des épreuves...</p>';
             
             db.collection('epreuves')
-                .where('status', '==', 'approved') // CORRECTION: Filtre côté client
+                .where('status', '==', 'approved')
                 .get()
                 .then(querySnapshot => {
                     examsContainer.innerHTML = '';
@@ -1861,9 +1835,8 @@
                     <p>Publié par: <span class="author-link" data-author-id="${exam.auteurId}">${exam.auteurNom || 'Utilisateur'}</span></p>
                 </div>
                 <div class="exam-actions">
-                    <button class="exam-btn view-btn" data-exam-id="${examId}" data-type="sujet">Voir l'épreuve</button>
-                    <button class="exam-btn download-btn" data-exam-id="${examId}" data-type="sujet">Télécharger</button>
-                    ${exam.fichier_corrige ? `<button class="exam-btn download-btn" data-exam-id="${examId}" data-type="corrige">Corrigé (2 points)</button>` : ''}
+                    <button class="exam-btn download-btn" data-exam-id="${examId}" data-type="sujet">Télécharger le sujet</button>
+                    ${exam.fichier_corrige ? `<button class="exam-btn download-btn" data-exam-id="${examId}" data-type="corrige">Télécharger le corrigé (2 points)</button>` : ''}
                     <button class="exam-btn transfer-btn" data-exam-id="${examId}">Transférer</button>
                     <button class="exam-btn favorite-btn ${isFavorite ? 'active' : ''}" data-exam-id="${examId}">
                         ${isFavorite ? '❤️' : '🤍'} Favori
@@ -1873,11 +1846,6 @@
             `;
             
             // Ajouter les gestionnaires d'événements pour les boutons
-            const viewBtn = card.querySelector('.view-btn');
-            viewBtn.addEventListener('click', () => {
-                viewExam(examId, 'sujet');
-            });
-            
             const downloadBtns = card.querySelectorAll('.download-btn');
             downloadBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1909,74 +1877,6 @@
             });
             
             return card;
-        }
-
-        // NOUVELLE FONCTION: Voir l'épreuve sans télécharger
-        function viewExam(examId, type) {
-            db.collection('epreuves').doc(examId).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const exam = doc.data();
-                        let fileUrl = '';
-                        
-                        if (type === 'sujet') {
-                            fileUrl = exam.fichier_sujet;
-                        } else if (type === 'corrige') {
-                            // Vérifier si l'utilisateur a assez de points
-                            db.collection('users').doc(currentUser.uid).get()
-                                .then(userDoc => {
-                                    const userData = userDoc.data();
-                                    
-                                    if (userData.points < 2) {
-                                        showNotification('Points insuffisants pour voir le corrigé', 'error');
-                                        return;
-                                    }
-                                    
-                                    // Déduire les points
-                                    db.collection('users').doc(currentUser.uid).update({
-                                        points: firebase.firestore.FieldValue.increment(-2),
-                                        examsDownloaded: firebase.firestore.FieldValue.increment(1)
-                                    });
-                                    
-                                    // Ajouter des points à l'auteur
-                                    if (exam.auteurId && exam.auteurId !== currentUser.uid) {
-                                        db.collection('users').doc(exam.auteurId).update({
-                                            points: firebase.firestore.FieldValue.increment(2)
-                                        });
-                                        
-                                        // Créer une notification pour l'auteur
-                                        db.collection('notifications').add({
-                                            userId: exam.auteurId,
-                                            type: 'economy',
-                                            message: `Vous avez reçu +2 points de ${userData.prenom} ${userData.nom} pour la consultation de votre corrigé`,
-                                            read: false,
-                                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                        });
-                                    }
-                                    
-                                    fileUrl = exam.fichier_corrige;
-                                    if (fileUrl) {
-                                        window.open(fileUrl, '_blank');
-                                        showNotification('Corrigé consulté avec succès (2 points déduits)', 'success');
-                                    } else {
-                                        showNotification('Erreur: URL du corrigé non disponible', 'error');
-                                    }
-                                });
-                            return;
-                        }
-                        
-                        // CORRECTION: Ouverture directe de l'URL Cloudinary pour voir le sujet
-                        if (fileUrl) {
-                            window.open(fileUrl, '_blank');
-                        } else {
-                            showNotification('Erreur: URL du fichier non disponible', 'error');
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la consultation:', error);
-                    showNotification('Erreur lors de la consultation', 'error');
-                });
         }
 
         function downloadExam(examId, type) {
@@ -2064,27 +1964,6 @@
                 button.classList.add('active');
                 button.innerHTML = '❤️ Favori';
                 showNotification('Épreuve ajoutée aux favoris', 'success');
-                
-                // NOTIFICATION: Envoyer une notification à l'auteur de l'épreuve
-                db.collection('epreuves').doc(examId).get()
-                    .then(doc => {
-                        if (doc.exists) {
-                            const exam = doc.data();
-                            if (exam.auteurId && exam.auteurId !== currentUser.uid) {
-                                db.collection('notifications').add({
-                                    userId: exam.auteurId,
-                                    type: 'favorite',
-                                    message: `${userData.prenom} ${userData.nom} a ajouté votre épreuve "${exam.nom_epreuve}" à ses favoris`,
-                                    examId: examId,
-                                    read: false,
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erreur lors de la création de la notification de favori:', error);
-                    });
             }
             
             // Mettre à jour Firestore
@@ -2279,7 +2158,6 @@
                 });
         }
 
-        // CORRECTION: Auto-approbation pour les admins
         function submitExam() {
             const matiere = document.getElementById('exam-matiere').value;
             const classe = document.getElementById('exam-classe').value;
@@ -2293,7 +2171,7 @@
                 return;
             }
             
-            // CORRECTION: Déterminer le statut en fonction du rôle - Admin = approuvé automatiquement
+            // CORRECTION: Déterminer le statut en fonction du rôle
             const status = isAdmin ? 'approved' : 'pending';
             
             // Récupérer les informations de l'utilisateur
@@ -2333,13 +2211,12 @@
                 });
         }
 
-        // CORRECTION: Filtrage côté client pour les notifications
         function loadNotifications() {
             const notificationsContainer = document.getElementById('notifications-list');
             notificationsContainer.innerHTML = '<p>Chargement des notifications...</p>';
             
             db.collection('notifications')
-                .where('userId', '==', currentUser.uid) // CORRECTION: Filtre côté client
+                .where('userId', '==', currentUser.uid)
                 .orderBy('createdAt', 'desc')
                 .limit(20)
                 .get()
@@ -2355,13 +2232,11 @@
                         const notification = doc.data();
                         const notificationElement = document.createElement('div');
                         notificationElement.className = 'notification-item';
-                        notificationElement.setAttribute('data-notification-id', doc.id);
                         
                         let icon = '🔔';
                         if (notification.type === 'economy') icon = '💰';
                         else if (notification.type === 'transfer') icon = '📤';
                         else if (notification.type === 'submission') icon = '📝';
-                        else if (notification.type === 'favorite') icon = '❤️';
                         
                         notificationElement.innerHTML = `
                             <div class="notification-icon">${icon}</div>
@@ -2371,27 +2246,18 @@
                             </div>
                         `;
                         
-                        // Si la notification contient un examId, ajouter un gestionnaire pour rediriger vers l'épreuve
-                        if (notification.examId) {
-                            notificationElement.addEventListener('click', () => {
-                                // Marquer comme lue
-                                db.collection('notifications').doc(doc.id).update({
-                                    read: true
-                                });
-                                
+                        // Si c'est une notification de transfert, ajouter un lien vers l'épreuve
+                        if (notification.type === 'transfer' && notification.examId) {
+                            const link = document.createElement('button');
+                            link.textContent = 'Voir l\'épreuve';
+                            link.className = 'exam-btn download-btn';
+                            link.style.marginTop = '0.5rem';
+                            link.addEventListener('click', () => {
                                 // Rediriger vers la vue des examens
                                 document.querySelector('.nav-icon[data-view="exams"]').click();
-                                
-                                // Optionnel: Faire défiler jusqu'à l'épreuve spécifique
-                                // Cela nécessiterait un système d'ID pour les cartes d'épreuve
                             });
-                        } else {
-                            // Marquer comme lue au clic
-                            notificationElement.addEventListener('click', () => {
-                                db.collection('notifications').doc(doc.id).update({
-                                    read: true
-                                });
-                            });
+                            
+                            notificationElement.querySelector('.notification-content').appendChild(link);
                         }
                         
                         notificationsContainer.appendChild(notificationElement);
