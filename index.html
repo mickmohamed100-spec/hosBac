@@ -417,6 +417,7 @@
             border-bottom: 1px solid var(--light-blue);
             cursor: pointer;
             transition: var(--transition);
+            position: relative;
         }
 
         .notification-item:hover {
@@ -426,6 +427,33 @@
         .notification-icon {
             font-size: 1.5rem;
             color: var(--secondary-blue);
+        }
+
+        .notification-actions {
+            position: absolute;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .notification-delete {
+            background: var(--error);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 0.3rem 0.6rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .notification-delete-all {
+            background: var(--error);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            margin-bottom: 1rem;
         }
 
         /* Styles pour les épreuves */
@@ -762,7 +790,7 @@
             color: var(--white);
             border: none;
             padding: 0.5rem 1rem;
-            borderRadius: 10px;
+            border-radius: 10px;
             cursor: pointer;
         }
 
@@ -939,6 +967,7 @@
             <!-- Vue Notifications -->
             <div id="notifications-view" class="view">
                 <h1 class="view-title">Notifications</h1>
+                <button id="delete-all-notifications" class="notification-delete-all">Supprimer toutes les notifications</button>
                 <div id="notifications-list">
                     <!-- Les notifications seront chargées ici -->
                 </div>
@@ -1326,6 +1355,11 @@
         </div>
     </div>
 
+    <!-- Audio pour les notifications -->
+    <audio id="notification-sound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/286/286-preview.mp3" type="audio/mp3">
+    </audio>
+
     <script>
         // Configuration Firebase
         const firebaseConfig = {
@@ -1350,6 +1384,7 @@
         let currentUser = null;
         let isAdmin = false;
         let userData = null;
+        let notificationListener = null;
 
         // Éléments DOM
         const splashScreen = document.getElementById('splash-screen');
@@ -1380,6 +1415,8 @@
         const searchExams = document.getElementById('search-exams');
         const globalSearch = document.getElementById('global-search');
         const searchResults = document.getElementById('search-results');
+        const deleteAllNotificationsBtn = document.getElementById('delete-all-notifications');
+        const notificationSound = document.getElementById('notification-sound');
 
         // Initialisation de l'application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1404,6 +1441,7 @@
                         checkUserRole();
                         app.style.display = 'block';
                         loadUserData();
+                        startNotificationListener();
                     } else {
                         // L'utilisateur n'est pas connecté
                         authScreen.style.display = 'flex';
@@ -1444,6 +1482,7 @@
                         app.style.display = 'block';
                         checkUserRole();
                         loadUserData();
+                        startNotificationListener();
                         showNotification('Connexion réussie', 'success');
                     })
                     .catch(error => {
@@ -1496,6 +1535,7 @@
                         app.style.display = 'block';
                         checkUserRole();
                         loadUserData();
+                        startNotificationListener();
                         showNotification('Inscription réussie', 'success');
                     })
                     .catch(error => {
@@ -1577,6 +1617,9 @@
 
             // Gestionnaire pour le bouton de déconnexion
             logoutBtn.addEventListener('click', () => {
+                if (notificationListener) {
+                    notificationListener();
+                }
                 auth.signOut()
                     .then(() => {
                         currentUser = null;
@@ -1606,6 +1649,11 @@
                 privacyPopup.style.display = 'flex';
             });
 
+            // Gestionnaire pour supprimer toutes les notifications
+            deleteAllNotificationsBtn.addEventListener('click', () => {
+                deleteAllNotifications();
+            });
+
             // Gestionnaires pour fermer les popups
             popupCloseButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -1622,7 +1670,7 @@
                 });
             });
 
-            // CORRECTION: Configuration Cloudinary avec gestion d'erreur améliorée
+            // Configuration Cloudinary corrigée
             let sujetUploadWidget, corrigeUploadWidget;
             
             try {
@@ -1700,32 +1748,69 @@
             }, 300));
         });
 
+        // Démarrer l'écoute des notifications en temps réel
+        function startNotificationListener() {
+            if (!currentUser) return;
+            
+            notificationListener = db.collection('notifications')
+                .where('userId', '==', currentUser.uid)
+                .orderBy('createdAt', 'desc')
+                .limit(1)
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            // Nouvelle notification - jouer le son et vibrer
+                            playNotificationSound();
+                            vibratePhone();
+                            
+                            // Recharger les notifications si on est sur la vue notifications
+                            if (document.getElementById('notifications-view').classList.contains('active')) {
+                                loadNotifications();
+                            }
+                            
+                            // Mettre à jour le badge de notification
+                            updateNotificationBadge();
+                        }
+                    });
+                }, error => {
+                    console.error('Erreur écoute notifications:', error);
+                });
+        }
+
+        // Jouer le son de notification
+        function playNotificationSound() {
+            try {
+                notificationSound.currentTime = 0;
+                notificationSound.play().catch(e => {
+                    console.log('Lecture audio bloquée:', e);
+                });
+            } catch (error) {
+                console.error('Erreur lecture son notification:', error);
+            }
+        }
+
+        // Faire vibrer le téléphone
+        function vibratePhone() {
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+            }
+        }
+
         // Fonction pour vérifier le rôle admin
         function checkUserRole() {
             if (!currentUser) return;
-            
-            console.log("Vérification du rôle pour l'utilisateur:", currentUser.uid);
             
             db.collection('users').doc(currentUser.uid).get()
                 .then(doc => {
                     if (doc.exists) {
                         userData = doc.data();
-                        console.log("Données utilisateur:", userData);
-                        
-                        // Vérification correcte du rôle admin
                         isAdmin = userData.role === 'admin';
-                        console.log("Est admin?", isAdmin);
                         
-                        // Afficher ou cacher l'icône admin
                         if (isAdmin) {
                             adminIcon.style.display = 'block';
-                            console.log("Icône admin affichée");
                         } else {
                             adminIcon.style.display = 'none';
-                            console.log("Icône admin cachée");
                         }
-                    } else {
-                        console.log("Document utilisateur non trouvé");
                     }
                 })
                 .catch(error => {
@@ -1737,6 +1822,7 @@
             loadRecentExams();
             loadNotifications();
             loadProfileData();
+            updateNotificationBadge();
         }
 
         function loadRecentExams() {
@@ -1923,7 +2009,7 @@
             return card;
         }
 
-        // CORRECTION: Fonction viewExam améliorée avec gestion Cloudinary
+        // CORRECTION: Fonction viewExam avec gestion Cloudinary améliorée
         function viewExam(examId, type) {
             db.collection('epreuves').doc(examId).get()
                 .then(doc => {
@@ -1933,52 +2019,15 @@
                         
                         if (type === 'sujet') {
                             fileUrl = exam.fichier_sujet;
+                            // CORRECTION: Ouverture dans un nouvel onglet
+                            if (fileUrl && fileUrl.includes('cloudinary.com')) {
+                                window.open(fileUrl, '_blank');
+                            } else {
+                                showNotification('Erreur: Fichier non disponible', 'error');
+                            }
                         } else if (type === 'corrige') {
-                            db.collection('users').doc(currentUser.uid).get()
-                                .then(userDoc => {
-                                    const userData = userDoc.data();
-                                    
-                                    if (userData.points < 2) {
-                                        showNotification('Points insuffisants pour voir le corrigé', 'error');
-                                        return;
-                                    }
-                                    
-                                    db.collection('users').doc(currentUser.uid).update({
-                                        points: firebase.firestore.FieldValue.increment(-2),
-                                        examsDownloaded: firebase.firestore.FieldValue.increment(1)
-                                    });
-                                    
-                                    if (exam.auteurId && exam.auteurId !== currentUser.uid) {
-                                        db.collection('users').doc(exam.auteurId).update({
-                                            points: firebase.firestore.FieldValue.increment(2)
-                                        });
-                                        
-                                        db.collection('notifications').add({
-                                            userId: exam.auteurId,
-                                            type: 'economy',
-                                            message: `Vous avez reçu +2 points de ${userData.prenom} ${userData.nom} pour la consultation de votre corrigé`,
-                                            read: false,
-                                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                        });
-                                    }
-                                    
-                                    fileUrl = exam.fichier_corrige;
-                                    if (fileUrl) {
-                                        // CORRECTION: Utilisation correcte de l'URL Cloudinary
-                                        window.open(fileUrl, '_blank');
-                                        showNotification('Corrigé consulté avec succès (2 points déduits)', 'success');
-                                    } else {
-                                        showNotification('Erreur: URL du corrigé non disponible', 'error');
-                                    }
-                                });
-                            return;
-                        }
-                        
-                        // CORRECTION: Ouverture directe de l'URL Cloudinary
-                        if (fileUrl) {
-                            window.open(fileUrl, '_blank');
-                        } else {
-                            showNotification('Erreur: URL du fichier non disponible', 'error');
+                            // Vérifier les points pour le corrigé
+                            handleCorrigeAccess(examId, exam, 'view');
                         }
                     }
                 })
@@ -1988,18 +2037,17 @@
                 });
         }
 
-        // CORRECTION: Fonction downloadExam améliorée
+        // CORRECTION: Fonction downloadExam avec gestion Cloudinary améliorée
         function downloadExam(examId, type) {
             db.collection('epreuves').doc(examId).get()
                 .then(doc => {
                     if (doc.exists) {
                         const exam = doc.data();
-                        let fileUrl = '';
                         
                         if (type === 'sujet') {
-                            fileUrl = exam.fichier_sujet;
-                            if (fileUrl) {
-                                // CORRECTION: Téléchargement direct depuis Cloudinary
+                            const fileUrl = exam.fichier_sujet;
+                            // CORRECTION: Téléchargement direct
+                            if (fileUrl && fileUrl.includes('cloudinary.com')) {
                                 const link = document.createElement('a');
                                 link.href = fileUrl;
                                 link.download = `${exam.nom_epreuve}_sujet.pdf`;
@@ -2008,58 +2056,76 @@
                                 link.click();
                                 document.body.removeChild(link);
                             } else {
-                                showNotification('Erreur: URL du fichier non disponible', 'error');
+                                showNotification('Erreur: Fichier non disponible', 'error');
                             }
                         } else if (type === 'corrige') {
-                            db.collection('users').doc(currentUser.uid).get()
-                                .then(userDoc => {
-                                    const userData = userDoc.data();
-                                    
-                                    if (userData.points < 2) {
-                                        showNotification('Points insuffisants pour télécharger le corrigé', 'error');
-                                        return;
-                                    }
-                                    
-                                    db.collection('users').doc(currentUser.uid).update({
-                                        points: firebase.firestore.FieldValue.increment(-2),
-                                        examsDownloaded: firebase.firestore.FieldValue.increment(1)
-                                    });
-                                    
-                                    if (exam.auteurId && exam.auteurId !== currentUser.uid) {
-                                        db.collection('users').doc(exam.auteurId).update({
-                                            points: firebase.firestore.FieldValue.increment(2)
-                                        });
-                                        
-                                        db.collection('notifications').add({
-                                            userId: exam.auteurId,
-                                            type: 'economy',
-                                            message: `Vous avez reçu +2 points de ${userData.prenom} ${userData.nom} pour le téléchargement de votre corrigé`,
-                                            read: false,
-                                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                        });
-                                    }
-                                    
-                                    fileUrl = exam.fichier_corrige;
-                                    if (fileUrl) {
-                                        // CORRECTION: Téléchargement direct depuis Cloudinary
-                                        const link = document.createElement('a');
-                                        link.href = fileUrl;
-                                        link.download = `${exam.nom_epreuve}_corrige.pdf`;
-                                        link.target = '_blank';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                        showNotification('Corrigé téléchargé avec succès (2 points déduits)', 'success');
-                                    } else {
-                                        showNotification('Erreur: URL du corrigé non disponible', 'error');
-                                    }
-                                });
+                            // Vérifier les points pour le corrigé
+                            handleCorrigeAccess(examId, exam, 'download');
                         }
                     }
                 })
                 .catch(error => {
                     console.error('Erreur lors du téléchargement:', error);
                     showNotification('Erreur lors du téléchargement', 'error');
+                });
+        }
+
+        // NOUVELLE FONCTION: Gestion de l'accès aux corrigés
+        function handleCorrigeAccess(examId, exam, action) {
+            db.collection('users').doc(currentUser.uid).get()
+                .then(userDoc => {
+                    const userData = userDoc.data();
+                    
+                    if (userData.points < 2) {
+                        showNotification('Points insuffisants. Vous avez besoin de 2 points pour accéder au corrigé', 'error');
+                        return;
+                    }
+                    
+                    // Déduire 2 points de l'utilisateur
+                    return db.collection('users').doc(currentUser.uid).update({
+                        points: firebase.firestore.FieldValue.increment(-2),
+                        examsDownloaded: firebase.firestore.FieldValue.increment(1)
+                    }).then(() => {
+                        // Ajouter 2 points à l'auteur si ce n'est pas le même utilisateur
+                        if (exam.auteurId && exam.auteurId !== currentUser.uid) {
+                            return db.collection('users').doc(exam.auteurId).update({
+                                points: firebase.firestore.FieldValue.increment(2)
+                            }).then(() => {
+                                // Notification pour l'auteur
+                                return db.collection('notifications').add({
+                                    userId: exam.auteurId,
+                                    type: 'points_received',
+                                    message: `Vous avez reçu +2 points de ${userData.prenom} ${userData.nom} pour le ${action} de votre corrigé`,
+                                    examId: examId,
+                                    read: false,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            });
+                        }
+                    }).then(() => {
+                        // Accéder au fichier corrigé
+                        const fileUrl = exam.fichier_corrige;
+                        if (fileUrl && fileUrl.includes('cloudinary.com')) {
+                            if (action === 'view') {
+                                window.open(fileUrl, '_blank');
+                            } else {
+                                const link = document.createElement('a');
+                                link.href = fileUrl;
+                                link.download = `${exam.nom_epreuve}_corrige.pdf`;
+                                link.target = '_blank';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                            }
+                            showNotification(`Corrigé ${action === 'view' ? 'consulté' : 'téléchargé'} avec succès (2 points déduits)`, 'success');
+                        } else {
+                            showNotification('Erreur: Fichier corrigé non disponible', 'error');
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors de l\'accès au corrigé:', error);
+                    showNotification('Erreur lors de l\'accès au corrigé', 'error');
                 });
         }
 
@@ -2081,6 +2147,7 @@
                 button.innerHTML = '❤️ Favori';
                 showNotification('Épreuve ajoutée aux favoris', 'success');
                 
+                // Notification à l'auteur
                 db.collection('epreuves').doc(examId).get()
                     .then(doc => {
                         if (doc.exists) {
@@ -2202,7 +2269,6 @@
             });
         }
 
-        // CORRECTION: Fonction searchUsersByEmail corrigée
         function searchUsersByEmail(query) {
             const resultsContainer = document.getElementById('search-results-list');
             resultsContainer.innerHTML = '<p>Recherche en cours...</p>';
@@ -2212,7 +2278,6 @@
                 return;
             }
             
-            // CORRECTION: Requête Firestore corrigée avec gestion d'erreur
             db.collection('users')
                 .where('email', '>=', query)
                 .where('email', '<=', query + '\uf8ff')
@@ -2285,7 +2350,7 @@
                 });
         }
 
-        // CORRECTION: Fonction submitExam avec validation améliorée
+        // CORRECTION: Fonction submitExam avec système de points amélioré
         function submitExam() {
             const matiere = document.getElementById('exam-matiere').value;
             const classe = document.getElementById('exam-classe').value;
@@ -2299,7 +2364,6 @@
                 return;
             }
             
-            // CORRECTION: Validation des URLs Cloudinary
             if (!fichier_sujet.includes('cloudinary.com') || !fichier_sujet.includes('.pdf')) {
                 showNotification('Erreur: Le fichier sujet n\'est pas valide', 'error');
                 return;
@@ -2337,6 +2401,8 @@
                     
                     if (isAdmin) {
                         showNotification('Épreuve publiée avec succès', 'success');
+                        // Si admin, attribuer les points immédiatement
+                        assignPointsAfterApproval(currentUser.uid, fichier_corrige ? 4 : 2);
                     } else {
                         showNotification('Épreuve soumise avec succès, en attente d\'approbation', 'success');
                     }
@@ -2347,6 +2413,7 @@
                 });
         }
 
+        // NOUVELLE FONCTION: Charger les notifications avec boutons de suppression
         function loadNotifications() {
             const notificationsContainer = document.getElementById('notifications-list');
             notificationsContainer.innerHTML = '<p>Chargement des notifications...</p>';
@@ -2354,7 +2421,7 @@
             db.collection('notifications')
                 .where('userId', '==', currentUser.uid)
                 .orderBy('createdAt', 'desc')
-                .limit(20)
+                .limit(50)
                 .get()
                 .then(querySnapshot => {
                     notificationsContainer.innerHTML = '';
@@ -2371,19 +2438,37 @@
                         notificationElement.setAttribute('data-notification-id', doc.id);
                         
                         let icon = '🔔';
-                        if (notification.type === 'economy') icon = '💰';
+                        if (notification.type === 'economy' || notification.type === 'points_received') icon = '💰';
                         else if (notification.type === 'transfer') icon = '📤';
                         else if (notification.type === 'submission') icon = '📝';
                         else if (notification.type === 'favorite') icon = '❤️';
+                        else if (notification.type === 'approval') icon = '✅';
                         
                         notificationElement.innerHTML = `
                             <div class="notification-icon">${icon}</div>
                             <div class="notification-content">
                                 <p>${notification.message}</p>
-                                <small>${new Date(notification.createdAt?.toDate()).toLocaleDateString()}</small>
+                                <small>${new Date(notification.createdAt?.toDate()).toLocaleDateString('fr-FR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}</small>
+                            </div>
+                            <div class="notification-actions">
+                                <button class="notification-delete" data-notification-id="${doc.id}">×</button>
                             </div>
                         `;
                         
+                        // Gestionnaire pour la suppression individuelle
+                        const deleteBtn = notificationElement.querySelector('.notification-delete');
+                        deleteBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteNotification(doc.id);
+                        });
+                        
+                        // Gestionnaire pour le clic sur la notification
                         if (notification.examId) {
                             notificationElement.addEventListener('click', () => {
                                 db.collection('notifications').doc(doc.id).update({
@@ -2405,6 +2490,96 @@
                 .catch(error => {
                     console.error('Erreur lors du chargement des notifications:', error);
                     notificationsContainer.innerHTML = '<p>Erreur lors du chargement des notifications.</p>';
+                });
+        }
+
+        // NOUVELLE FONCTION: Supprimer une notification
+        function deleteNotification(notificationId) {
+            db.collection('notifications').doc(notificationId).delete()
+                .then(() => {
+                    showNotification('Notification supprimée', 'success');
+                    loadNotifications();
+                    updateNotificationBadge();
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la suppression de la notification:', error);
+                    showNotification('Erreur lors de la suppression', 'error');
+                });
+        }
+
+        // NOUVELLE FONCTION: Supprimer toutes les notifications
+        function deleteAllNotifications() {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer toutes vos notifications ?')) {
+                return;
+            }
+            
+            db.collection('notifications')
+                .where('userId', '==', currentUser.uid)
+                .get()
+                .then(querySnapshot => {
+                    const deletePromises = [];
+                    querySnapshot.forEach(doc => {
+                        deletePromises.push(db.collection('notifications').doc(doc.id).delete());
+                    });
+                    return Promise.all(deletePromises);
+                })
+                .then(() => {
+                    showNotification('Toutes les notifications ont été supprimées', 'success');
+                    loadNotifications();
+                    updateNotificationBadge();
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la suppression des notifications:', error);
+                    showNotification('Erreur lors de la suppression des notifications', 'error');
+                });
+        }
+
+        // NOUVELLE FONCTION: Mettre à jour le badge de notification
+        function updateNotificationBadge() {
+            if (!currentUser) return;
+            
+            db.collection('notifications')
+                .where('userId', '==', currentUser.uid)
+                .where('read', '==', false)
+                .get()
+                .then(querySnapshot => {
+                    const unreadCount = querySnapshot.size;
+                    const notificationIcon = document.querySelector('.nav-icon[data-view="notifications"]');
+                    
+                    if (unreadCount > 0) {
+                        // Ajouter un badge avec le nombre de notifications non lues
+                        let badge = notificationIcon.querySelector('.notification-badge');
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'notification-badge';
+                            badge.style.cssText = `
+                                position: absolute;
+                                top: -5px;
+                                right: -5px;
+                                background: var(--error);
+                                color: white;
+                                border-radius: 50%;
+                                width: 18px;
+                                height: 18px;
+                                font-size: 0.7rem;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            `;
+                            notificationIcon.style.position = 'relative';
+                            notificationIcon.appendChild(badge);
+                        }
+                        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                    } else {
+                        // Supprimer le badge s'il existe
+                        const badge = notificationIcon.querySelector('.notification-badge');
+                        if (badge) {
+                            badge.remove();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du comptage des notifications:', error);
                 });
         }
 
@@ -2507,7 +2682,6 @@
                 });
         }
 
-        // CORRECTION: Fonction performGlobalSearch corrigée
         function performGlobalSearch(query) {
             if (!query || query.length < 2) {
                 searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
@@ -2516,7 +2690,6 @@
             
             searchResults.innerHTML = '<p>Recherche en cours...</p>';
             
-            // CORRECTION: Recherche d'épreuves avec gestion d'erreur
             const examsPromise = db.collection('epreuves')
                 .where('status', '==', 'approved')
                 .where('nom_epreuve', '>=', query)
@@ -2528,7 +2701,6 @@
                     return { empty: true };
                 });
             
-            // CORRECTION: Recherche d'utilisateurs avec gestion d'erreur
             const usersPromise = db.collection('users')
                 .where('nom', '>=', query)
                 .where('nom', '<=', query + '\uf8ff')
@@ -2606,8 +2778,6 @@
                 return;
             }
             
-            console.log("Chargement du panneau d'administration");
-            
             db.collection('users').get()
                 .then(querySnapshot => {
                     document.getElementById('total-users').textContent = querySnapshot.size;
@@ -2638,6 +2808,7 @@
                             <h3 class="card-title">${exam.nom_epreuve}</h3>
                             <p>Matière: ${exam.matiere} | Classe: ${exam.classe} | Série: ${exam.serie}</p>
                             <p>Publié par: ${exam.auteurNom}</p>
+                            <p>Sujet: ${exam.fichier_sujet ? '✓' : '✗'} | Corrigé: ${exam.fichier_corrige ? '✓' : '✗'}</p>
                             <div class="exam-actions-admin">
                                 <button class="approve-btn" data-exam-id="${doc.id}">Approuver</button>
                                 <button class="reject-btn" data-exam-id="${doc.id}">Rejeter</button>
@@ -2647,7 +2818,9 @@
                         pendingExamsContainer.appendChild(examElement);
                         
                         examElement.querySelector('.approve-btn').addEventListener('click', () => {
-                            approveExam(doc.id, exam.auteurId, exam.fichier_corrige ? 4 : 1);
+                            // CORRECTION: Calcul des points selon la présence du corrigé
+                            const points = exam.fichier_corrige ? 4 : 2;
+                            approveExam(doc.id, exam.auteurId, points);
                         });
                         
                         examElement.querySelector('.reject-btn').addEventListener('click', () => {
@@ -2657,21 +2830,23 @@
                 });
         }
 
+        // CORRECTION: Fonction approveExam avec notification à l'utilisateur
         function approveExam(examId, authorId, points) {
+            // Mettre à jour le statut de l'épreuve
             db.collection('epreuves').doc(examId).update({
                 status: 'approved'
             })
             .then(() => {
-                return db.collection('users').doc(authorId).update({
-                    points: firebase.firestore.FieldValue.increment(points),
-                    examsUploaded: firebase.firestore.FieldValue.increment(1)
-                });
+                // Attribuer les points à l'auteur
+                return assignPointsAfterApproval(authorId, points);
             })
             .then(() => {
+                // Notification à l'auteur
                 return db.collection('notifications').add({
                     userId: authorId,
-                    type: 'submission',
-                    message: `Votre épreuve a été approuvée. Vous avez gagné ${points} points.`,
+                    type: 'approval',
+                    message: `Votre épreuve a été approuvée ! Vous avez reçu ${points} points ${points === 4 ? '(2 pour le sujet + 2 pour le corrigé)' : '(2 pour le sujet)'}.`,
+                    examId: examId,
                     read: false,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
@@ -2686,9 +2861,19 @@
             });
         }
 
+        // NOUVELLE FONCTION: Attribuer les points après approbation
+        function assignPointsAfterApproval(authorId, points) {
+            return db.collection('users').doc(authorId).update({
+                points: firebase.firestore.FieldValue.increment(points),
+                examsUploaded: firebase.firestore.FieldValue.increment(1)
+            });
+        }
+
         function rejectExam(examId, authorId) {
+            // Supprimer l'épreuve
             db.collection('epreuves').doc(examId).delete()
             .then(() => {
+                // Notification à l'auteur
                 return db.collection('notifications').add({
                     userId: authorId,
                     type: 'submission',
