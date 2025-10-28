@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HosBac - Plateforme éducative collaborative</title>
+    <title>MickaBac - Plateforme éducative collaborative</title>
     
     <!-- Importation de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -13,8 +13,11 @@
     <!-- Importation de Cloudinary -->
     <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
     
+    <!-- Framer Motion via CDN (simulation avec Anime.js) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
     <style>
-        /* Variables CSS */
+        /* Variables CSS améliorées pour le design Glassmorphism */
         :root {
             --primary-blue: #1e3a8a;
             --secondary-blue: #3b82f6;
@@ -26,10 +29,11 @@
             --success: #10b981;
             --warning: #f59e0b;
             --error: #ef4444;
-            --glass-bg: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.18);
-            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-            --transition: all 0.3s ease;
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-spring: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         /* Reset et styles de base */
@@ -37,7 +41,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
         body {
@@ -45,6 +49,20 @@
             color: var(--text-dark);
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Effet de verre global */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(224, 242, 254, 0.8) 0%, rgba(219, 234, 254, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            z-index: -1;
         }
 
         /* Styles pour l'écran de démarrage */
@@ -104,13 +122,15 @@
         }
 
         .warning-container {
-            background: var(--white);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 2rem;
             max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: var(--shadow);
+            box-shadow: var(--glass-shadow);
             animation: slideUp 0.5s ease;
         }
 
@@ -133,12 +153,18 @@
             border-radius: 50px;
             font-size: 1rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
+            position: relative;
+            overflow: hidden;
         }
 
         .accept-btn:hover {
             background: var(--secondary-blue);
             transform: translateY(-2px);
+        }
+
+        .accept-btn:active {
+            transform: scale(0.95);
         }
 
         /* Styles pour l'authentification */
@@ -156,12 +182,14 @@
         }
 
         .auth-container {
-            background: var(--white);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 2rem;
             width: 90%;
             max-width: 400px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--glass-shadow);
             animation: slideUp 0.5s ease;
         }
 
@@ -207,7 +235,8 @@
             padding: 0.8rem;
             border: 1px solid var(--light-blue);
             border-radius: 10px;
-            background: var(--light-gray);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
             transition: var(--transition);
         }
 
@@ -226,8 +255,10 @@
             border-radius: 50px;
             font-size: 1rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
             margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .auth-btn:hover {
@@ -235,11 +266,20 @@
             transform: translateY(-2px);
         }
 
+        .auth-btn:active {
+            transform: scale(0.95);
+        }
+
         .forgot-password {
             text-align: center;
             margin-top: 1rem;
             color: var(--secondary-blue);
             cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
         }
 
         /* Styles pour l'application principale */
@@ -251,7 +291,7 @@
         /* En-tête */
         header {
             background: var(--glass-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
             padding: 1rem;
             position: sticky;
@@ -282,9 +322,10 @@
             font-size: 1.5rem;
             color: var(--text-dark);
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
             padding: 0.5rem;
             border-radius: 50%;
+            position: relative;
         }
 
         .nav-icon.active {
@@ -324,7 +365,7 @@
         /* Pied de page */
         footer {
             background: var(--glass-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             border-top: 1px solid var(--glass-border);
             padding: 2rem 1rem;
         }
@@ -353,7 +394,7 @@
             font-size: 1.5rem;
             color: var(--primary-blue);
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
             padding: 0.5rem;
             border-radius: 50%;
             background: var(--glass-bg);
@@ -388,17 +429,30 @@
         /* Styles pour les cartes */
         .card {
             background: var(--glass-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
+            box-shadow: var(--glass-shadow);
+            transition: var(--transition-spring);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            z-index: -1;
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.02);
             box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2);
         }
 
@@ -416,12 +470,17 @@
             padding: 1rem;
             border-bottom: 1px solid var(--light-blue);
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
             position: relative;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
         }
 
         .notification-item:hover {
             background: var(--light-blue);
+            transform: translateX(5px);
         }
 
         .notification-icon {
@@ -444,6 +503,11 @@
             padding: 0.3rem 0.6rem;
             cursor: pointer;
             font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .notification-delete:hover {
+            transform: scale(1.1);
         }
 
         .notification-delete-all {
@@ -454,6 +518,11 @@
             padding: 0.5rem 1rem;
             cursor: pointer;
             margin-bottom: 1rem;
+            transition: var(--transition-spring);
+        }
+
+        .notification-delete-all:hover {
+            transform: translateY(-2px);
         }
 
         /* Styles pour les épreuves */
@@ -468,7 +537,8 @@
             padding: 0.5rem 1rem;
             border: 1px solid var(--light-blue);
             border-radius: 10px;
-            background: var(--light-gray);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
             transition: var(--transition);
         }
 
@@ -483,7 +553,8 @@
             padding: 0.5rem 1rem;
             border: 1px solid var(--light-blue);
             border-radius: 10px;
-            background: var(--light-gray);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
             transition: var(--transition);
         }
 
@@ -499,15 +570,21 @@
             padding: 0.5rem 1rem;
             border-radius: 50px;
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .add-exam-btn:hover {
             background: var(--secondary-blue);
             transform: translateY(-2px);
+        }
+
+        .add-exam-btn:active {
+            transform: scale(0.95);
         }
 
         .exam-list {
@@ -518,17 +595,29 @@
 
         .exam-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 15px;
             padding: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
+            box-shadow: var(--glass-shadow);
+            transition: var(--transition-spring);
             position: relative;
+            overflow: hidden;
+        }
+
+        .exam-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            z-index: -1;
         }
 
         .exam-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.03);
             box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2);
         }
 
@@ -555,9 +644,11 @@
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
             text-align: center;
             min-width: 120px;
+            position: relative;
+            overflow: hidden;
         }
 
         .download-btn {
@@ -567,6 +658,11 @@
 
         .download-btn:hover {
             background: var(--secondary-blue);
+            transform: translateY(-2px);
+        }
+
+        .download-btn:active {
+            transform: scale(0.95);
         }
 
         .view-btn {
@@ -576,6 +672,11 @@
 
         .view-btn:hover {
             background: #0da271;
+            transform: translateY(-2px);
+        }
+
+        .view-btn:active {
+            transform: scale(0.95);
         }
 
         .transfer-btn {
@@ -586,6 +687,11 @@
         .transfer-btn:hover {
             background: var(--secondary-blue);
             color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .transfer-btn:active {
+            transform: scale(0.95);
         }
 
         .favorite-btn {
@@ -599,6 +705,14 @@
             color: var(--white);
         }
 
+        .favorite-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .favorite-btn:active {
+            transform: scale(0.95);
+        }
+
         .delete-btn {
             background: var(--error);
             color: var(--white);
@@ -606,12 +720,22 @@
 
         .delete-btn:hover {
             background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .delete-btn:active {
+            transform: scale(0.95);
         }
 
         .author-link {
             color: var(--secondary-blue);
             cursor: pointer;
             text-decoration: underline;
+            transition: var(--transition);
+        }
+
+        .author-link:hover {
+            color: var(--primary-blue);
         }
 
         /* Styles pour le profil */
@@ -649,12 +773,17 @@
 
         .stat-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 15px;
             padding: 1.5rem;
             text-align: center;
-            box-shadow: var(--shadow);
+            box-shadow: var(--glass-shadow);
+            transition: var(--transition-spring);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
         .stat-value {
@@ -684,19 +813,22 @@
             background: rgba(0, 0, 0, 0.7);
             display: none;
             justify-content: center;
-            align-items: center;
+            align-items: flex-end;
             z-index: 1000;
         }
 
         .popup-content {
-            background: var(--white);
-            border-radius: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px 20px 0 0;
             padding: 2rem;
-            max-width: 90%;
+            width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: var(--shadow);
-            animation: slideUp 0.5s ease;
+            box-shadow: var(--glass-shadow);
+            animation: slideUpFromBottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
         }
 
         .popup-title {
@@ -714,6 +846,12 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: var(--text-light);
+            transition: var(--transition);
+        }
+
+        .popup-close:hover {
+            color: var(--primary-blue);
+            transform: scale(1.1);
         }
 
         /* Styles pour les formulaires */
@@ -734,12 +872,15 @@
             text-align: center;
             margin-bottom: 1rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
         }
 
         .file-upload:hover {
             border-color: var(--secondary-blue);
             background: var(--light-blue);
+            transform: translateY(-2px);
         }
 
         .submit-btn {
@@ -750,12 +891,18 @@
             border-radius: 50px;
             font-size: 1rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
+            position: relative;
+            overflow: hidden;
         }
 
         .submit-btn:hover {
             background: var(--secondary-blue);
             transform: translateY(-2px);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.95);
         }
 
         /* Styles pour l'administration */
@@ -783,6 +930,15 @@
             padding: 0.5rem 1rem;
             border-radius: 10px;
             cursor: pointer;
+            transition: var(--transition-spring);
+        }
+
+        .approve-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .approve-btn:active {
+            transform: scale(0.95);
         }
 
         .reject-btn {
@@ -792,6 +948,15 @@
             padding: 0.5rem 1rem;
             border-radius: 10px;
             cursor: pointer;
+            transition: var(--transition-spring);
+        }
+
+        .reject-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .reject-btn:active {
+            transform: scale(0.95);
         }
 
         /* Styles pour les résultats de recherche */
@@ -803,16 +968,26 @@
             padding: 1rem;
             border-bottom: 1px solid var(--light-blue);
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-spring);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
         }
 
         .search-result-item:hover {
             background: var(--light-blue);
+            transform: translateX(5px);
         }
 
         /* Animations */
         @keyframes slideUp {
             from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideUpFromBottom {
+            from { transform: translateY(100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
@@ -847,12 +1022,71 @@
                 min-width: 100%;
             }
         }
+
+        /* Styles pour l'effet de cascade */
+        .stagger-item {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* Styles pour les badges de notification */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--error);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Styles pour le bouton flottant */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: var(--transition-spring);
+            z-index: 99;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .fab:hover {
+            transform: translateY(-5px) scale(1.1);
+            background: var(--secondary-blue);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* Styles pour le drag des modales */
+        .popup-content.dragging {
+            transition: none;
+        }
     </style>
 </head>
 <body>
     <!-- Écran de démarrage -->
     <div id="splash-screen">
-        <div class="splash-logo">HosBac</div>
+        <div class="splash-logo">MickaBac</div>
         <div class="splash-icons">
             <span>📚</span>
             <span>🖊</span>
@@ -866,16 +1100,16 @@
     <!-- Écran d'avertissement -->
     <div id="warning-screen">
         <div class="warning-container">
-            <h2 class="warning-title">🔒 Avertissement – Utilisation responsable de la plateforme hosBac</h2>
+            <h2 class="warning-title">🔒 Avertissement – Utilisation responsable de la plateforme MickaBac</h2>
             <div class="warning-text">
-                <p>La plateforme hosBac est un espace éducatif collaboratif destiné à aider les élèves et étudiants dans leur préparation aux examens. Nous mettons à disposition des épreuves et corrigés pour faciliter l'apprentissage et la révision.</p>
+                <p>La plateforme MickaBac est un espace éducatif collaboratif destiné à aider les élèves et étudiants dans leur préparation aux examens. Nous mettons à disposition des épreuves et corrigés pour faciliter l'apprentissage et la révision.</p>
                 <p>Nous rappelons à tous les utilisateurs que ces ressources doivent être utilisées de manière éthique et responsable. Il est strictement interdit de :</p>
                 <ul>
                     <li>Partager des contenus protégés par des droits d'auteur sans autorisation</li>
                     <li>Utiliser les épreuves pour tricher lors d'examens officiels</li>
                     <li>Publier des contenus inappropriés, offensants ou illégaux</li>
                 </ul>
-                <p>L'équipe HosBac se réserve le droit de modérer tous les contenus publiés et de suspendre les comptes ne respectant pas ces règles.</p>
+                <p>L'équipe MickaBac se réserve le droit de modérer tous les contenus publiés et de suspendre les comptes ne respectant pas ces règles.</p>
                 <p>Merci de participer avec intégrité.</p>
             </div>
             <button class="accept-btn">J'accepte</button>
@@ -938,7 +1172,7 @@
         <!-- En-tête -->
         <header>
             <div class="header-content">
-                <div class="logo">HosBac</div>
+                <div class="logo">MickaBac</div>
                 <div class="nav-icons">
                     <div class="nav-icon active" data-view="home">🏠</div>
                     <div class="nav-icon" data-view="notifications">🔔</div>
@@ -1010,7 +1244,6 @@
                         <option value="G">G</option>
                     </select>
                     <input type="text" id="search-exams" class="search-bar" placeholder="Rechercher une épreuve...">
-                    <button id="add-exam-btn" class="add-exam-btn">➕ Ajouter une épreuve</button>
                 </div>
                 <div id="exams-list" class="exam-list">
                     <!-- Les épreuves seront chargées ici -->
@@ -1114,10 +1347,13 @@
             </div>
         </main>
 
+        <!-- Bouton flottant pour ajouter une épreuve -->
+        <div class="fab" id="fab-add-exam">+</div>
+
         <!-- Pied de page -->
         <footer>
             <div class="footer-content">
-                <div class="footer-brand">HosBac</div>
+                <div class="footer-brand">MickaBac</div>
                 <div class="footer-contact">
                     <a href="https://www.facebook.com/profile.php?id=61579985138308" target="_blank" class="contact-icon">📘</a>
                     <a href="https://wa.me/qr/73EC225KOITDD1" target="_blank" class="contact-icon">📱</a>
@@ -1226,12 +1462,12 @@
             <h2 class="popup-title">Conditions Générales d'Utilisation</h2>
             <div class="warning-text">
                 <!-- Contenu des CGU -->
-                <p>Conditions Générales d'Utilisation de hosBac</p>
+                <p>Conditions Générales d'Utilisation de MickaBac</p>
                 <p>Dernière mise à jour : 26/10/2025</p>
-                <p>Bienvenue sur HosBac ! En accédant à notre site web et en utilisant nos services, vous acceptez d'être lié par les présentes Conditions Générales d'Utilisation (CGU).</p>
+                <p>Bienvenue sur MickaBac ! En accédant à notre site web et en utilisant nos services, vous acceptez d'être lié par les présentes Conditions Générales d'Utilisation (CGU).</p>
                 
                 <h3>1. Objet de la Plateforme</h3>
-                <p>hosBac est une plateforme éducative conçue pour aider les élèves et étudiants (du Collège au Lycée, classes de 6ème à la Terminale, et préparant le BEPC et le BAC) en leur donnant accès à des épreuves, examens et corrigés. Les utilisateurs peuvent consulter, télécharger et publier des ressources pédagogiques.</p>
+                <p>MickaBac est une plateforme éducative conçue pour aider les élèves et étudiants (du Collège au Lycée, classes de 6ème à la Terminale, et préparant le BEPC et le BAC) en leur donnant accès à des épreuves, examens et corrigés. Les utilisateurs peuvent consulter, télécharger et publier des ressources pédagogiques.</p>
                 
                 <h3>2. Inscription et Compte Utilisateur</h3>
                 <ul>
@@ -1242,7 +1478,7 @@
                 
                 <h3>3. Publication de Contenu par les Utilisateurs</h3>
                 <ul>
-                    <li><strong>Propriété du contenu :</strong> En publiant une épreuve ou un corrigé (ci-après "le Contenu") sur hosBac, vous déclarez et garantissez que :
+                    <li><strong>Propriété du contenu :</strong> En publiant une épreuve ou un corrigé (ci-après "le Contenu") sur MickaBac, vous déclarez et garantissez que :
                         <ul>
                             <li>Vous êtes l'auteur de ce Contenu, ou ;</li>
                             <li>Vous disposez de toutes les autorisations et droits nécessaires (notamment les droits d'auteur) pour le publier et nous accorder une licence d'utilisation.</li>
@@ -1254,20 +1490,20 @@
                 
                 <h3>4. Modération et Approbation</h3>
                 <ul>
-                    <li><strong>Rôle de l'Administrateur :</strong> L'administrateur de hosBac (ci-après "l'Administrateur") se réserve le droit d'examiner tout Contenu soumis.</li>
+                    <li><strong>Rôle de l'Administrateur :</strong> L'administrateur de MickaBac (ci-après "l'Administrateur") se réserve le droit d'examiner tout Contenu soumis.</li>
                     <li><strong>Approbation :</strong> Le Contenu ne sera visible publiquement qu'après approbation par l'Administrateur.</li>
                     <li><strong>Refus ou Retrait :</strong> L'Administrateur peut refuser ou retirer tout Contenu, à tout moment et sans préavis, s'il estime qu'il ne respecte pas les présentes CGU, qu'il est de mauvaise qualité, ou pour toute autre raison, à sa seule discrétion.</li>
                 </ul>
                 
                 <h3>5. Responsabilité</h3>
                 <ul>
-                    <li><strong>Exactitude du Contenu :</strong> hosBac ne garantit pas l'exactitude, la pertinence ou l'exhaustivité des épreuves et corrigés publiés par les utilisateurs. Nous agissons en tant qu'hébergeur.</li>
+                    <li><strong>Exactitude du Contenu :</strong> MickaBac ne garantit pas l'exactitude, la pertinence ou l'exhaustivité des épreuves et corrigés publiés par les utilisateurs. Nous agissons en tant qu'hébergeur.</li>
                     <li><strong>Limitation de responsabilité :</strong> L'utilisation de la plateforme se fait à vos propres risques. Nous ne serons pas tenus responsables des dommages directs ou indirects résultant de l'utilisation du site.</li>
                     <li><strong>Responsabilité de l'utilisateur :</strong> Vous êtes seul responsable du Contenu que vous publiez et des conséquences de sa diffusion.</li>
                 </ul>
                 
                 <h3>6. Propriété Intellectuelle</h3>
-                <p>Tous les éléments constituant la plateforme (logo, design, structure) sont la propriété exclusive de hosBac. Le contenu pédagogique reste la propriété de ses auteurs respectifs, sous réserve de la licence accordée à la plateforme (voir article 3).</p>
+                <p>Tous les éléments constituant la plateforme (logo, design, structure) sont la propriété exclusive de MickaBac. Le contenu pédagogique reste la propriété de ses auteurs respectifs, sous réserve de la licence accordée à la plateforme (voir article 3).</p>
                 
                 <h3>7. Modification des CGU</h3>
                 <p>Nous nous réservons le droit de modifier ces CGU à tout moment. Les modifications prendront effet dès leur publication sur le site.</p>
@@ -1288,9 +1524,9 @@
             <h2 class="popup-title">Politique de Confidentialité</h2>
             <div class="warning-text">
                 <!-- Contenu de la politique de confidentialité -->
-                <p>Politique de Confidentialité de hosBac</p>
+                <p>Politique de Confidentialité de MickaBac</p>
                 <p>Dernière mise à jour : 26/10/2025</p>
-                <p>La protection de vos données personnelles est une priorité pour hosBac. Cette politique décrit quelles informations nous collectons et comment nous les utilisons.</p>
+                <p>La protection de vos données personnelles est une priorité pour MickaBac. Cette politique décrit quelles informations nous collectons et comment nous les utilisons.</p>
                 
                 <h3>1. Quelles données collectons-nous ?</h3>
                 <p>Nous collectons deux types d'informations :</p>
@@ -1397,7 +1633,7 @@
         const authForms = document.querySelectorAll('.auth-form');
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
-        const addExamBtn = document.getElementById('add-exam-btn');
+        const fabAddExam = document.getElementById('fab-add-exam');
         const addExamPopup = document.getElementById('add-exam-popup');
         const addExamForm = document.getElementById('add-exam-form');
         const transferPopup = document.getElementById('transfer-popup');
@@ -1417,6 +1653,11 @@
         const searchResults = document.getElementById('search-results');
         const deleteAllNotificationsBtn = document.getElementById('delete-all-notifications');
         const notificationSound = document.getElementById('notification-sound');
+
+        // Variables pour les fonctionnalités de glissement
+        let isDragging = false;
+        let startY = 0;
+        let currentY = 0;
 
         // Initialisation de l'application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1442,6 +1683,7 @@
                         app.style.display = 'block';
                         loadUserData();
                         startNotificationListener();
+                        animateStaggerItems();
                     } else {
                         // L'utilisateur n'est pas connecté
                         authScreen.style.display = 'flex';
@@ -1483,7 +1725,9 @@
                         checkUserRole();
                         loadUserData();
                         startNotificationListener();
+                        animateStaggerItems();
                         showNotification('Connexion réussie', 'success');
+                        vibrate();
                     })
                     .catch(error => {
                         // Erreur de connexion
@@ -1536,7 +1780,9 @@
                         checkUserRole();
                         loadUserData();
                         startNotificationListener();
+                        animateStaggerItems();
                         showNotification('Inscription réussie', 'success');
+                        vibrate();
                     })
                     .catch(error => {
                         console.error('Erreur d\'inscription:', error);
@@ -1568,45 +1814,55 @@
                 icon.addEventListener('click', () => {
                     const viewName = icon.getAttribute('data-view');
                     
-                    // Activer l'icône sélectionnée
-                    navIcons.forEach(i => i.classList.remove('active'));
-                    icon.classList.add('active');
-                    
-                    // Afficher la vue correspondante
-                    views.forEach(view => {
-                        view.classList.remove('active');
-                        if (view.id === `${viewName}-view`) {
-                            view.classList.add('active');
-                        }
-                    });
-                    
-                    // Charger les données de la vue
-                    switch(viewName) {
-                        case 'home':
-                            loadRecentExams();
-                            break;
-                        case 'notifications':
-                            loadNotifications();
-                            break;
-                        case 'exams':
-                            loadAllExams();
-                            break;
-                        case 'search':
-                            // Initialiser la recherche
-                            break;
-                        case 'profile':
-                            loadProfileData();
-                            break;
-                        case 'admin':
-                            loadAdminPanel();
-                            break;
+                    // Animation de transition entre vues
+                    const currentActiveView = document.querySelector('.view.active');
+                    if (currentActiveView) {
+                        currentActiveView.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(() => {
+                            currentActiveView.classList.remove('active');
+                            currentActiveView.style.animation = '';
+                            
+                            // Activer l'icône sélectionnée
+                            navIcons.forEach(i => i.classList.remove('active'));
+                            icon.classList.add('active');
+                            
+                            // Afficher la vue correspondante
+                            views.forEach(view => {
+                                if (view.id === `${viewName}-view`) {
+                                    view.classList.add('active');
+                                    view.style.animation = 'fadeIn 0.5s ease';
+                                }
+                            });
+                            
+                            // Charger les données de la vue
+                            switch(viewName) {
+                                case 'home':
+                                    loadRecentExams();
+                                    break;
+                                case 'notifications':
+                                    loadNotifications();
+                                    break;
+                                case 'exams':
+                                    loadAllExams();
+                                    break;
+                                case 'search':
+                                    // Initialiser la recherche
+                                    break;
+                                case 'profile':
+                                    loadProfileData();
+                                    break;
+                                case 'admin':
+                                    loadAdminPanel();
+                                    break;
+                            }
+                        }, 300);
                     }
                 });
             });
 
-            // Gestionnaire pour le bouton d'ajout d'épreuve
-            addExamBtn.addEventListener('click', () => {
-                addExamPopup.style.display = 'flex';
+            // Gestionnaire pour le bouton flottant d'ajout d'épreuve
+            fabAddExam.addEventListener('click', () => {
+                openAddExamPopup();
             });
 
             // Gestionnaire pour le formulaire d'ajout d'épreuve
@@ -1642,11 +1898,11 @@
 
             // Gestionnaires pour les liens du pied de page
             termsLink.addEventListener('click', () => {
-                termsPopup.style.display = 'flex';
+                openPopup(termsPopup);
             });
 
             privacyLink.addEventListener('click', () => {
-                privacyPopup.style.display = 'flex';
+                openPopup(privacyPopup);
             });
 
             // Gestionnaire pour supprimer toutes les notifications
@@ -1657,7 +1913,7 @@
             // Gestionnaires pour fermer les popups
             popupCloseButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    button.closest('.popup-overlay').style.display = 'none';
+                    closePopup(button.closest('.popup-overlay'));
                 });
             });
 
@@ -1665,12 +1921,12 @@
             document.querySelectorAll('.popup-overlay').forEach(popup => {
                 popup.addEventListener('click', e => {
                     if (e.target === popup) {
-                        popup.style.display = 'none';
+                        closePopup(popup);
                     }
                 });
             });
 
-            // Configuration Cloudinary corrigée
+            // Configuration Cloudinary
             let sujetUploadWidget, corrigeUploadWidget;
             
             try {
@@ -1746,7 +2002,124 @@
             globalSearch.addEventListener('input', debounce(() => {
                 performGlobalSearch(globalSearch.value);
             }, 300));
+
+            // Ajouter les gestionnaires de glissement pour les popups
+            setupPopupDrag();
         });
+
+        // Fonction pour ouvrir une popup avec animation
+        function openPopup(popup) {
+            popup.style.display = 'flex';
+            const content = popup.querySelector('.popup-content');
+            content.style.transform = 'translateY(100%)';
+            
+            setTimeout(() => {
+                content.style.transform = 'translateY(0)';
+            }, 10);
+        }
+
+        // Fonction pour fermer une popup avec animation
+        function closePopup(popup) {
+            const content = popup.querySelector('.popup-content');
+            content.style.transform = 'translateY(100%)';
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+                content.style.transform = 'translateY(0)';
+            }, 300);
+        }
+
+        // Fonction pour ouvrir la popup d'ajout d'épreuve
+        function openAddExamPopup() {
+            openPopup(addExamPopup);
+        }
+
+        // Configuration du glissement pour les popups
+        function setupPopupDrag() {
+            const popups = document.querySelectorAll('.popup-overlay');
+            
+            popups.forEach(popup => {
+                const content = popup.querySelector('.popup-content');
+                
+                content.addEventListener('mousedown', startDrag);
+                content.addEventListener('touchstart', startDrag, { passive: true });
+                
+                function startDrag(e) {
+                    isDragging = true;
+                    startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+                    currentY = startY;
+                    content.classList.add('dragging');
+                    
+                    document.addEventListener('mousemove', onDrag);
+                    document.addEventListener('touchmove', onDrag, { passive: true });
+                    document.addEventListener('mouseup', stopDrag);
+                    document.addEventListener('touchend', stopDrag);
+                }
+                
+                function onDrag(e) {
+                    if (!isDragging) return;
+                    
+                    currentY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+                    const diff = currentY - startY;
+                    
+                    if (diff > 0) {
+                        content.style.transform = `translateY(${diff}px)`;
+                    }
+                }
+                
+                function stopDrag() {
+                    if (!isDragging) return;
+                    
+                    isDragging = false;
+                    content.classList.remove('dragging');
+                    
+                    const diff = currentY - startY;
+                    const threshold = 100; // Seuil pour fermer la popup
+                    
+                    if (diff > threshold) {
+                        closePopup(popup);
+                    } else {
+                        content.style.transform = 'translateY(0)';
+                    }
+                    
+                    document.removeEventListener('mousemove', onDrag);
+                    document.removeEventListener('touchmove', onDrag);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchend', stopDrag);
+                }
+            });
+        }
+
+        // Fonction pour animer les éléments en cascade
+        function animateStaggerItems() {
+            const staggerItems = document.querySelectorAll('.stagger-item, .exam-card, .notification-item, .stat-card');
+            
+            if (window.anime) {
+                anime({
+                    targets: staggerItems,
+                    opacity: [0, 1],
+                    translateY: [20, 0],
+                    delay: anime.stagger(100),
+                    duration: 500,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            } else {
+                // Fallback si Anime.js n'est pas disponible
+                staggerItems.forEach((item, index) => {
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }
+        }
+
+        // Fonction pour simuler la vibration
+        function vibrate() {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
 
         // Démarrer l'écoute des notifications en temps réel
         function startNotificationListener() {
@@ -1761,7 +2134,7 @@
                         if (change.type === 'added') {
                             // Nouvelle notification - jouer le son et vibrer
                             playNotificationSound();
-                            vibratePhone();
+                            vibrate();
                             
                             // Recharger les notifications si on est sur la vue notifications
                             if (document.getElementById('notifications-view').classList.contains('active')) {
@@ -1786,13 +2159,6 @@
                 });
             } catch (error) {
                 console.error('Erreur lecture son notification:', error);
-            }
-        }
-
-        // Faire vibrer le téléphone
-        function vibratePhone() {
-            if (navigator.vibrate) {
-                navigator.vibrate([200, 100, 200]);
             }
         }
 
@@ -1847,6 +2213,9 @@
                         const examCard = createExamCard(exam, doc.id);
                         recentExamsContainer.appendChild(examCard);
                     });
+                    
+                    // Appliquer l'animation en cascade
+                    animateStaggerItems();
                 })
                 .catch(error => {
                     console.error('Erreur lors du chargement des épreuves récentes:', error);
@@ -1874,6 +2243,9 @@
                         const examCard = createExamCard(exam, doc.id);
                         examsContainer.appendChild(examCard);
                     });
+                    
+                    // Appliquer l'animation en cascade
+                    animateStaggerItems();
                 })
                 .catch(error => {
                     console.error('Erreur lors du chargement des épreuves:', error);
@@ -1939,6 +2311,9 @@
                         const examCard = createExamCard(exam, exam.id);
                         examsContainer.appendChild(examCard);
                     });
+                    
+                    // Appliquer l'animation en cascade
+                    animateStaggerItems();
                 })
                 .catch(error => {
                     console.error('Erreur lors du filtrage des épreuves:', error);
@@ -1948,7 +2323,9 @@
 
         function createExamCard(exam, examId) {
             const card = document.createElement('div');
-            card.className = 'exam-card';
+            card.className = 'exam-card stagger-item';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
             
             const isFavorite = userData && userData.favorites && userData.favorites.includes(examId);
             
@@ -2009,7 +2386,6 @@
             return card;
         }
 
-        // CORRECTION: Fonction viewExam avec gestion Cloudinary améliorée
         function viewExam(examId, type) {
             db.collection('epreuves').doc(examId).get()
                 .then(doc => {
@@ -2019,14 +2395,12 @@
                         
                         if (type === 'sujet') {
                             fileUrl = exam.fichier_sujet;
-                            // CORRECTION: Ouverture dans un nouvel onglet
                             if (fileUrl && fileUrl.includes('cloudinary.com')) {
                                 window.open(fileUrl, '_blank');
                             } else {
                                 showNotification('Erreur: Fichier non disponible', 'error');
                             }
                         } else if (type === 'corrige') {
-                            // Vérifier les points pour le corrigé
                             handleCorrigeAccess(examId, exam, 'view');
                         }
                     }
@@ -2037,7 +2411,6 @@
                 });
         }
 
-        // CORRECTION: Fonction downloadExam avec gestion Cloudinary améliorée
         function downloadExam(examId, type) {
             db.collection('epreuves').doc(examId).get()
                 .then(doc => {
@@ -2046,7 +2419,6 @@
                         
                         if (type === 'sujet') {
                             const fileUrl = exam.fichier_sujet;
-                            // CORRECTION: Téléchargement direct
                             if (fileUrl && fileUrl.includes('cloudinary.com')) {
                                 const link = document.createElement('a');
                                 link.href = fileUrl;
@@ -2059,7 +2431,6 @@
                                 showNotification('Erreur: Fichier non disponible', 'error');
                             }
                         } else if (type === 'corrige') {
-                            // Vérifier les points pour le corrigé
                             handleCorrigeAccess(examId, exam, 'download');
                         }
                     }
@@ -2070,7 +2441,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Gestion de l'accès aux corrigés
         function handleCorrigeAccess(examId, exam, action) {
             db.collection('users').doc(currentUser.uid).get()
                 .then(userDoc => {
@@ -2081,17 +2451,14 @@
                         return;
                     }
                     
-                    // Déduire 2 points de l'utilisateur
                     return db.collection('users').doc(currentUser.uid).update({
                         points: firebase.firestore.FieldValue.increment(-2),
                         examsDownloaded: firebase.firestore.FieldValue.increment(1)
                     }).then(() => {
-                        // Ajouter 2 points à l'auteur si ce n'est pas le même utilisateur
                         if (exam.auteurId && exam.auteurId !== currentUser.uid) {
                             return db.collection('users').doc(exam.auteurId).update({
                                 points: firebase.firestore.FieldValue.increment(2)
                             }).then(() => {
-                                // Notification pour l'auteur
                                 return db.collection('notifications').add({
                                     userId: exam.auteurId,
                                     type: 'points_received',
@@ -2103,7 +2470,6 @@
                             });
                         }
                     }).then(() => {
-                        // Accéder au fichier corrigé
                         const fileUrl = exam.fichier_corrige;
                         if (fileUrl && fileUrl.includes('cloudinary.com')) {
                             if (action === 'view') {
@@ -2118,6 +2484,7 @@
                                 document.body.removeChild(link);
                             }
                             showNotification(`Corrigé ${action === 'view' ? 'consulté' : 'téléchargé'} avec succès (2 points déduits)`, 'success');
+                            vibrate();
                         } else {
                             showNotification('Erreur: Fichier corrigé non disponible', 'error');
                         }
@@ -2147,7 +2514,6 @@
                 button.innerHTML = '❤️ Favori';
                 showNotification('Épreuve ajoutée aux favoris', 'success');
                 
-                // Notification à l'auteur
                 db.collection('epreuves').doc(examId).get()
                     .then(doc => {
                         if (doc.exists) {
@@ -2248,7 +2614,7 @@
         }
 
         function openTransferPopup(examId) {
-            transferPopup.style.display = 'flex';
+            openPopup(transferPopup);
             transferPopup.setAttribute('data-exam-id', examId);
             
             const userSearch = document.getElementById('user-search');
@@ -2341,8 +2707,9 @@
                     }
                 })
                 .then(() => {
-                    transferPopup.style.display = 'none';
+                    closePopup(transferPopup);
                     showNotification('Épreuve transférée avec succès', 'success');
+                    vibrate();
                 })
                 .catch(error => {
                     console.error('Erreur lors du transfert:', error);
@@ -2350,7 +2717,6 @@
                 });
         }
 
-        // CORRECTION: Fonction submitExam avec système de points amélioré
         function submitExam() {
             const matiere = document.getElementById('exam-matiere').value;
             const classe = document.getElementById('exam-classe').value;
@@ -2394,18 +2760,19 @@
                     });
                 })
                 .then(() => {
-                    addExamPopup.style.display = 'none';
+                    closePopup(addExamPopup);
                     addExamForm.reset();
                     document.getElementById('sujet-upload').innerHTML = '<p>Cliquez pour télécharger le fichier sujet</p>';
                     document.getElementById('corrige-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
                     
                     if (isAdmin) {
                         showNotification('Épreuve publiée avec succès', 'success');
-                        // Si admin, attribuer les points immédiatement
-                        assignPointsAfterApproval(currentUser.uid, fichier_corrige ? 4 : 2);
+                        const points = fichier_corrige ? 4 : 2;
+                        assignPointsAfterApproval(currentUser.uid, points);
                     } else {
                         showNotification('Épreuve soumise avec succès, en attente d\'approbation', 'success');
                     }
+                    vibrate();
                 })
                 .catch(error => {
                     console.error('Erreur lors de la soumission de l\'épreuve:', error);
@@ -2413,7 +2780,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Charger les notifications avec boutons de suppression
         function loadNotifications() {
             const notificationsContainer = document.getElementById('notifications-list');
             notificationsContainer.innerHTML = '<p>Chargement des notifications...</p>';
@@ -2434,7 +2800,9 @@
                     querySnapshot.forEach(doc => {
                         const notification = doc.data();
                         const notificationElement = document.createElement('div');
-                        notificationElement.className = 'notification-item';
+                        notificationElement.className = 'notification-item stagger-item';
+                        notificationElement.style.opacity = '0';
+                        notificationElement.style.transform = 'translateY(20px)';
                         notificationElement.setAttribute('data-notification-id', doc.id);
                         
                         let icon = '🔔';
@@ -2461,14 +2829,12 @@
                             </div>
                         `;
                         
-                        // Gestionnaire pour la suppression individuelle
                         const deleteBtn = notificationElement.querySelector('.notification-delete');
                         deleteBtn.addEventListener('click', (e) => {
                             e.stopPropagation();
                             deleteNotification(doc.id);
                         });
                         
-                        // Gestionnaire pour le clic sur la notification
                         if (notification.examId) {
                             notificationElement.addEventListener('click', () => {
                                 db.collection('notifications').doc(doc.id).update({
@@ -2486,6 +2852,9 @@
                         
                         notificationsContainer.appendChild(notificationElement);
                     });
+                    
+                    // Appliquer l'animation en cascade
+                    animateStaggerItems();
                 })
                 .catch(error => {
                     console.error('Erreur lors du chargement des notifications:', error);
@@ -2493,7 +2862,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Supprimer une notification
         function deleteNotification(notificationId) {
             db.collection('notifications').doc(notificationId).delete()
                 .then(() => {
@@ -2507,7 +2875,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Supprimer toutes les notifications
         function deleteAllNotifications() {
             if (!confirm('Êtes-vous sûr de vouloir supprimer toutes vos notifications ?')) {
                 return;
@@ -2534,7 +2901,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Mettre à jour le badge de notification
         function updateNotificationBadge() {
             if (!currentUser) return;
             
@@ -2547,31 +2913,15 @@
                     const notificationIcon = document.querySelector('.nav-icon[data-view="notifications"]');
                     
                     if (unreadCount > 0) {
-                        // Ajouter un badge avec le nombre de notifications non lues
                         let badge = notificationIcon.querySelector('.notification-badge');
                         if (!badge) {
                             badge = document.createElement('span');
                             badge.className = 'notification-badge';
-                            badge.style.cssText = `
-                                position: absolute;
-                                top: -5px;
-                                right: -5px;
-                                background: var(--error);
-                                color: white;
-                                border-radius: 50%;
-                                width: 18px;
-                                height: 18px;
-                                font-size: 0.7rem;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                            `;
                             notificationIcon.style.position = 'relative';
                             notificationIcon.appendChild(badge);
                         }
                         badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
                     } else {
-                        // Supprimer le badge s'il existe
                         const badge = notificationIcon.querySelector('.notification-badge');
                         if (badge) {
                             badge.remove();
@@ -2675,6 +3025,9 @@
                     if (!hasFavorites) {
                         favoritesContainer.innerHTML = '<p>Aucun favori pour le moment.</p>';
                     }
+                    
+                    // Appliquer l'animation en cascade
+                    animateStaggerItems();
                 })
                 .catch(error => {
                     console.error('Erreur lors du chargement des favoris:', error);
@@ -2725,7 +3078,9 @@
                         examsSnapshot.forEach(doc => {
                             const exam = doc.data();
                             const resultItem = document.createElement('div');
-                            resultItem.className = 'search-result-item';
+                            resultItem.className = 'search-result-item stagger-item';
+                            resultItem.style.opacity = '0';
+                            resultItem.style.transform = 'translateY(20px)';
                             resultItem.innerHTML = `
                                 <p><strong>${exam.nom_epreuve}</strong> - ${exam.matiere} - ${exam.classe}</p>
                                 <small>Publié par: ${exam.auteurNom}</small>
@@ -2748,7 +3103,9 @@
                             const user = doc.data();
                             if (doc.id !== currentUser.uid) {
                                 const resultItem = document.createElement('div');
-                                resultItem.className = 'search-result-item';
+                                resultItem.className = 'search-result-item stagger-item';
+                                resultItem.style.opacity = '0';
+                                resultItem.style.transform = 'translateY(20px)';
                                 resultItem.innerHTML = `
                                     <p><strong>${user.prenom} ${user.nom}</strong> - ${user.email}</p>
                                     <small>${user.ecole || ''} - ${user.classe || ''}</small>
@@ -2765,6 +3122,9 @@
                     if (!hasResults) {
                         searchResults.innerHTML = '<p>Aucun résultat trouvé.</p>';
                     }
+                    
+                    // Appliquer l'animation en cascade
+                    animateStaggerItems();
                 })
                 .catch(error => {
                     console.error('Erreur lors de la recherche globale:', error);
@@ -2803,7 +3163,9 @@
                     querySnapshot.forEach(doc => {
                         const exam = doc.data();
                         const examElement = document.createElement('div');
-                        examElement.className = 'card';
+                        examElement.className = 'card stagger-item';
+                        examElement.style.opacity = '0';
+                        examElement.style.transform = 'translateY(20px)';
                         examElement.innerHTML = `
                             <h3 class="card-title">${exam.nom_epreuve}</h3>
                             <p>Matière: ${exam.matiere} | Classe: ${exam.classe} | Série: ${exam.serie}</p>
@@ -2818,7 +3180,6 @@
                         pendingExamsContainer.appendChild(examElement);
                         
                         examElement.querySelector('.approve-btn').addEventListener('click', () => {
-                            // CORRECTION: Calcul des points selon la présence du corrigé
                             const points = exam.fichier_corrige ? 4 : 2;
                             approveExam(doc.id, exam.auteurId, points);
                         });
@@ -2827,21 +3188,20 @@
                             rejectExam(doc.id, exam.auteurId);
                         });
                     });
+                    
+                    // Appliquer l'animation en cascade
+                    animateStaggerItems();
                 });
         }
 
-        // CORRECTION: Fonction approveExam avec notification à l'utilisateur
         function approveExam(examId, authorId, points) {
-            // Mettre à jour le statut de l'épreuve
             db.collection('epreuves').doc(examId).update({
                 status: 'approved'
             })
             .then(() => {
-                // Attribuer les points à l'auteur
                 return assignPointsAfterApproval(authorId, points);
             })
             .then(() => {
-                // Notification à l'auteur
                 return db.collection('notifications').add({
                     userId: authorId,
                     type: 'approval',
@@ -2861,7 +3221,6 @@
             });
         }
 
-        // NOUVELLE FONCTION: Attribuer les points après approbation
         function assignPointsAfterApproval(authorId, points) {
             return db.collection('users').doc(authorId).update({
                 points: firebase.firestore.FieldValue.increment(points),
@@ -2870,10 +3229,8 @@
         }
 
         function rejectExam(examId, authorId) {
-            // Supprimer l'épreuve
             db.collection('epreuves').doc(examId).delete()
             .then(() => {
-                // Notification à l'auteur
                 return db.collection('notifications').add({
                     userId: authorId,
                     type: 'submission',
@@ -2906,6 +3263,10 @@
                 font-weight: 500;
                 z-index: 10000;
                 animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+                background: var(--glass-bg);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--glass-border);
+                box-shadow: var(--glass-shadow);
             `;
             
             if (type === 'success') {
@@ -2952,8 +3313,13 @@
                 from { opacity: 1; }
                 to { opacity: 0; }
             }
+            
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
         `;
         document.head.appendChild(style);
     </script>
 </body>
-    </html>
+</html>
