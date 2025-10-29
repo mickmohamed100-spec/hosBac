@@ -114,6 +114,163 @@
             100% { background-position: 200px 0; }
         }
 
+        /* Nouveau design d'accueil complexe */
+        #welcome-design {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+            z-index: 9998;
+            overflow: hidden;
+        }
+
+        .welcome-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-delay: -5s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 80%;
+            animation-delay: -10s;
+        }
+
+        .floating-element:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 20%;
+            animation-delay: -7s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(30px, -50px) rotate(120deg);
+            }
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+
+        .welcome-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .welcome-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+            max-width: 900px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--light-blue);
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .welcome-btn {
+            background: var(--white);
+            color: var(--primary-blue);
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .welcome-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
         /* Styles pour l'avertissement */
         #warning-screen {
             display: none;
@@ -123,7 +280,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 9998;
+            z-index: 9997;
             justify-content: center;
             align-items: center;
         }
@@ -175,7 +332,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 9997;
+            z-index: 9996;
             justify-content: center;
             align-items: center;
         }
@@ -1197,6 +1354,18 @@
             .exam-btn {
                 min-width: 100%;
             }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .welcome-title {
+                font-size: 2.5rem;
+            }
+            
+            .welcome-subtitle {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
@@ -1211,6 +1380,45 @@
             <i class="fas fa-graduation-cap"></i>
             <i class="fas fa-search"></i>
             <i class="fas fa-folder-open"></i>
+        </div>
+    </div>
+
+    <div id="welcome-design">
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="welcome-container">
+            <h1 class="welcome-title">Bienvenue sur HosBac</h1>
+            <p class="welcome-subtitle">La plateforme éducative collaborative pour partager et découvrir des épreuves académiques</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Partage d'Épreuves</h3>
+                    <p>Partagez vos épreuves avec la communauté et aidez vos pairs</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3 class="feature-title">Téléchargement</h3>
+                    <p>Accédez à des milliers d'épreuves et de corrigés</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3 class="feature-title">Système de Points</h3>
+                    <p>Gagnez des points en partageant et en aidant les autres</p>
+                </div>
+            </div>
+            
+            <button class="welcome-btn" id="enter-site-btn">Accéder à la Plateforme</button>
         </div>
     </div>
 
@@ -1691,12 +1899,15 @@
         let userData = null;
         let notificationListener = null;
         let announcementsListener = null;
+        let pendingExamsListener = null;
 
         // Éléments DOM
         const splashScreen = document.getElementById('splash-screen');
+        const welcomeDesign = document.getElementById('welcome-design');
         const warningScreen = document.getElementById('warning-screen');
         const authScreen = document.getElementById('auth-screen');
         const app = document.getElementById('app');
+        const enterSiteBtn = document.getElementById('enter-site-btn');
         const navIcons = document.querySelectorAll('.nav-icon');
         const views = document.querySelectorAll('.view');
         const authTabs = document.querySelectorAll('.auth-tab');
@@ -1737,9 +1948,15 @@
                 splashScreen.style.opacity = '0';
                 setTimeout(() => {
                     splashScreen.style.display = 'none';
-                    warningScreen.style.display = 'flex';
+                    welcomeDesign.style.display = 'block';
                 }, 500);
             }, 4000);
+
+            // Gestionnaire pour le bouton "Accéder à la Plateforme"
+            enterSiteBtn.addEventListener('click', () => {
+                welcomeDesign.style.display = 'none';
+                warningScreen.style.display = 'flex';
+            });
 
             // Gestionnaire pour le bouton "J'accepte"
             document.querySelector('.accept-btn').addEventListener('click', () => {
@@ -1755,6 +1972,7 @@
                         loadUserData();
                         startNotificationListener();
                         startAnnouncementsListener();
+                        startPendingExamsListener();
                     } else {
                         // L'utilisateur n'est pas connecté
                         authScreen.style.display = 'flex';
@@ -1852,6 +2070,7 @@
                         loadUserData();
                         startNotificationListener();
                         startAnnouncementsListener();
+                        startPendingExamsListener();
                         showNotification('Connexion réussie', 'success');
                     })
                     .catch(error => {
@@ -1896,6 +2115,8 @@
                             examsUploaded: 0,
                             examsDownloaded: 0,
                             role: 'user',
+                            favorites: [],
+                            likedAnnouncements: [],
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     })
@@ -1906,6 +2127,7 @@
                         loadUserData();
                         startNotificationListener();
                         startAnnouncementsListener();
+                        startPendingExamsListener();
                         showNotification('Inscription réussie', 'success');
                     })
                     .catch(error => {
@@ -2005,6 +2227,9 @@
                 }
                 if (announcementsListener) {
                     announcementsListener();
+                }
+                if (pendingExamsListener) {
+                    pendingExamsListener();
                 }
                 auth.signOut()
                     .then(() => {
@@ -2141,7 +2366,6 @@
             notificationListener = db.collection('notifications')
                 .where('userId', '==', currentUser.uid)
                 .orderBy('createdAt', 'desc')
-                .limit(1)
                 .onSnapshot(snapshot => {
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
@@ -2171,6 +2395,34 @@
                     loadAnnouncements();
                 }, error => {
                     console.error('Erreur écoute annonces:', error);
+                });
+        }
+
+        // Démarrer l'écoute des épreuves en attente (pour les admins)
+        function startPendingExamsListener() {
+            if (!isAdmin) return;
+            
+            pendingExamsListener = db.collection('epreuves')
+                .where('status', '==', 'pending')
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            // Nouvelle épreuve en attente - notifier l'admin
+                            playNotificationSound();
+                            vibratePhone();
+                            showNotification('Nouvelle épreuve en attente d\'approbation', 'warning');
+                            
+                            // Recharger le panneau admin si on est dessus
+                            if (document.getElementById('admin-view').classList.contains('active')) {
+                                loadAdminPanel();
+                            }
+                            
+                            // Mettre à jour le badge de notification
+                            updateNotificationBadge();
+                        }
+                    });
+                }, error => {
+                    console.error('Erreur écoute épreuves en attente:', error);
                 });
         }
 
@@ -2316,14 +2568,20 @@
                         .then(doc => {
                             if (doc.exists) {
                                 const announcement = doc.data();
-                                db.collection('notifications').add({
-                                    userId: announcement.authorId,
-                                    type: 'announcement_like',
-                                    message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
-                                    announcementId: announcementId,
-                                    read: false,
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
+                                // Notifier tous les administrateurs
+                                db.collection('users').where('role', '==', 'admin').get()
+                                    .then(adminSnapshot => {
+                                        adminSnapshot.forEach(adminDoc => {
+                                            db.collection('notifications').add({
+                                                userId: adminDoc.id,
+                                                type: 'announcement_like',
+                                                message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
+                                                announcementId: announcementId,
+                                                read: false,
+                                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                            });
+                                        });
+                                    });
                             }
                         })
                         .catch(error => {
@@ -2956,7 +3214,9 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
-                .then(() => {
+                .then((docRef) => {
+                    const examId = docRef.id;
+                    
                     addExamPopup.style.display = 'none';
                     addExamForm.reset();
                     document.getElementById('sujet-upload').innerHTML = '<p>Cliquez pour télécharger le fichier sujet</p>';
@@ -2967,6 +3227,21 @@
                         assignPointsAfterApproval(currentUser.uid, fichier_corrige ? 4 : 2);
                     } else {
                         showNotification('Épreuve soumise avec succès, en attente d\'approbation', 'success');
+                        
+                        // Notifier tous les administrateurs de la nouvelle soumission
+                        db.collection('users').where('role', '==', 'admin').get()
+                            .then(adminSnapshot => {
+                                adminSnapshot.forEach(adminDoc => {
+                                    db.collection('notifications').add({
+                                        userId: adminDoc.id,
+                                        type: 'new_submission',
+                                        message: `Nouvelle épreuve soumise par ${userData.prenom} ${userData.nom} : ${nom_epreuve}`,
+                                        examId: examId,
+                                        read: false,
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                });
+                            });
                     }
                 })
                 .catch(error => {
@@ -3001,7 +3276,7 @@
                         let icon = 'fas fa-bell';
                         if (notification.type === 'economy' || notification.type === 'points_received') icon = 'fas fa-coins';
                         else if (notification.type === 'transfer') icon = 'fas fa-paper-plane';
-                        else if (notification.type === 'submission') icon = 'fas fa-file-upload';
+                        else if (notification.type === 'new_submission') icon = 'fas fa-file-upload';
                         else if (notification.type === 'favorite') icon = 'fas fa-heart';
                         else if (notification.type === 'approval') icon = 'fas fa-check-circle';
                         else if (notification.type === 'announcement_like') icon = 'fas fa-heart';
