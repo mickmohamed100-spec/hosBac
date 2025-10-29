@@ -15,10 +15,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
-
     <style>
         /* Variables CSS */
         :root {
@@ -36,6 +32,8 @@
             --glass-border: rgba(255, 255, 255, 0.18);
             --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
             --transition: all 0.3s ease;
+            --silver: linear-gradient(145deg, #e6e6e6, #ffffff);
+            --silver-dark: linear-gradient(145deg, #c0c0c0, #e6e6e6);
         }
 
         /* Reset et styles de base */
@@ -53,68 +51,68 @@
             overflow-x: hidden;
         }
 
-        /* --- MODIFICATIONS SPLASH SCREEN (Req 1) --- */
+        /* Styles pour l'écran de démarrage */
         #splash-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* Garde le fond bleu original, il est pro */
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            transition: opacity 0.8s ease-out; /* Transition de sortie plus fluide */
-            opacity: 1; /* Assure qu'il est visible au départ */
+            transition: opacity 0.5s ease;
         }
 
-        /* NOUVEAU: Logo "HosBac" (Req 1) */
-        .splash-logo-new {
-            font-family: 'Poppins', sans-serif; /* Police moderne et élégante */
-            font-size: 5rem; /* Taille augmentée */
-            font-weight: 700;
-            animation: fadeInLogo 1.5s ease-out;
-            user-select: none;
+        .splash-logo {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+            font-style: italic;
+            display: flex;
         }
 
-        .splash-logo-new .hos {
-            font-style: italic; /* Légèrement penchée */
-            font-weight: 600;
-            /* Effet métallique argenté */
-            background: linear-gradient(135deg, #b8b8b8 20%, #ffffff 50%, #b0b0b0 80%);
-            background-size: 300% 100%; /* Gradient large pour l'animation */
-            color: transparent;
-            background-clip: text;
+        .splash-logo .hos {
+            background: var(--silver);
             -webkit-background-clip: text;
-            animation: metallicShine 3s linear infinite; /* Animation de reflet */
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            animation: shimmer 3s infinite;
         }
 
-        .splash-logo-new .bac {
-            font-style: italic; /* Légèrement penchée */
-            color: #000000; /* Noir profond */
+        .splash-logo .bac {
+            color: #000;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
         }
 
-        /* NOUVELLES Animations pour le Splash Screen */
-        @keyframes fadeInLogo {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        
-        @keyframes metallicShine {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
+        .splash-icons {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 2.5rem;
+            animation: bounce 2s infinite;
+            color: var(--light-blue);
         }
 
-        /* ANCIEN: Cacher l'ancien logo et icônes */
-        .splash-logo, .splash-icons {
-            display: none;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
-        /* (Fin des modifications Splash Screen) */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
 
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
 
         /* Styles pour l'avertissement */
         #warning-screen {
@@ -168,9 +166,7 @@
             transform: translateY(-2px);
         }
 
-        
-        /* --- MODIFICATIONS AUTHENTIFICATION (Req 2) --- */
-        
+        /* Styles pour l'authentification */
         #auth-screen {
             display: none;
             position: fixed;
@@ -178,36 +174,32 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7); /* Garde l'overlay sombre */
+            background: rgba(0, 0, 0, 0.7);
             z-index: 9997;
             justify-content: center;
             align-items: center;
         }
 
-        /* MODIFIÉ: Effet "Liquid Glass" (Req 2) */
         .auth-container {
-            /* background: var(--white); <-- ANCIEN */
-            background: var(--glass-bg); /* NOUVEAU: Fond en verre */
-            backdrop-filter: blur(10px); /* NOUVEAU: Flou d'arrière-plan */
-            border: 1px solid var(--glass-border); /* NOUVEAU: Bordure subtile */
-            
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 2rem;
             width: 90%;
             max-width: 400px;
             box-shadow: var(--shadow);
             animation: slideUp 0.5s ease;
-            
-            position: relative; /* NÉCESSAIRE pour les overlays d'animation */
-            overflow: hidden; /* NÉCESSAIRE pour que l'overlay respecte le border-radius */
+            position: relative;
+            overflow: hidden;
         }
 
         .auth-tabs {
             display: flex;
             margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--light-blue);
-            position: relative; /* Assure que les onglets sont sous l'animation */
-            z-index: 1;
+            position: relative;
+            z-index: 2;
         }
 
         .auth-tab {
@@ -216,7 +208,8 @@
             padding: 0.8rem;
             cursor: pointer;
             transition: var(--transition);
-            color: var(--text-dark); /* Couleur ajustée pour la lisibilité sur le verre */
+            position: relative;
+            z-index: 2;
         }
 
         .auth-tab.active {
@@ -224,50 +217,15 @@
             border-bottom: 2px solid var(--primary-blue);
         }
 
-        /* MODIFIÉ: Ajout de transition de fondu (Req 2) */
         .auth-form {
             display: none;
-            transition: opacity 0.5s ease-in-out; /* Transition douce */
-            opacity: 0; /* Caché par défaut (géré par .active) */
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
         .auth-form.active {
             display: block;
-            opacity: 1; /* Rendu visible */
         }
-
-        /* NOUVEAU: Styles pour l'animation Tom & Jerry (Req 2) */
-        .animation-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* Fond semi-transparent pour cacher les formulaires pendant l'animation */
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(5px);
-            z-index: 10; /* Au-dessus des formulaires */
-            display: none; /* Caché par défaut */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: var(--primary-blue);
-            font-weight: 500;
-        }
-
-        /* Ceci est un PLACEHOLDER. Remplacez l'icône par votre <img src="jerry.gif"> */
-        .animation-overlay .animation-icon {
-            font-size: 4rem;
-            color: var(--primary-blue);
-            animation: pulse 1s infinite;
-            margin-bottom: 1rem;
-        }
-        
-        /* (Fin des modifications Authentification) */
-
 
         .form-group {
             margin-bottom: 1rem;
@@ -319,29 +277,84 @@
             cursor: pointer;
         }
 
+        /* Animations Tom et Jerry */
+        .tom-jerry-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: none;
+        }
+
+        .tom-jerry-animation.active {
+            display: block;
+        }
+
+        .character {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .jerry {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="brown"/><circle cx="35" cy="40" r="5" fill="black"/><circle cx="65" cy="40" r="5" fill="black"/><path d="M40,65 Q50,75 60,65" stroke="black" stroke-width="3" fill="none"/></svg>');
+            top: 20%;
+            left: -100px;
+        }
+
+        .tom {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="gray"/><circle cx="35" cy="40" r="5" fill="black"/><circle cx="65" cy="40" r="5" fill="black"/><path d="M40,65 Q50,75 60,65" stroke="black" stroke-width="3" fill="none"/></svg>');
+            top: 20%;
+            right: -100px;
+        }
+
+        .light-beam {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            transition: all 0.8s ease;
+            box-shadow: 0 0 50px 30px rgba(255, 255, 200, 0.7);
+            opacity: 0;
+        }
+
+        .light-beam.active {
+            width: 300px;
+            height: 300px;
+            opacity: 1;
+        }
+
         /* Styles pour l'application principale */
         #app {
             display: none;
             min-height: 100vh;
         }
 
-        /* NOUVEAU: En-tête (Style Facebook) */
+        /* En-tête (Style Facebook) */
         header {
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--glass-border);
-            padding: 0.5rem 1rem; /* Réduit pour un look plus moderne */
+            padding: 0.5rem 1rem;
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
-        /* ... (Le reste de votre CSS est inchangé) ... */
-        /* (J'omets le reste du CSS pour la lisibilité, il est identique à l'original) */
-        
         .header-content {
             display: grid;
-            grid-template-columns: 1fr auto 1fr; /* Gauche | Centre | Droite */
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
             max-width: 1200px;
             margin: 0 auto;
@@ -363,7 +376,7 @@
         .header-right {
             display: flex;
             justify-content: flex-end;
-            gap: 0.5rem; /* Plus serré pour les icônes d'action */
+            gap: 0.5rem;
         }
         
         .nav-icons {
@@ -376,7 +389,7 @@
             color: var(--text-dark);
             cursor: pointer;
             transition: var(--transition);
-            padding: 0.8rem 2rem; /* Plus large */
+            padding: 0.8rem 2rem;
             border-radius: 10px;
         }
         
@@ -393,7 +406,7 @@
 
         /* Style pour les icônes de droite (style cercle) */
         .header-right .nav-icon {
-            font-size: 1.2rem; /* Légèrement plus petit */
+            font-size: 1.2rem;
             color: var(--text-dark);
             cursor: pointer;
             transition: var(--transition);
@@ -405,7 +418,7 @@
             align-items: center;
             border-radius: 50%;
             background: var(--light-blue);
-            position: relative; /* Pour le badge */
+            position: relative;
         }
 
         .header-right .nav-icon.active {
@@ -418,7 +431,7 @@
             transform: scale(1.05);
         }
         
-        /* NOUVEAU: Style pour le badge de notification */
+        /* Style pour le badge de notification */
         .notification-badge {
             position: absolute;
             top: -2px;
@@ -460,7 +473,7 @@
             color: var(--primary-blue);
         }
         
-        /* NOUVEAU: Style pour le bandeau d'accueil */
+        /* Style pour le bandeau d'accueil */
         .welcome-banner {
             padding: 2rem;
             background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
@@ -473,9 +486,9 @@
             font-size: 2rem;
         }
         
-        /* NOUVEAU: Style pour les stats sur l'accueil */
+        /* Style pour les stats sur l'accueil */
         .home-stats {
-            grid-template-columns: repeat(3, 1fr); /* Forcer 3 colonnes */
+            grid-template-columns: repeat(3, 1fr);
         }
 
         /* Pied de page */
@@ -516,8 +529,8 @@
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
-            width: 40px; /* Taille fixe */
-            height: 40px; /* Taille fixe */
+            width: 40px;
+            height: 40px;
             display: inline-flex;
             justify-content: center;
             align-items: center;
@@ -727,7 +740,7 @@
             transition: var(--transition);
             text-align: center;
             min-width: 120px;
-            display: inline-flex; /* Pour aligner l'icône et le texte */
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
@@ -768,7 +781,7 @@
         }
         
         .favorite-btn .fa-heart {
-            color: var(--primary-blue); /* Icône "far" (vide) */
+            color: var(--primary-blue);
         }
         
         .favorite-btn.active {
@@ -777,7 +790,7 @@
         }
         
         .favorite-btn.active .fa-heart {
-            color: var(--white); /* Icône "fas" (pleine) */
+            color: var(--white);
         }
 
         .delete-btn {
@@ -873,13 +886,13 @@
             background: var(--white);
             border-radius: 20px;
             padding: 2rem;
-            width: 90%; /* MODIFIÉ: Plus large par défaut */
-            max-width: 600px; /* MODIFIÉ: Max-width */
+            width: 90%;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow);
             animation: slideUp 0.5s ease;
-            position: relative; /* Pour le bouton fermer */
+            position: relative;
         }
 
         .popup-title {
@@ -947,7 +960,7 @@
             transform: translateY(-2px);
         }
 
-        /* NOUVEAU: Styles pour l'administration (Graphiques) */
+        /* Styles pour l'administration (Graphiques) */
         .admin-stats {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1019,6 +1032,103 @@
             background: var(--light-blue);
         }
 
+        /* Styles pour les annonces */
+        .announcements-section {
+            margin-bottom: 2rem;
+        }
+
+        .announcement-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .announcement-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .announcement-date {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .announcement-content {
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .announcement-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .like-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .like-btn:hover {
+            color: var(--error);
+        }
+
+        .like-btn.liked {
+            color: var(--error);
+        }
+
+        .like-count {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .announcement-form {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .announcement-form textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--light-blue);
+            border-radius: 10px;
+            background: var(--light-gray);
+            transition: var(--transition);
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .announcement-form textarea:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
         /* Animations */
         @keyframes slideUp {
             from { transform: translateY(50px); opacity: 0; }
@@ -1030,27 +1140,27 @@
             to { opacity: 1; }
         }
 
+        @keyframes characterEnter {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes characterExit {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100px); opacity: 0; }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
-            
-            /* NOUVEAU: Ajustement du logo splash pour mobile */
-            .splash-logo-new {
-                font-size: 3.5rem;
-            }
-
-            /* Ajustement de l'en-tête pour mobile */
             .header-content {
-                grid-template-columns: auto 1fr; /* Logo | Reste */
+                grid-template-columns: auto 1fr;
                 padding: 0.5rem 1rem;
             }
             .header-center {
-                /* Les icônes centrales peuvent être masquées ou déplacées en bas */
-                /* Pour ce projet, on les garde mais on réduit l'espace */
-                display: none; /* CACHÉ sur mobile pour la simplicité */
-                /* Alternative: les mettre en bas dans une barre de navigation fixe */
+                display: none;
             }
             .header-right {
-                grid-column: 2 / 3; /* Prend toute la place à droite */
+                grid-column: 2 / 3;
                 gap: 0.5rem;
             }
             .header-right .nav-icon {
@@ -1061,11 +1171,11 @@
             }
             
             .home-stats {
-                grid-template-columns: 1fr; /* 1 colonne sur mobile */
+                grid-template-columns: 1fr;
             }
             
             .admin-charts {
-                grid-template-columns: 1fr; /* 1 colonne sur mobile */
+                grid-template-columns: 1fr;
             }
             
             .exam-filters {
@@ -1091,14 +1201,11 @@
     </style>
 </head>
 <body>
-    
     <div id="splash-screen">
-        <div class="splash-logo-new">
+        <div class="splash-logo">
             <span class="hos">Hos</span><span class="bac">Bac</span>
         </div>
-        
-        <div class="splash-logo" style="display:none;">HosBac</div>
-        <div class="splash-icons" style="display:none;">
+        <div class="splash-icons">
             <i class="fas fa-book"></i>
             <i class="fas fa-pen-alt"></i>
             <i class="fas fa-graduation-cap"></i>
@@ -1106,12 +1213,14 @@
             <i class="fas fa-folder-open"></i>
         </div>
     </div>
+
     <div id="warning-screen">
         <div class="warning-container">
             <h2 class="warning-title">🔒 Avertissement – Utilisation responsable</h2>
             <div class="warning-text">
-                <p>La plateforme hosBac est un espace éducatif collaboratif... (Contenu inchangé)</p>
-                <p>Nous rappelons à tous les utilisateurs que ces ressources doivent être utilisées de manière éthique et responsable...</p>
+                <p>La plateforme hosBac est un espace éducatif collaboratif dédié au partage d'épreuves et de ressources pédagogiques. Nous encourageons l'entraide et la collaboration entre étudiants.</p>
+                <p>Nous rappelons à tous les utilisateurs que ces ressources doivent être utilisées de manière éthique et responsable, dans le respect du travail des enseignants et des établissements scolaires. Toute tentative de fraude ou de tricherie est strictement interdite.</p>
+                <p>En utilisant cette plateforme, vous vous engagez à respecter ces principes et à contribuer positivement à la communauté éducative.</p>
             </div>
             <button class="accept-btn">J'accepte</button>
         </div>
@@ -1119,15 +1228,13 @@
 
     <div id="auth-screen">
         <div class="auth-container">
-            
-            <div class="animation-overlay" id="jerry-animation">
-                <i class="fas fa-lightbulb animation-icon"></i>
-                <p>Jerry prépare l'inscription...</p>
+            <div class="tom-jerry-animation" id="jerry-animation">
+                <div class="character jerry"></div>
+                <div class="light-beam" id="jerry-light"></div>
             </div>
-            
-            <div class="animation-overlay" id="tom-animation">
-                <i class="fas fa-toggle-on animation-icon"></i>
-                <p>Tom prépare la connexion...</p>
+            <div class="tom-jerry-animation" id="tom-animation">
+                <div class="character tom"></div>
+                <div class="light-beam" id="tom-light"></div>
             </div>
             
             <div class="auth-tabs">
@@ -1177,6 +1284,7 @@
             </form>
         </div>
     </div>
+
     <div id="app">
         <header>
             <div class="header-content">
@@ -1219,10 +1327,18 @@
                     </div>
                 </div>
                 
+                <div class="announcements-section">
+                    <h2 class="view-title">Annonces</h2>
+                    <div id="announcements-list">
+                        <!-- Les annonces seront chargées ici -->
+                    </div>
+                </div>
+                
                 <h2 class="view-title">Épreuves récentes</h2>
                 <div class="card">
                     <div id="recent-exams" class="exam-list">
-                        </div>
+                        <!-- Les épreuves récentes seront chargées ici -->
+                    </div>
                 </div>
             </div>
 
@@ -1230,7 +1346,8 @@
                 <h1 class="view-title">Notifications</h1>
                 <button id="delete-all-notifications" class="notification-delete-all">Supprimer toutes les notifications</button>
                 <div id="notifications-list">
-                    </div>
+                    <!-- Les notifications seront chargées ici -->
+                </div>
             </div>
 
             <div id="exams-view" class="view">
@@ -1274,7 +1391,8 @@
                     </button>
                 </div>
                 <div id="exams-list" class="exam-list">
-                    </div>
+                    <!-- Les épreuves seront chargées ici -->
+                </div>
             </div>
 
             <div id="search-view" class="view">
@@ -1282,7 +1400,8 @@
                 <div class="card">
                     <input type="text" id="global-search" class="search-bar" placeholder="Rechercher des épreuves, utilisateurs...">
                     <div id="search-results" class="search-results">
-                        </div>
+                        <!-- Les résultats de recherche seront affichés ici -->
+                    </div>
                 </div>
             </div>
 
@@ -1336,7 +1455,8 @@
                 <div class="card">
                     <h2 class="card-title">Épreuves favorites</h2>
                     <div id="favorites-list" class="favorites-list">
-                        </div>
+                        <!-- Les favoris seront chargés ici -->
+                    </div>
                 </div>
                 
                 <button id="logout-btn" class="auth-btn" style="margin-top: 2rem;">Se Déconnecter</button>
@@ -1374,10 +1494,26 @@
                     </div>
                 </div>
                 
+                <div class="card announcement-form">
+                    <h2 class="card-title">Publier une annonce</h2>
+                    <form id="announcement-form">
+                        <div class="form-group">
+                            <label for="announcement-title">Titre de l'annonce</label>
+                            <input type="text" id="announcement-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="announcement-content">Contenu de l'annonce</label>
+                            <textarea id="announcement-content" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Publier l'annonce</button>
+                    </form>
+                </div>
+                
                 <div class="pending-exams card">
                     <h3 class="card-title">Épreuves en attente d'approbation</h3>
                     <div id="pending-exams-list">
-                        </div>
+                        <!-- Les épreuves en attente seront chargées ici -->
+                    </div>
                 </div>
             </div>
         </main>
@@ -1478,7 +1614,8 @@
                 <input type="text" id="user-search" class="search-bar" placeholder="Rechercher un utilisateur par email...">
             </div>
             <div id="search-results-list">
-                </div>
+                <!-- Les résultats de recherche seront affichés ici -->
+            </div>
             <button id="send-transfer-btn" class="submit-btn">Envoyer</button>
         </div>
     </div>
@@ -1488,7 +1625,12 @@
             <button class="popup-close"><i class="fas fa-times"></i></button>
             <h2 class="popup-title">Conditions Générales d'Utilisation</h2>
             <div class="warning-text">
-                </div>
+                <p>Les présentes conditions générales d'utilisation (dites « CGU ») ont pour objet l'encadrement juridique des modalités de mise à disposition du site et des services par HosBac et de définir les conditions d'accès et d'utilisation des services par « l'Utilisateur ».</p>
+                <p>Les présentes CGU sont accessibles sur le site à la rubrique «CGU».</p>
+                <p>Toute inscription ou utilisation du site implique l'acceptation sans aucune réserve ni restriction des présentes CGU par l'utilisateur. Lors de l'inscription sur le site via le Formulaire d'inscription, chaque utilisateur accepte expressément les présentes CGU en cochant la case précédant le texte suivant : « Je reconnais avoir lu et compris les CGU et je les accepte ».</p>
+                <p>En cas de non-acceptation des CGU stipulées dans le présent contrat, l'Utilisateur se doit de renoncer à l'accès des services proposés par le site.</p>
+                <p>HosBac se réserve le droit de modifier unilatéralement et à tout moment le contenu des présentes CGU.</p>
+            </div>
         </div>
     </div>
 
@@ -1497,7 +1639,25 @@
             <button class="popup-close"><i class="fas fa-times"></i></button>
             <h2 class="popup-title">Politique de Confidentialité</h2>
             <div class="warning-text">
-                </div>
+                <p>La présente politique de confidentialité a pour but d'informer les utilisateurs du site HosBac sur la manière dont sont collectées et utilisées leurs données personnelles.</p>
+                <p>Conformément à la loi Informatique et Libertés du 6 janvier 1978 modifiée, HosBac s'engage à respecter la confidentialité des données personnelles des utilisateurs et à les traiter dans le respect des dispositions légales en vigueur.</p>
+                <p>Les données personnelles collectées sur le site HosBac sont les suivantes :</p>
+                <ul>
+                    <li>Nom et prénom</li>
+                    <li>Adresse électronique</li>
+                    <li>Établissement scolaire</li>
+                    <li>Classe</li>
+                </ul>
+                <p>Ces données sont collectées lorsque l'utilisateur s'inscrit sur le site ou lorsqu'il utilise les services proposés.</p>
+                <p>Les données personnelles collectées sont utilisées pour :</p>
+                <ul>
+                    <li>La gestion du compte utilisateur</li>
+                    <li>La fourniture des services proposés par le site</li>
+                    <li>L'amélioration de l'expérience utilisateur</li>
+                    <li>La communication d'informations relatives au service</li>
+                </ul>
+                <p>HosBac s'engage à ne pas vendre, louer ou céder les données personnelles des utilisateurs à des tiers.</p>
+            </div>
         </div>
     </div>
 
@@ -1508,8 +1668,7 @@
     <script>
         // Configuration Firebase
         const firebaseConfig = {
-            // ATTENTION: Clés sensibles. Ne pas exposer publiquement sans règles de sécurité.
-            apiKey: "AIzaSyCZQDAO0xK3nZqSwh41u91IbIc4ufkrd1o", // SÉCURITÉ: Clé masquée
+            apiKey: "AIzaSyCZQDAO0xK3nZqSwh41u91IbIc4ufkrd1o",
             authDomain: "hosbac-6ae23.firebaseapp.com",
             projectId: "hosbac-6ae23",
             storageBucket: "hosbac-6ae23.firebasestorage.app",
@@ -1531,6 +1690,7 @@
         let isAdmin = false;
         let userData = null;
         let notificationListener = null;
+        let announcementsListener = null;
 
         // Éléments DOM
         const splashScreen = document.getElementById('splash-screen');
@@ -1563,6 +1723,12 @@
         const searchResults = document.getElementById('search-results');
         const deleteAllNotificationsBtn = document.getElementById('delete-all-notifications');
         const notificationSound = document.getElementById('notification-sound');
+        const jerryAnimation = document.getElementById('jerry-animation');
+        const tomAnimation = document.getElementById('tom-animation');
+        const jerryLight = document.getElementById('jerry-light');
+        const tomLight = document.getElementById('tom-light');
+        const announcementForm = document.getElementById('announcement-form');
+        const announcementsList = document.getElementById('announcements-list');
 
         // Initialisation de l'application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1572,8 +1738,8 @@
                 setTimeout(() => {
                     splashScreen.style.display = 'none';
                     warningScreen.style.display = 'flex';
-                }, 800); // 0.8s (temps de la transition CSS)
-            }, 4000); // Durée totale du splash screen
+                }, 500);
+            }, 4000);
 
             // Gestionnaire pour le bouton "J'accepte"
             document.querySelector('.accept-btn').addEventListener('click', () => {
@@ -1588,6 +1754,7 @@
                         app.style.display = 'block';
                         loadUserData();
                         startNotificationListener();
+                        startAnnouncementsListener();
                     } else {
                         // L'utilisateur n'est pas connecté
                         authScreen.style.display = 'flex';
@@ -1595,73 +1762,79 @@
                 });
             });
 
-            
-            // --- MODIFIÉ: Gestionnaires pour les onglets d'authentification (Req 2) ---
+            // Gestionnaires pour les onglets d'authentification avec animations Tom et Jerry
             authTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     const tabName = tab.getAttribute('data-tab');
-                    const currentActiveTab = document.querySelector('.auth-tab.active');
                     
-                    // Ne rien faire si on clique sur l'onglet déjà actif
-                    if (tab.classList.contains('active')) {
-                        return;
-                    }
-
-                    // --- NOUVELLE LOGIQUE D'ANIMATION (Req 2) ---
-
-                    let animationElement;
-                    let oldForm;
-                    let newForm;
+                    // Activer l'onglet sélectionné
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
                     
+                    // Afficher le formulaire correspondant avec animation
                     if (tabName === 'signup') {
-                        // On va vers l'inscription (Animation Jerry)
-                        animationElement = document.getElementById('jerry-animation');
-                        oldForm = document.getElementById('login-form');
-                        newForm = document.getElementById('signup-form');
+                        showJerryAnimation();
                     } else {
-                        // On va vers la connexion (Animation Tom)
-                        animationElement = document.getElementById('tom-animation');
-                        oldForm = document.getElementById('signup-form');
-                        newForm = document.getElementById('login-form');
+                        showTomAnimation();
                     }
-
-                    // 1. Afficher l'animation (ex: <img src="jerry.gif">)
-                    if (animationElement) {
-                        animationElement.style.display = 'flex';
-                    }
-
-                    // 2. Cacher l'ancien formulaire (fondu)
-                    if (oldForm) {
-                        oldForm.classList.remove('active'); // Déclenche la transition opacity: 0
-                    }
-
-                    // 3. Attendre la fin de l'animation
-                    // (Simulé avec 1.5s. Remplacez par la durée de votre animation/GIF)
-                    const animationDuration = 1500; // 1.5 secondes
-                    
-                    setTimeout(() => {
-                        
-                        // 4. Cacher l'animation
-                        if (animationElement) {
-                            animationElement.style.display = 'none';
-                        }
-                        
-                        // 5. Mettre à jour les onglets (MAINTENANT)
-                        if (currentActiveTab) {
-                            currentActiveTab.classList.remove('active');
-                        }
-                        tab.classList.add('active');
-                        
-                        // 6. Afficher le nouveau formulaire (fondu)
-                        if (newForm) {
-                            newForm.classList.add('active'); // Déclenche la transition opacity: 1
-                        }
-                        
-                    }, animationDuration); // DURÉE DE L'ANIMATION (Tom/Jerry)
                 });
             });
-            // --- FIN DES MODIFICATIONS D'ONGLETS ---
 
+            // Fonction pour afficher l'animation de Jerry
+            function showJerryAnimation() {
+                // Masquer le formulaire de connexion
+                document.getElementById('login-form').classList.remove('active');
+                
+                // Afficher l'animation de Jerry
+                jerryAnimation.classList.add('active');
+                const jerryCharacter = jerryAnimation.querySelector('.jerry');
+                jerryCharacter.style.animation = 'characterEnter 0.8s forwards';
+                
+                // Activer le faisceau lumineux
+                setTimeout(() => {
+                    jerryLight.classList.add('active');
+                }, 800);
+                
+                // Afficher le formulaire d'inscription
+                setTimeout(() => {
+                    document.getElementById('signup-form').classList.add('active');
+                }, 1500);
+                
+                // Masquer l'animation après un délai
+                setTimeout(() => {
+                    jerryAnimation.classList.remove('active');
+                    jerryLight.classList.remove('active');
+                    jerryCharacter.style.animation = '';
+                }, 2500);
+            }
+
+            // Fonction pour afficher l'animation de Tom
+            function showTomAnimation() {
+                // Masquer le formulaire d'inscription
+                document.getElementById('signup-form').classList.remove('active');
+                
+                // Afficher l'animation de Tom
+                tomAnimation.classList.add('active');
+                const tomCharacter = tomAnimation.querySelector('.tom');
+                tomCharacter.style.animation = 'characterEnter 0.8s forwards';
+                
+                // Activer le faisceau lumineux
+                setTimeout(() => {
+                    tomLight.classList.add('active');
+                }, 800);
+                
+                // Afficher le formulaire de connexion
+                setTimeout(() => {
+                    document.getElementById('login-form').classList.add('active');
+                }, 1500);
+                
+                // Masquer l'animation après un délai
+                setTimeout(() => {
+                    tomAnimation.classList.remove('active');
+                    tomLight.classList.remove('active');
+                    tomCharacter.style.animation = '';
+                }, 2500);
+            }
 
             // Gestionnaire pour la connexion
             loginForm.addEventListener('submit', e => {
@@ -1678,6 +1851,7 @@
                         checkUserRole();
                         loadUserData();
                         startNotificationListener();
+                        startAnnouncementsListener();
                         showNotification('Connexion réussie', 'success');
                     })
                     .catch(error => {
@@ -1731,6 +1905,7 @@
                         checkUserRole();
                         loadUserData();
                         startNotificationListener();
+                        startAnnouncementsListener();
                         showNotification('Inscription réussie', 'success');
                     })
                     .catch(error => {
@@ -1758,15 +1933,20 @@
                     });
             });
 
+            // Gestionnaire pour le formulaire d'annonce
+            announcementForm.addEventListener('submit', e => {
+                e.preventDefault();
+                submitAnnouncement();
+            });
+
             // Gestionnaires pour la navigation
             navIcons.forEach(icon => {
                 icon.addEventListener('click', () => {
                     const viewName = icon.getAttribute('data-view');
-                    if (!viewName) return; // Au cas où on clique sur le logo
+                    if (!viewName) return;
                     
                     // Activer l'icône sélectionnée
                     navIcons.forEach(i => i.classList.remove('active'));
-                    // Activer toutes les icônes pointant vers la même vue
                     document.querySelectorAll(`.nav-icon[data-view="${viewName}"]`).forEach(activeIcon => {
                         activeIcon.classList.add('active');
                     });
@@ -1783,7 +1963,6 @@
                     switch(viewName) {
                         case 'home':
                             loadRecentExams();
-                            // Les stats de l'accueil sont chargées par loadProfileData
                             break;
                         case 'notifications':
                             loadNotifications();
@@ -1792,7 +1971,6 @@
                             loadAllExams();
                             break;
                         case 'search':
-                            // Initialiser la recherche
                             break;
                         case 'profile':
                             loadProfileData();
@@ -1824,6 +2002,9 @@
             logoutBtn.addEventListener('click', () => {
                 if (notificationListener) {
                     notificationListener();
+                }
+                if (announcementsListener) {
+                    announcementsListener();
                 }
                 auth.signOut()
                     .then(() => {
@@ -1875,7 +2056,7 @@
                 });
             });
 
-            // Configuration Cloudinary corrigée
+            // Configuration Cloudinary
             let sujetUploadWidget, corrigeUploadWidget;
             
             try {
@@ -1886,7 +2067,7 @@
                     multiple: false,
                     resourceType: 'raw',
                     clientAllowedFormats: ['pdf'],
-                    maxFileSize: 5000000 // 5MB
+                    maxFileSize: 5000000
                 }, (error, result) => {
                     if (!error && result && result.event === 'success') {
                         const fileUrl = result.info.secure_url;
@@ -1907,7 +2088,7 @@
                     multiple: false,
                     resourceType: 'raw',
                     clientAllowedFormats: ['pdf'],
-                    maxFileSize: 5000000 // 5MB
+                    maxFileSize: 5000000
                 }, (error, result) => {
                     if (!error && result && result.event === 'success') {
                         const fileUrl = result.info.secure_url;
@@ -1982,12 +2163,23 @@
                 });
         }
 
+        // Démarrer l'écoute des annonces en temps réel
+        function startAnnouncementsListener() {
+            announcementsListener = db.collection('announcements')
+                .orderBy('createdAt', 'desc')
+                .onSnapshot(snapshot => {
+                    loadAnnouncements();
+                }, error => {
+                    console.error('Erreur écoute annonces:', error);
+                });
+        }
+
         // Jouer le son de notification
         function playNotificationSound() {
             try {
                 notificationSound.currentTime = 0;
                 notificationSound.play().catch(e => {
-                    console.log('Lecture audio bloquée (l\'utilisateur doit d\'abord interagir avec la page):', e);
+                    console.log('Lecture audio bloquée:', e);
                 });
             } catch (error) {
                 console.error('Erreur lecture son notification:', error);
@@ -2012,7 +2204,7 @@
                         isAdmin = userData.role === 'admin';
                         
                         if (isAdmin) {
-                            adminIcon.style.display = 'flex'; // MODIFIÉ: 'flex' au lieu de 'block'
+                            adminIcon.style.display = 'flex';
                         } else {
                             adminIcon.style.display = 'none';
                         }
@@ -2026,8 +2218,162 @@
         function loadUserData() {
             loadRecentExams();
             loadNotifications();
-            loadProfileData(); // Charge les données du profil ET de l'accueil
+            loadProfileData();
+            loadAnnouncements();
             updateNotificationBadge();
+        }
+
+        function loadAnnouncements() {
+            const announcementsContainer = document.getElementById('announcements-list');
+            announcementsContainer.innerHTML = '<p>Chargement des annonces...</p>';
+            
+            db.collection('announcements')
+                .orderBy('createdAt', 'desc')
+                .get()
+                .then(querySnapshot => {
+                    announcementsContainer.innerHTML = '';
+                    
+                    if (querySnapshot.empty) {
+                        announcementsContainer.innerHTML = '<p>Aucune annonce pour le moment.</p>';
+                        return;
+                    }
+                    
+                    querySnapshot.forEach(doc => {
+                        const announcement = doc.data();
+                        const announcementCard = createAnnouncementCard(announcement, doc.id);
+                        announcementsContainer.appendChild(announcementCard);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des annonces:', error);
+                    announcementsContainer.innerHTML = '<p>Erreur lors du chargement des annonces.</p>';
+                });
+        }
+
+        function createAnnouncementCard(announcement, announcementId) {
+            const card = document.createElement('div');
+            card.className = 'announcement-card';
+            
+            const hasLiked = userData && userData.likedAnnouncements && userData.likedAnnouncements.includes(announcementId);
+            
+            card.innerHTML = `
+                <div class="announcement-header">
+                    <div class="announcement-title">${announcement.title}</div>
+                    <div class="announcement-date">${new Date(announcement.createdAt?.toDate()).toLocaleDateString('fr-FR')}</div>
+                </div>
+                <div class="announcement-content">
+                    ${announcement.content}
+                </div>
+                <div class="announcement-actions">
+                    <button class="like-btn ${hasLiked ? 'liked' : ''}" data-announcement-id="${announcementId}">
+                        <i class="fas fa-heart"></i>
+                        <span class="like-count">${announcement.likes || 0}</span>
+                    </button>
+                </div>
+            `;
+            
+            const likeBtn = card.querySelector('.like-btn');
+            likeBtn.addEventListener('click', () => {
+                toggleAnnouncementLike(announcementId, likeBtn);
+            });
+            
+            return card;
+        }
+
+        function toggleAnnouncementLike(announcementId, button) {
+            if (!userData) return;
+            
+            const isCurrentlyLiked = userData.likedAnnouncements && userData.likedAnnouncements.includes(announcementId);
+            
+            let newLikedAnnouncements = userData.likedAnnouncements ? [...userData.likedAnnouncements] : [];
+            
+            if (isCurrentlyLiked) {
+                // Retirer le like
+                newLikedAnnouncements = newLikedAnnouncements.filter(id => id !== announcementId);
+                button.classList.remove('liked');
+                
+                // Mettre à jour le compteur de likes
+                db.collection('announcements').doc(announcementId).update({
+                    likes: firebase.firestore.FieldValue.increment(-1)
+                });
+                
+                showNotification('Like retiré', 'success');
+            } else {
+                // Ajouter le like
+                newLikedAnnouncements.push(announcementId);
+                button.classList.add('liked');
+                
+                // Mettre à jour le compteur de likes
+                db.collection('announcements').doc(announcementId).update({
+                    likes: firebase.firestore.FieldValue.increment(1)
+                });
+                
+                showNotification('Annonce likée', 'success');
+                
+                // Notification à l'admin si l'utilisateur n'est pas admin
+                if (!isAdmin) {
+                    db.collection('announcements').doc(announcementId).get()
+                        .then(doc => {
+                            if (doc.exists) {
+                                const announcement = doc.data();
+                                db.collection('notifications').add({
+                                    userId: announcement.authorId,
+                                    type: 'announcement_like',
+                                    message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
+                                    announcementId: announcementId,
+                                    read: false,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la création de la notification de like:', error);
+                        });
+                }
+            }
+            
+            // Mettre à jour la liste des annonces likées de l'utilisateur
+            db.collection('users').doc(currentUser.uid).update({
+                likedAnnouncements: newLikedAnnouncements
+            })
+            .then(() => {
+                userData.likedAnnouncements = newLikedAnnouncements;
+                // Mettre à jour le compteur de likes affiché
+                const likeCount = button.querySelector('.like-count');
+                const currentCount = parseInt(likeCount.textContent);
+                likeCount.textContent = isCurrentlyLiked ? currentCount - 1 : currentCount + 1;
+            })
+            .catch(error => {
+                console.error('Erreur lors de la mise à jour des likes:', error);
+                showNotification('Erreur lors de la mise à jour du like', 'error');
+            });
+        }
+
+        function submitAnnouncement() {
+            if (!isAdmin) {
+                showNotification('Action non autorisée', 'error');
+                return;
+            }
+            
+            const title = document.getElementById('announcement-title').value;
+            const content = document.getElementById('announcement-content').value;
+            
+            db.collection('announcements').add({
+                title: title,
+                content: content,
+                authorId: currentUser.uid,
+                authorName: `${userData.prenom} ${userData.nom}`,
+                likes: 0,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                announcementForm.reset();
+                showNotification('Annonce publiée avec succès', 'success');
+            })
+            .catch(error => {
+                console.error('Erreur lors de la publication de l\'annonce:', error);
+                showNotification('Erreur lors de la publication de l\'annonce', 'error');
+            });
         }
 
         function loadRecentExams() {
@@ -2214,7 +2560,6 @@
             return card;
         }
 
-        // CORRECTION: Fonction viewExam avec gestion Cloudinary améliorée
         function viewExam(examId, type) {
             db.collection('epreuves').doc(examId).get()
                 .then(doc => {
@@ -2224,14 +2569,12 @@
                         
                         if (type === 'sujet') {
                             fileUrl = exam.fichier_sujet;
-                            // CORRECTION: Ouverture dans un nouvel onglet
                             if (fileUrl && fileUrl.includes('cloudinary.com')) {
                                 window.open(fileUrl, '_blank');
                             } else {
                                 showNotification('Erreur: Fichier non disponible', 'error');
                             }
                         } else if (type === 'corrige') {
-                            // Vérifier les points pour le corrigé
                             handleCorrigeAccess(examId, exam, 'view');
                         }
                     }
@@ -2242,7 +2585,6 @@
                 });
         }
 
-        // CORRECTION: Fonction downloadExam avec gestion Cloudinary améliorée
         function downloadExam(examId, type) {
             db.collection('epreuves').doc(examId).get()
                 .then(doc => {
@@ -2251,7 +2593,6 @@
                         
                         if (type === 'sujet') {
                             const fileUrl = exam.fichier_sujet;
-                            // CORRECTION: Téléchargement direct
                             if (fileUrl && fileUrl.includes('cloudinary.com')) {
                                 const link = document.createElement('a');
                                 link.href = fileUrl;
@@ -2261,7 +2602,7 @@
                                 link.click();
                                 document.body.removeChild(link);
                                 
-                                // NOUVEAU: Incrémenter le compteur de téléchargement
+                                // Incrémenter le compteur de téléchargement
                                 const examRef = db.collection('epreuves').doc(examId);
                                 examRef.update({
                                     downloadCount: firebase.firestore.FieldValue.increment(1)
@@ -2271,7 +2612,6 @@
                                 showNotification('Erreur: Fichier non disponible', 'error');
                             }
                         } else if (type === 'corrige') {
-                            // Vérifier les points pour le corrigé
                             handleCorrigeAccess(examId, exam, 'download');
                         }
                     }
@@ -2282,7 +2622,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Gestion de l'accès aux corrigés
         function handleCorrigeAccess(examId, exam, action) {
             db.collection('users').doc(currentUser.uid).get()
                 .then(userDoc => {
@@ -2315,7 +2654,7 @@
                             });
                         }
                     }).then(() => {
-                        // NOUVEAU: Incrémenter le compteur de téléchargement pour le corrigé aussi
+                        // Incrémenter le compteur de téléchargement pour le corrigé aussi
                         const examRef = db.collection('epreuves').doc(examId);
                         examRef.update({
                             downloadCount: firebase.firestore.FieldValue.increment(1)
@@ -2392,8 +2731,6 @@
             })
             .then(() => {
                 userData.favorites = newFavorites;
-                // Si on est sur la page profil, recharger les favoris pour
-                // que l'épreuve disparaisse/apparaisse immédiatement
                 if (document.getElementById('profile-view').classList.contains('active')) {
                     loadFavorites();
                 }
@@ -2461,7 +2798,7 @@
                         document.getElementById('profile-form').style.display = 'none';
                         document.getElementById('favorites-list').style.display = 'none';
                         document.querySelector('#profile-view .card:nth-of-type(2) .card-title').style.display = 'none';
-                        document.getElementById('logout-btn').style.display = 'none'; // Cacher le bouton déconnexion
+                        document.getElementById('logout-btn').style.display = 'none';
 
                         
                         showNotification(`Profil de ${userProfile.prenom} ${userProfile.nom}`, 'success');
@@ -2576,7 +2913,6 @@
                 });
         }
 
-        // CORRECTION: Fonction submitExam avec système de points amélioré
         function submitExam() {
             const matiere = document.getElementById('exam-matiere').value;
             const classe = document.getElementById('exam-classe').value;
@@ -2616,7 +2952,7 @@
                         auteurId: currentUser.uid,
                         auteurNom: `${userData.prenom} ${userData.nom}`,
                         status: status,
-                        downloadCount: 0, // NOUVEAU: Initialiser le compteur de téléchargements
+                        downloadCount: 0,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
@@ -2628,7 +2964,6 @@
                     
                     if (isAdmin) {
                         showNotification('Épreuve publiée avec succès', 'success');
-                        // Si admin, attribuer les points immédiatement
                         assignPointsAfterApproval(currentUser.uid, fichier_corrige ? 4 : 2);
                     } else {
                         showNotification('Épreuve soumise avec succès, en attente d\'approbation', 'success');
@@ -2640,7 +2975,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Charger les notifications avec boutons de suppression
         function loadNotifications() {
             const notificationsContainer = document.getElementById('notifications-list');
             notificationsContainer.innerHTML = '<p>Chargement des notifications...</p>';
@@ -2664,12 +2998,13 @@
                         notificationElement.className = 'notification-item';
                         notificationElement.setAttribute('data-notification-id', doc.id);
                         
-                        let icon = 'fas fa-bell'; // Icône par défaut
+                        let icon = 'fas fa-bell';
                         if (notification.type === 'economy' || notification.type === 'points_received') icon = 'fas fa-coins';
                         else if (notification.type === 'transfer') icon = 'fas fa-paper-plane';
                         else if (notification.type === 'submission') icon = 'fas fa-file-upload';
                         else if (notification.type === 'favorite') icon = 'fas fa-heart';
                         else if (notification.type === 'approval') icon = 'fas fa-check-circle';
+                        else if (notification.type === 'announcement_like') icon = 'fas fa-heart';
                         
                         notificationElement.innerHTML = `
                             <div class="notification-icon"><i class="${icon}"></i></div>
@@ -2720,7 +3055,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Supprimer une notification
         function deleteNotification(notificationId) {
             db.collection('notifications').doc(notificationId).delete()
                 .then(() => {
@@ -2734,7 +3068,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Supprimer toutes les notifications
         function deleteAllNotifications() {
             if (!confirm('Êtes-vous sûr de vouloir supprimer toutes vos notifications ?')) {
                 return;
@@ -2761,7 +3094,6 @@
                 });
         }
 
-        // NOUVELLE FONCTION: Mettre à jour le badge de notification
         function updateNotificationBadge() {
             if (!currentUser) return;
             
@@ -2806,7 +3138,7 @@
                     if (doc.exists) {
                         userData = doc.data();
                         
-                        // --- Mettre à jour le Profil ---
+                        // Mettre à jour le Profil
                         document.getElementById('profile-avatar').textContent = 
                             userData.prenom ? userData.prenom.charAt(0).toUpperCase() : 'U';
                         document.getElementById('profile-name').textContent = 
@@ -2823,7 +3155,7 @@
                         document.getElementById('edit-prenom').value = userData.prenom || '';
                         document.getElementById('edit-classe').value = userData.classe || '';
                         
-                        // --- Mettre à jour l'Accueil ---
+                        // Mettre à jour l'Accueil
                         document.getElementById('welcome-message').textContent = 
                             `Bonjour, ${userData.prenom || 'Utilisateur'} !`;
                         document.getElementById('home-points-balance').textContent = userData.points || 0;
@@ -2837,7 +3169,7 @@
                         document.getElementById('logout-btn').style.display = 'block';
 
                         
-                        loadFavorites(); // Charger les favoris pour le profil
+                        loadFavorites();
                     }
                 })
                 .catch(error => {
@@ -2996,7 +3328,7 @@
         function loadAdminPanel() {
             if (!isAdmin) {
                 showNotification('Accès non autorisé', 'error');
-                document.querySelector('.nav-icon[data-view="home"]').click(); // Rediriger
+                document.querySelector('.nav-icon[data-view="home"]').click();
                 return;
             }
             
@@ -3040,7 +3372,6 @@
                         pendingExamsContainer.appendChild(examElement);
                         
                         examElement.querySelector('.approve-btn').addEventListener('click', () => {
-                            // CORRECTION: Calcul des points selon la présence du corrigé
                             const points = exam.fichier_corrige ? 4 : 2;
                             approveExam(doc.id, exam.auteurId, points);
                         });
@@ -3051,14 +3382,12 @@
                     });
                 });
                 
-            // NOUVEAU: Charger les graphiques
             renderAdminCharts();
         }
         
-        // NOUVEAU: Fonction pour afficher les graphiques
         async function renderAdminCharts() {
             try {
-                // --- Données Graphique Utilisateurs ---
+                // Données Graphique Utilisateurs
                 const usersSnapshot = await db.collection('users').get();
                 const userCountsByDate = {};
                 const today = new Date();
@@ -3072,7 +3401,7 @@
 
                 usersSnapshot.forEach(doc => {
                     const user = doc.data();
-                    if (user.createdAt && user.createdAt.toDate) { // Vérifier si toDate existe
+                    if (user.createdAt && user.createdAt.toDate) {
                         const dateString = user.createdAt.toDate().toISOString().split('T')[0];
                         if (userCountsByDate[dateString] !== undefined) {
                             userCountsByDate[dateString]++;
@@ -3100,7 +3429,7 @@
                     }
                 });
 
-                // --- Données Graphique Épreuves ---
+                // Données Graphique Épreuves
                 const examsSnapshot = await db.collection('epreuves')
                                             .where('downloadCount', '>', 0)
                                             .orderBy('downloadCount', 'desc')
@@ -3111,7 +3440,7 @@
                 const examDataPoints = [];
                 examsSnapshot.forEach(doc => {
                     const exam = doc.data();
-                    examLabels.push(exam.nom_epreuve.substring(0, 20) + '...'); // Raccourcir
+                    examLabels.push(exam.nom_epreuve.substring(0, 20) + '...');
                     examDataPoints.push(exam.downloadCount || 0);
                 });
 
@@ -3128,7 +3457,7 @@
                         }]
                     },
                     options: {
-                        indexAxis: 'y', // Graphique à barres horizontales
+                        indexAxis: 'y',
                     }
                 });
 
@@ -3139,19 +3468,14 @@
             }
         }
 
-
-        // CORRECTION: Fonction approveExam avec notification à l'utilisateur
         function approveExam(examId, authorId, points) {
-            // Mettre à jour le statut de l'épreuve
             db.collection('epreuves').doc(examId).update({
                 status: 'approved'
             })
             .then(() => {
-                // Attribuer les points à l'auteur
                 return assignPointsAfterApproval(authorId, points);
             })
             .then(() => {
-                // Notification à l'auteur
                 return db.collection('notifications').add({
                     userId: authorId,
                     type: 'approval',
@@ -3171,7 +3495,6 @@
             });
         }
 
-        // NOUVELLE FONCTION: Attribuer les points après approbation
         function assignPointsAfterApproval(authorId, points) {
             return db.collection('users').doc(authorId).update({
                 points: firebase.firestore.FieldValue.increment(points),
@@ -3180,10 +3503,8 @@
         }
 
         function rejectExam(examId, authorId) {
-            // Supprimer l'épreuve
             db.collection('epreuves').doc(examId).delete()
             .then(() => {
-                // Notification à l'auteur
                 return db.collection('notifications').add({
                     userId: authorId,
                     type: 'submission',
