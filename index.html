@@ -5,15 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HosBac - Plateforme éducative collaborative</title>
     
+    <!-- Importation de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
+    <!-- Importation de Cloudinary -->
     <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         /* Variables CSS */
@@ -48,40 +46,78 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-
-        /* Styles pour l'écran de démarrage */
+        /* Nouveau style pour l'écran de démarrage */
         #splash-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             transition: opacity 0.5s ease;
         }
 
+        .logo-container {
+            position: relative;
+            text-align: center;
+        }
+
+        .logo-circle {
+            width: 200px;
+            height: 200px;
+            animation: circleRotate 3s linear infinite;
+        }
+
         .splash-logo {
-            font-size: 4rem;
-            font-weight: bold;
-            color: var(--white);
-            margin-bottom: 2rem;
-            animation: pulse 2s infinite;
-        }
-
-        .splash-icons {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
             display: flex;
-            gap: 1.5rem;
-            font-size: 2.5rem;
-            animation: bounce 2s infinite;
-            color: var(--light-blue); /* MODIFIÉ: Couleur pour les icônes FA */
         }
 
-        @keyframes pulse {
+        .logo-letter {
+            display: inline-block;
+            animation: letterBounce 1.5s ease infinite alternate;
+        }
+
+        .logo-letter:nth-child(1) { animation-delay: 0s; }
+        .logo-letter:nth-child(2) { animation-delay: 0.1s; }
+        .logo-letter:nth-child(3) { animation-delay: 0.2s; }
+        .logo-letter:nth-child(4) { animation-delay: 0.3s; }
+        .logo-letter:nth-child(5) { animation-delay: 0.4s; }
+        .logo-letter:nth-child(6) { animation-delay: 0.5s; }
+
+        .splash-subtitle {
+            margin-top: 2rem;
+            color: white;
+            font-size: 1.2rem;
+            opacity: 0;
+            animation: fadeIn 1s ease 2s forwards;
+        }
+
+        @keyframes circleRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes letterBounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-15px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 0.8; }
+        }
+@keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
@@ -143,22 +179,63 @@
             background: var(--secondary-blue);
             transform: translateY(-2px);
         }
+    /* Styles pour l'authentification */
+    #auth-screen {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9997;
+        justify-content: center;
+        align-items: center;
+    }
 
-        /* Styles pour l'authentification */
-        #auth-screen {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 9997;
-            justify-content: center;
-            align-items: center;
-        }
+    .animation-container {
+        position: absolute;
+        width: 100%;
+        height: 150px;
+        bottom: -150px;
+        overflow: hidden;
+    }
 
-        .auth-container {
+    .tom, .jerry {
+        position: absolute;
+        width: 100px;
+        height: auto;
+        transition: all 0.5s ease;
+    }
+
+    .tom {
+        left: -100px;
+    }
+
+    .jerry {
+        right: -100px;
+    }
+
+    @keyframes tomRun {
+        0% { left: -100px; transform: rotate(0deg); }
+        50% { left: 50%; transform: rotate(10deg); }
+        100% { left: 100%; transform: rotate(0deg); }
+    }
+
+    @keyframes jerryRun {
+        0% { right: -100px; transform: rotate(0deg); }
+        50% { right: 50%; transform: rotate(-10deg); }
+        100% { right: 100%; transform: rotate(0deg); }
+    }
+
+    @keyframes chase {
+        0% { left: -100px; right: -100px; }
+        25% { left: 20%; right: 30%; }
+        50% { left: 40%; right: 50%; }
+        75% { left: 60%; right: 70%; }
+        100% { left: 100%; right: 100%; }
+    }
+.auth-container {
             background: var(--white);
             border-radius: 20px;
             padding: 2rem;
@@ -251,112 +328,53 @@
             min-height: 100vh;
         }
 
-        /* NOUVEAU: En-tête (Style Facebook) */
+        /* En-tête */
         header {
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--glass-border);
-            padding: 0.5rem 1rem; /* Réduit pour un look plus moderne */
+            padding: 1rem;
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
         .header-content {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr; /* Gauche | Centre | Droite */
+            display: flex;
+            justify-content: space-between;
             align-items: center;
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        .header-left .logo {
+        .logo {
             font-size: 1.8rem;
             font-weight: bold;
             color: var(--primary-blue);
-            cursor: pointer;
-        }
-        
-        .header-center {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
         }
 
-        .header-right {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem; /* Plus serré pour les icônes d'action */
-        }
-        
         .nav-icons {
             display: flex;
+            gap: 1.5rem;
         }
 
-        /* Style pour les icônes centrales (style onglet) */
-        .header-center .nav-icon {
+        .nav-icon {
             font-size: 1.5rem;
             color: var(--text-dark);
             cursor: pointer;
             transition: var(--transition);
-            padding: 0.8rem 2rem; /* Plus large */
-            border-radius: 10px;
+            padding: 0.5rem;
+            border-radius: 50%;
         }
-        
-        .header-center .nav-icon.active {
+
+        .nav-icon.active {
             color: var(--primary-blue);
             background: var(--light-blue);
-            border-bottom: 3px solid var(--primary-blue);
-            border-radius: 10px 10px 0 0;
         }
 
-        .header-center .nav-icon:hover {
-            background: var(--light-blue);
-        }
-
-        /* Style pour les icônes de droite (style cercle) */
-        .header-right .nav-icon {
-            font-size: 1.2rem; /* Légèrement plus petit */
-            color: var(--text-dark);
-            cursor: pointer;
-            transition: var(--transition);
-            padding: 0.8rem;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-            background: var(--light-blue);
-            position: relative; /* Pour le badge */
-        }
-
-        .header-right .nav-icon.active {
-            color: var(--white);
-            background: var(--primary-blue);
-        }
-
-        .header-right .nav-icon:hover {
-            background: var(--light-blue);
-            transform: scale(1.05);
-        }
-        
-        /* NOUVEAU: Style pour le badge de notification */
-        .notification-badge {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            background: var(--error);
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
+        .nav-icon:hover {
+            color: var(--primary-blue);
+            transform: translateY(-2px);
         }
 
         /* Contenu principal */
@@ -381,24 +399,6 @@
             font-size: 1.8rem;
             margin-bottom: 1.5rem;
             color: var(--primary-blue);
-        }
-        
-        /* NOUVEAU: Style pour le bandeau d'accueil */
-        .welcome-banner {
-            padding: 2rem;
-            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
-            color: var(--white);
-            border-radius: 15px;
-            margin-bottom: 2rem;
-        }
-        
-        .welcome-banner h1 {
-            font-size: 2rem;
-        }
-        
-        /* NOUVEAU: Style pour les stats sur l'accueil */
-        .home-stats {
-            grid-template-columns: repeat(3, 1fr); /* Forcer 3 colonnes */
         }
 
         /* Pied de page */
@@ -439,12 +439,6 @@
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
-            width: 40px; /* Taille fixe */
-            height: 40px; /* Taille fixe */
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
         }
 
         .contact-icon:hover {
@@ -513,8 +507,6 @@
         .notification-icon {
             font-size: 1.5rem;
             color: var(--secondary-blue);
-            width: 40px;
-            text-align: center;
         }
 
         .notification-actions {
@@ -592,10 +584,6 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
-        .add-exam-btn i {
-            font-size: 0.8rem;
-        }
 
         .add-exam-btn:hover {
             background: var(--secondary-blue);
@@ -650,10 +638,6 @@
             transition: var(--transition);
             text-align: center;
             min-width: 120px;
-            display: inline-flex; /* Pour aligner l'icône et le texte */
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
         }
 
         .download-btn {
@@ -689,18 +673,10 @@
             border: 1px solid var(--primary-blue);
             color: var(--primary-blue);
         }
-        
-        .favorite-btn .fa-heart {
-            color: var(--primary-blue); /* Icône "far" (vide) */
-        }
-        
+
         .favorite-btn.active {
             background: var(--primary-blue);
             color: var(--white);
-        }
-        
-        .favorite-btn.active .fa-heart {
-            color: var(--white); /* Icône "fas" (pleine) */
         }
 
         .delete-btn {
@@ -796,13 +772,11 @@
             background: var(--white);
             border-radius: 20px;
             padding: 2rem;
-            width: 90%; /* MODIFIÉ: Plus large par défaut */
-            max-width: 600px; /* MODIFIÉ: Max-width */
+            max-width: 90%;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow);
             animation: slideUp 0.5s ease;
-            position: relative; /* Pour le bouton fermer */
         }
 
         .popup-title {
@@ -815,17 +789,11 @@
             position: absolute;
             top: 1rem;
             right: 1rem;
-            background: var(--light-gray);
+            background: none;
             border: none;
-            font-size: 1rem;
+            font-size: 1.5rem;
             cursor: pointer;
             color: var(--text-light);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         /* Styles pour les formulaires */
@@ -870,32 +838,12 @@
             transform: translateY(-2px);
         }
 
-        /* NOUVEAU: Styles pour l'administration (Graphiques) */
+        /* Styles pour l'administration */
         .admin-stats {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
-        }
-        
-        .admin-charts {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-        
-        .chart-container {
-            background: var(--light-gray);
-            padding: 1rem;
-            border-radius: 10px;
-        }
-        
-        .chart-container h3 {
-            text-align: center;
-            margin-bottom: 1rem;
-            color: var(--text-dark);
-            font-size: 1rem;
         }
 
         .pending-exams {
@@ -955,59 +903,8 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            /* Ajustement de l'en-tête pour mobile */
-            .header-content {
-                grid-template-columns: auto 1fr; /* Logo | Reste */
-                padding: 0.5rem 1rem;
-            }
-            .header-center {
-                /* Les icônes centrales peuvent être masquées ou déplacées en bas */
-                /* Pour ce projet, on les garde mais on réduit l'espace */
-                display: none; /* CACHÉ sur mobile pour la simplicité */
-                /* Alternative: les mettre en bas dans une barre de navigation fixe */
-            }
-            .header-right {
-                grid-column: 2 / 3; /* Prend toute la place à droite */
-                gap: 0.5rem;
-            }
-            .header-right .nav-icon {
-                padding: 0.5rem;
-                width: 40px;
-                height: 40px;
-                font-size: 1.1rem;
-            }
-            
-            /* (Optionnel) Si on veut une barre en bas (style app) */
-            /*
-            main { padding-bottom: 60px; }
-            .mobile-nav {
-                display: flex;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                background: var(--white);
-                box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-                z-index: 100;
-            }
-            .mobile-nav .nav-icon {
-                flex: 1;
-                text-align: center;
-                padding: 0.8rem 0;
-                font-size: 1.5rem;
-                color: var(--text-dark);
-            }
-            .mobile-nav .nav-icon.active {
-                color: var(--primary-blue);
-            }
-            */
-            
-            .home-stats {
-                grid-template-columns: 1fr; /* 1 colonne sur mobile */
-            }
-            
-            .admin-charts {
-                grid-template-columns: 1fr; /* 1 colonne sur mobile */
+            .nav-icons {
+                gap: 1rem;
             }
             
             .exam-filters {
@@ -1033,36 +930,53 @@
     </style>
 </head>
 <body>
+    <!-- Écran de démarrage -->
     <div id="splash-screen">
-        <div class="splash-logo">HosBac</div>
-        <div class="splash-icons">
-            <i class="fas fa-book"></i>
-            <i class="fas fa-pen-alt"></i>
-            <i class="fas fa-graduation-cap"></i>
-            <i class="fas fa-search"></i>
-            <i class="fas fa-folder-open"></i>
+        <div class="logo-container">
+            <svg class="logo-circle" viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="90" stroke="#3b82f6" stroke-width="8" fill="none"/>
+            </svg>
+            <h1 class="splash-logo">
+                <span class="logo-letter">H</span>
+                <span class="logo-letter">o</span>
+                <span class="logo-letter">s</span>
+                <span class="logo-letter">B</span>
+                <span class="logo-letter">a</span>
+                <span class="logo-letter">c</span>
+            </h1>
+            <p class="splash-subtitle">Plateforme Éducative Collaborative</p>
         </div>
     </div>
-
+<!-- Écran d'avertissement -->
     <div id="warning-screen">
         <div class="warning-container">
-            <h2 class="warning-title">🔒 Avertissement – Utilisation responsable</h2>
+            <h2 class="warning-title">🔒 Avertissement – Utilisation responsable de la plateforme hosBac</h2>
             <div class="warning-text">
-                <p>La plateforme hosBac est un espace éducatif collaboratif... (Contenu inchangé)</p>
-                <p>Nous rappelons à tous les utilisateurs que ces ressources doivent être utilisées de manière éthique et responsable...</p>
+                <p>La plateforme hosBac est un espace éducatif collaboratif destiné à aider les élèves et étudiants dans leur préparation aux examens. Nous mettons à disposition des épreuves et corrigés pour faciliter l'apprentissage et la révision.</p>
+                <p>Nous rappelons à tous les utilisateurs que ces ressources doivent être utilisées de manière éthique et responsable. Il est strictement interdit de :</p>
+                <ul>
+                    <li>Partager des contenus protégés par des droits d'auteur sans autorisation</li>
+                    <li>Utiliser les épreuves pour tricher lors d'examens officiels</li>
+                    <li>Publier des contenus inappropriés, offensants ou illégaux</li>
+                </ul>
+                <p>L'équipe HosBac se réserve le droit de modérer tous les contenus publiés et de suspendre les comptes ne respectant pas ces règles.</p>
+                <p>Merci de participer avec intégrité.</p>
             </div>
             <button class="accept-btn">J'accepte</button>
         </div>
     </div>
-
+    <!-- Écran d'authentification -->
     <div id="auth-screen">
         <div class="auth-container">
             <div class="auth-tabs">
                 <div class="auth-tab active" data-tab="login">Connexion</div>
                 <div class="auth-tab" data-tab="signup">Inscription</div>
             </div>
-            
-            <form id="login-form" class="auth-form active">
+            <div class="animation-container">
+                <img src="https://static.photos/cartoon/300x200/1" alt="Tom" class="tom" style="display:none;">
+                <img src="https://static.photos/cartoon/300x200/2" alt="Jerry" class="jerry" style="display:none;">
+            </div>
+<form id="login-form" class="auth-form active">
                 <div class="form-group">
                     <label for="login-email">Email</label>
                     <input type="email" id="login-email" required>
@@ -1105,62 +1019,80 @@
         </div>
     </div>
 
+    <!-- Application principale -->
     <div id="app">
+        <!-- En-tête -->
         <header>
             <div class="header-content">
-                <div class="header-left">
-                    <div class="logo" data-view="home">HosBac</div>
+                <div class="logo">HosBac</div>
+                <div class="nav-icons">
+                    <div class="nav-icon active" data-view="home">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </div>
+                    <div class="nav-icon" data-view="notifications">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </div>
+                    <div class="nav-icon" data-view="exams">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="nav-icon" data-view="search">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </div>
+                    <div class="nav-icon" data-view="profile">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <!-- Icône Admin - visible seulement pour les administrateurs -->
+                    <div class="nav-icon" id="admin-icon" data-view="admin" style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                    </div>
                 </div>
-                <div class="header-center nav-icons">
-                    <div class="nav-icon active" data-view="home" title="Accueil"><i class="fas fa-home"></i></div>
-                    <div class="nav-icon" data-view="exams" title="Examens"><i class="fas fa-file-alt"></i></div>
-                    <div class="nav-icon" data-view="search" title="Recherche"><i class="fas fa-search"></i></div>
-                </div>
-                <div class="header-right nav-icons">
-                    <div class="nav-icon" data-view="notifications" title="Notifications"><i class="fas fa-bell"></i></div>
-                    <div class="nav-icon" data-view="profile" title="Profil"><i class="fas fa-user"></i></div>
-                    <div class="nav-icon" id="admin-icon" data-view="admin" title="Admin" style="display: none;"><i class="fas fa-crown"></i></div>
-                </div>
-            </div>
+</div>
         </header>
 
+        <!-- Contenu principal -->
         <main>
+            <!-- Vue Accueil -->
             <div id="home-view" class="view active">
-                <div class="welcome-banner">
-                    <h1 id="welcome-message">Bonjour !</h1>
-                    <p>Bienvenue sur HosBac. Prêt à réviser ?</p>
-                </div>
-                
-                <h2 class="view-title">Vos Statistiques</h2>
-                <div class="profile-stats home-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="home-points-balance">0</div>
-                        <div class="stat-label">Points</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="home-exams-uploaded">0</div>
-                        <div class="stat-label">Épreuves partagées</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="home-exams-downloaded">0</div>
-                        <div class="stat-label">Épreuves téléchargées</div>
-                    </div>
-                </div>
-                
-                <h2 class="view-title">Épreuves récentes</h2>
+                <h1 class="view-title">Accueil</h1>
                 <div class="card">
+                    <h2 class="card-title">Épreuves récentes</h2>
                     <div id="recent-exams" class="exam-list">
-                        </div>
+                        <!-- Les épreuves récentes seront chargées ici -->
+                    </div>
                 </div>
             </div>
 
+            <!-- Vue Notifications -->
             <div id="notifications-view" class="view">
                 <h1 class="view-title">Notifications</h1>
                 <button id="delete-all-notifications" class="notification-delete-all">Supprimer toutes les notifications</button>
                 <div id="notifications-list">
-                    </div>
+                    <!-- Les notifications seront chargées ici -->
+                </div>
             </div>
 
+            <!-- Vue Examens -->
             <div id="exams-view" class="view">
                 <h1 class="view-title">Examens</h1>
                 <div class="exam-filters">
@@ -1197,23 +1129,25 @@
                         <option value="G">G</option>
                     </select>
                     <input type="text" id="search-exams" class="search-bar" placeholder="Rechercher une épreuve...">
-                    <button id="add-exam-btn" class="add-exam-btn">
-                        <i class="fas fa-plus"></i> Ajouter une épreuve
-                    </button>
+                    <button id="add-exam-btn" class="add-exam-btn">➕ Ajouter une épreuve</button>
                 </div>
                 <div id="exams-list" class="exam-list">
-                    </div>
+                    <!-- Les épreuves seront chargées ici -->
+                </div>
             </div>
 
+            <!-- Vue Recherche -->
             <div id="search-view" class="view">
                 <h1 class="view-title">Recherche</h1>
                 <div class="card">
                     <input type="text" id="global-search" class="search-bar" placeholder="Rechercher des épreuves, utilisateurs...">
                     <div id="search-results" class="search-results">
-                        </div>
+                        <!-- Les résultats de recherche seront chargés ici -->
+                    </div>
                 </div>
             </div>
 
+            <!-- Vue Profil -->
             <div id="profile-view" class="view">
                 <h1 class="view-title">Profil</h1>
                 <div class="profile-header">
@@ -1264,12 +1198,14 @@
                 <div class="card">
                     <h2 class="card-title">Épreuves favorites</h2>
                     <div id="favorites-list" class="favorites-list">
-                        </div>
+                        <!-- Les épreuves favorites seront chargées ici -->
+                    </div>
                 </div>
                 
                 <button id="logout-btn" class="auth-btn" style="margin-top: 2rem;">Se Déconnecter</button>
             </div>
 
+            <!-- Vue Admin -->
             <div id="admin-view" class="view">
                 <h1 class="view-title">Panneau d'Administration</h1>
                 
@@ -1288,36 +1224,24 @@
                     </div>
                 </div>
                 
-                <div class="card">
-                    <h2 class="card-title">Statistiques du Site</h2>
-                    <div class="admin-charts">
-                        <div class="chart-container">
-                            <h3>Nouveaux utilisateurs (7 derniers jours)</h3>
-                            <canvas id="users-chart"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <h3>Top 5 Épreuves (Téléchargements)</h3>
-                            <canvas id="exams-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="pending-exams card">
-                    <h3 class="card-title">Épreuves en attente d'approbation</h3>
+                <div class="pending-exams">
+                    <h3>Épreuves en attente d'approbation</h3>
                     <div id="pending-exams-list">
-                        </div>
+                        <!-- Les épreuves en attente seront chargées ici -->
+                    </div>
                 </div>
             </div>
         </main>
 
+        <!-- Pied de page -->
         <footer>
             <div class="footer-content">
                 <div class="footer-brand">HosBac</div>
                 <div class="footer-contact">
-                    <a href="https://www.facebook.com/profile.php?id=61579985138308" target="_blank" class="contact-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                    <a href="https://wa.me/qr/73EC225KOITDD1" target="_blank" class="contact-icon" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                    <a href="mailto:mickaelpcs14@gmail.com" class="contact-icon" title="Email"><i class="fas fa-envelope"></i></a>
-                    <a href="tel:+2290198860752" class="contact-icon" title="Téléphone"><i class="fas fa-phone"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61579985138308" target="_blank" class="contact-icon">📘</a>
+                    <a href="https://wa.me/qr/73EC225KOITDD1" target="_blank" class="contact-icon">📱</a>
+                    <a href="mailto:mickaelpcs14@gmail.com" class="contact-icon">✉️</a>
+                    <a href="tel:+2290198860752" class="contact-icon">📞</a>
                 </div>
                 <div class="footer-links">
                     <div class="footer-link" id="terms-link">Conditions Générales d'Utilisation</div>
@@ -1327,9 +1251,10 @@
         </footer>
     </div>
 
+    <!-- Popup pour ajouter une épreuve -->
     <div id="add-exam-popup" class="popup-overlay">
         <div class="popup-content">
-            <button class="popup-close"><i class="fas fa-times"></i></button>
+            <button class="popup-close">&times;</button>
             <h2 class="popup-title">Ajouter une épreuve</h2>
             <form id="add-exam-form">
                 <div class="form-group">
@@ -1398,46 +1323,166 @@
         </div>
     </div>
 
+    <!-- Popup pour transférer une épreuve -->
     <div id="transfer-popup" class="popup-overlay">
         <div class="popup-content">
-            <button class="popup-close"><i class="fas fa-times"></i></button>
+            <button class="popup-close">&times;</button>
             <h2 class="popup-title">Transférer l'épreuve</h2>
             <div class="form-group">
                 <input type="text" id="user-search" class="search-bar" placeholder="Rechercher un utilisateur par email...">
             </div>
             <div id="search-results-list">
-                </div>
+                <!-- Les résultats de recherche d'utilisateurs seront chargés ici -->
+            </div>
             <button id="send-transfer-btn" class="submit-btn">Envoyer</button>
         </div>
     </div>
 
+    <!-- Popup pour les CGU -->
     <div id="terms-popup" class="popup-overlay">
         <div class="popup-content">
-            <button class="popup-close"><i class="fas fa-times"></i></button>
+            <button class="popup-close">&times;</button>
             <h2 class="popup-title">Conditions Générales d'Utilisation</h2>
             <div class="warning-text">
-                </div>
+                <!-- Contenu des CGU -->
+                <p>Conditions Générales d'Utilisation de hosBac</p>
+                <p>Dernière mise à jour : 26/10/2025</p>
+                <p>Bienvenue sur HosBac ! En accédant à notre site web et en utilisant nos services, vous acceptez d'être lié par les présentes Conditions Générales d'Utilisation (CGU).</p>
+                
+                <h3>1. Objet de la Plateforme</h3>
+                <p>hosBac est une plateforme éducative conçue pour aider les élèves et étudiants (du Collège au Lycée, classes de 6ème à la Terminale, et préparant le BEPC et le BAC) en leur donnant accès à des épreuves, examens et corrigés. Les utilisateurs peuvent consulter, télécharger et publier des ressources pédagogiques.</p>
+                
+                <h3>2. Inscription et Compte Utilisateur</h3>
+                <ul>
+                    <li><strong>Création de compte :</strong> Pour accéder à certaines fonctionnalités (comme les favoris ou la publication), vous devez créer un compte en fournissant des informations exactes (Nom, Prénom, Email, Mot de passe).</li>
+                    <li><strong>Sécurité :</strong> Vous êtes responsable de la confidentialité de votre mot de passe et de toutes les activités effectuées depuis votre compte.</li>
+                    <li><strong>Âge :</strong> Vous devez avoir l'âge légal requis dans votre pays pour créer un compte, ou obtenir l'autorisation de vos parents ou tuteurs légaux.</li>
+                </ul>
+                
+                <h3>3. Publication de Contenu par les Utilisateurs</h3>
+                <ul>
+                    <li><strong>Propriété du contenu :</strong> En publiant une épreuve ou un corrigé (ci-après "le Contenu") sur hosBac, vous déclarez et garantissez que :
+                        <ul>
+                            <li>Vous êtes l'auteur de ce Contenu, ou ;</li>
+                            <li>Vous disposez de toutes les autorisations et droits nécessaires (notamment les droits d'auteur) pour le publier et nous accorder une licence d'utilisation.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Licence accordée :</strong> Vous nous accordez une licence non exclusive, mondiale et gratuite pour héberger, afficher, reproduire et distribuer votre Contenu sur la plateforme.</li>
+                    <li><strong>Contenu interdit :</strong> Il est interdit de publier du Contenu illégal, diffamatoire, haineux, ou portant atteinte aux droits de tiers.</li>
+                </ul>
+                
+                <h3>4. Modération et Approbation</h3>
+                <ul>
+                    <li><strong>Rôle de l'Administrateur :</strong> L'administrateur de hosBac (ci-après "l'Administrateur") se réserve le droit d'examiner tout Contenu soumis.</li>
+                    <li><strong>Approbation :</strong> Le Contenu ne sera visible publiquement qu'après approbation par l'Administrateur.</li>
+                    <li><strong>Refus ou Retrait :</strong> L'Administrateur peut refuser ou retirer tout Contenu, à tout moment et sans préavis, s'il estime qu'il ne respecte pas les présentes CGU, qu'il est de mauvaise qualité, ou pour toute autre raison, à sa seule discrétion.</li>
+                </ul>
+                
+                <h3>5. Responsabilité</h3>
+                <ul>
+                    <li><strong>Exactitude du Contenu :</strong> hosBac ne garantit pas l'exactitude, la pertinence ou l'exhaustivité des épreuves et corrigés publiés par les utilisateurs. Nous agissons en tant qu'hébergeur.</li>
+                    <li><strong>Limitation de responsabilité :</strong> L'utilisation de la plateforme se fait à vos propres risques. Nous ne serons pas tenus responsables des dommages directs ou indirects résultant de l'utilisation du site.</li>
+                    <li><strong>Responsabilité de l'utilisateur :</strong> Vous êtes seul responsable du Contenu que vous publiez et des conséquences de sa diffusion.</li>
+                </ul>
+                
+                <h3>6. Propriété Intellectuelle</h3>
+                <p>Tous les éléments constituant la plateforme (logo, design, structure) sont la propriété exclusive de hosBac. Le contenu pédagogique reste la propriété de ses auteurs respectifs, sous réserve de la licence accordée à la plateforme (voir article 3).</p>
+                
+                <h3>7. Modification des CGU</h3>
+                <p>Nous nous réservons le droit de modifier ces CGU à tout moment. Les modifications prendront effet dès leur publication sur le site.</p>
+                
+                <h3>8. Droit applicable</h3>
+                <p>Les présentes CGU sont régies par le droit du Bénin.</p>
+                
+                <h3>9. Contact</h3>
+                <p>Pour toute question relative à ces CGU, veuillez nous contacter à mickaelpcs14@gmail.com.</p>
+            </div>
         </div>
     </div>
 
+    <!-- Popup pour la politique de confidentialité -->
     <div id="privacy-popup" class="popup-overlay">
         <div class="popup-content">
-            <button class="popup-close"><i class="fas fa-times"></i></button>
+            <button class="popup-close">&times;</button>
             <h2 class="popup-title">Politique de Confidentialité</h2>
             <div class="warning-text">
-                </div>
+                <!-- Contenu de la politique de confidentialité -->
+                <p>Politique de Confidentialité de hosBac</p>
+                <p>Dernière mise à jour : 26/10/2025</p>
+                <p>La protection de vos données personnelles est une priorité pour hosBac. Cette politique décrit quelles informations nous collectons et comment nous les utilisons.</p>
+                
+                <h3>1. Quelles données collectons-nous ?</h3>
+                <p>Nous collectons deux types d'informations :</p>
+                <ul>
+                    <li><strong>Données fournies lors de l'inscription :</strong>
+                        <ul>
+                            <li>Nom et Prénom</li>
+                            <li>Adresse email</li>
+                            <li>Mot de passe (stocké de manière chiffrée/hachée)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Données générées par votre activité :</strong>
+                        <ul>
+                            <li>Les épreuves que vous mettez en favoris.</li>
+                            <li>Votre historique d'activité (épreuves consultées).</li>
+                            <li>Les épreuves que vous publiez (fichiers PDF et métadonnées associées : matière, classe, série).</li>
+                            <li>Données techniques (adresse IP, type de navigateur) via des outils d'analyse (comme Firebase Analytics) pour améliorer le service.</li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <h3>2. Pourquoi collectons-nous ces données (Finalités) ?</h3>
+                <p>Vos données sont utilisées pour :</p>
+                <ul>
+                    <li><strong>Fournir le service :</strong> Créer et gérer votre compte, vous permettre de vous connecter et de récupérer votre mot de passe.</li>
+                    <li><strong>Personnaliser votre expérience :</strong> Afficher votre ID, votre nom, et vous donner accès à vos favoris et activités récentes.</li>
+                    <li><strong>Gérer le Contenu :</strong> Permettre la publication, la modération et l'affichage des épreuves.</li>
+                    <li><strong>Améliorer la plateforme :</strong> Analyser l'utilisation du site pour corriger les bugs et développer de nouvelles fonctionnalités.</li>
+                    <li><strong>Sécurité :</strong> Protéger la plateforme contre la fraude et les abus.</li>
+                </ul>
+                
+                <h3>3. Partage des données</h3>
+                <p>Nous ne vendons ni ne louons vos données personnelles à des tiers.</p>
+                <p>Vos données peuvent être partagées avec :</p>
+                <ul>
+                    <li><strong>Les autres utilisateurs :</strong> Votre nom ou pseudo peut être visible si vous publiez une épreuve.</li>
+                    <li><strong>Nos fournisseurs techniques :</strong> Nous utilisons des services tiers pour faire fonctionner la plateforme, notamment pour l'hébergement, l'authentification et l'analyse (par exemple, Firebase). Ces fournisseurs n'ont accès à vos données que pour exécuter ces tâches en notre nom.</li>
+                    <li><strong>Obligations légales :</strong> Si la loi l'exige.</li>
+                </ul>
+                
+                <h3>4. Sécurité des données</h3>
+                <p>Nous mettons en œuvre des mesures de sécurité techniques (comme le chiffrage) et organisationnelles pour protéger vos données contre la perte, l'accès non autorisé ou la modification. Nous nous appuyons sur les mesures de sécurité fournies par Google/Firebase pour l'infrastructure de base de données et d'authentification.</p>
+                
+                <h3>5. Conservation des données</h3>
+                <p>Nous conservons vos données personnelles tant que votre compte est actif. Si vous supprimez votre compte, vos données personnelles (nom, email) seront supprimées dans un délai raisonnable. Les contenus (épreuves) que vous avez publiés pourront être conservés de manière anonyme.</p>
+                
+                <h3>6. Vos droits</h3>
+                <p>Conformément à la législation en vigueur, vous disposez d'un droit :</p>
+                <ul>
+                    <li><strong>D'accès :</strong> Consulter les données que nous avons sur vous (via votre profil).</li>
+                    <li><strong>De rectification :</strong> Modifier vos informations inexactes (via votre profil).</li>
+                    <li><strong>De suppression ("droit à l'oubli") :</strong> Demander la suppression de votre compte et de vos données.</li>
+                </ul>
+                <p>Pour exercer ces droits, vous pouvez nous contacter à mickaelpcs14@gmail.com.</p>
+                
+                <h3>7. Cookies</h3>
+                <p>Notre site utilise des cookies (petits fichiers stockés sur votre navigateur) nécessaires à son bon fonctionnement (ex: maintenir votre session connectée) et pour les analyses de trafic (ex: Firebase Analytics).</p>
+                
+                <h3>8. Contact</h3>
+                <p>Pour toute question sur cette Politique de Confidentialité, contactez l'Administrateur à mickaelpcs14@gmail.com via les liens de contact (WhatsApp, Facebook) disponibles sur le site.</p>
+            </div>
         </div>
     </div>
 
+    <!-- Audio pour les notifications -->
     <audio id="notification-sound" preload="auto">
-        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5dfadf2a3f.mp3" type="audio/mp3">
+        <source src="https://assets.mixkit.co/active_storage/sfx/286/286-preview.mp3" type="audio/mp3">
     </audio>
 
     <script>
         // Configuration Firebase
         const firebaseConfig = {
-            // ATTENTION: Clés sensibles. Ne pas exposer publiquement sans règles de sécurité.
-            apiKey: "AIzaSyCZQDAO0xK3nZqSwh41u91IbIc4ufkrd1o", // SÉCURITÉ: Clé masquée
+            apiKey: "AIzaSyCZQDAO0xK3nZqSwh41u91IbIc4ufkrd1o",
             authDomain: "hosbac-6ae23.firebaseapp.com",
             projectId: "hosbac-6ae23",
             storageBucket: "hosbac-6ae23.firebasestorage.app",
@@ -1522,7 +1567,6 @@
                     }
                 });
             });
-
             // Gestionnaires pour les onglets d'authentification
             authTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -1539,10 +1583,33 @@
                             form.classList.add('active');
                         }
                     });
+
+                    // Animation Tom et Jerry
+                    const tom = document.querySelector('.tom');
+                    const jerry = document.querySelector('.jerry');
+                    
+                    tom.style.display = 'block';
+                    jerry.style.display = 'block';
+                    
+                    if (tabName === 'login') {
+                        // Tom chasse Jerry
+                        tom.style.animation = 'tomRun 1s forwards';
+                        jerry.style.animation = 'jerryRun 1s forwards';
+                    } else {
+                        // Jerry chasse Tom
+                        tom.style.animation = 'jerryRun 1s reverse forwards';
+                        jerry.style.animation = 'tomRun 1s reverse forwards';
+                    }
+                    
+                    setTimeout(() => {
+                        tom.style.display = 'none';
+                        jerry.style.display = 'none';
+                        tom.style.animation = '';
+                        jerry.style.animation = '';
+                    }, 1000);
                 });
             });
-
-            // Gestionnaire pour la connexion
+// Gestionnaire pour la connexion
             loginForm.addEventListener('submit', e => {
                 e.preventDefault();
                 const email = document.getElementById('login-email').value;
@@ -1641,14 +1708,10 @@
             navIcons.forEach(icon => {
                 icon.addEventListener('click', () => {
                     const viewName = icon.getAttribute('data-view');
-                    if (!viewName) return; // Au cas où on clique sur le logo
                     
                     // Activer l'icône sélectionnée
                     navIcons.forEach(i => i.classList.remove('active'));
-                    // Activer toutes les icônes pointant vers la même vue
-                    document.querySelectorAll(`.nav-icon[data-view="${viewName}"]`).forEach(activeIcon => {
-                        activeIcon.classList.add('active');
-                    });
+                    icon.classList.add('active');
                     
                     // Afficher la vue correspondante
                     views.forEach(view => {
@@ -1662,7 +1725,6 @@
                     switch(viewName) {
                         case 'home':
                             loadRecentExams();
-                            // Les stats de l'accueil sont chargées par loadProfileData
                             break;
                         case 'notifications':
                             loadNotifications();
@@ -1681,11 +1743,6 @@
                             break;
                     }
                 });
-            });
-            
-            // Clic sur le logo ramène à l'accueil
-            document.querySelector('.logo').addEventListener('click', () => {
-                 document.querySelector('.nav-icon[data-view="home"]').click();
             });
 
             // Gestionnaire pour le bouton d'ajout d'épreuve
@@ -1866,7 +1923,7 @@
             try {
                 notificationSound.currentTime = 0;
                 notificationSound.play().catch(e => {
-                    console.log('Lecture audio bloquée (l\'utilisateur doit d\'abord interagir avec la page):', e);
+                    console.log('Lecture audio bloquée:', e);
                 });
             } catch (error) {
                 console.error('Erreur lecture son notification:', error);
@@ -1891,7 +1948,7 @@
                         isAdmin = userData.role === 'admin';
                         
                         if (isAdmin) {
-                            adminIcon.style.display = 'flex'; // MODIFIÉ: 'flex' au lieu de 'block'
+                            adminIcon.style.display = 'block';
                         } else {
                             adminIcon.style.display = 'none';
                         }
@@ -1905,7 +1962,7 @@
         function loadUserData() {
             loadRecentExams();
             loadNotifications();
-            loadProfileData(); // Charge les données du profil ET de l'accueil
+            loadProfileData();
             updateNotificationBadge();
         }
 
@@ -2050,7 +2107,7 @@
                     ${exam.fichier_corrige ? `<button class="exam-btn download-btn" data-exam-id="${examId}" data-type="corrige">Corrigé (2 points)</button>` : ''}
                     <button class="exam-btn transfer-btn" data-exam-id="${examId}">Transférer</button>
                     <button class="exam-btn favorite-btn ${isFavorite ? 'active' : ''}" data-exam-id="${examId}">
-                        <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i> Favori
+                        ${isFavorite ? '❤️' : '🤍'} Favori
                     </button>
                     ${isAdmin ? `<button class="exam-btn delete-btn" data-exam-id="${examId}">Supprimer</button>` : ''}
                 </div>
@@ -2139,13 +2196,6 @@
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
-                                
-                                // NOUVEAU: Incrémenter le compteur de téléchargement
-                                const examRef = db.collection('epreuves').doc(examId);
-                                examRef.update({
-                                    downloadCount: firebase.firestore.FieldValue.increment(1)
-                                });
-                                
                             } else {
                                 showNotification('Erreur: Fichier non disponible', 'error');
                             }
@@ -2194,12 +2244,6 @@
                             });
                         }
                     }).then(() => {
-                        // NOUVEAU: Incrémenter le compteur de téléchargement pour le corrigé aussi
-                        const examRef = db.collection('epreuves').doc(examId);
-                        examRef.update({
-                            downloadCount: firebase.firestore.FieldValue.increment(1)
-                        });
-                                
                         // Accéder au fichier corrigé
                         const fileUrl = exam.fichier_corrige;
                         if (fileUrl && fileUrl.includes('cloudinary.com')) {
@@ -2236,12 +2280,12 @@
             if (isCurrentlyFavorite) {
                 newFavorites = newFavorites.filter(id => id !== examId);
                 button.classList.remove('active');
-                button.innerHTML = '<i class="far fa-heart"></i> Favori';
+                button.innerHTML = '🤍 Favori';
                 showNotification('Épreuve retirée des favoris', 'success');
             } else {
                 newFavorites.push(examId);
                 button.classList.add('active');
-                button.innerHTML = '<i class="fas fa-heart"></i> Favori';
+                button.innerHTML = '❤️ Favori';
                 showNotification('Épreuve ajoutée aux favoris', 'success');
                 
                 // Notification à l'auteur
@@ -2271,11 +2315,6 @@
             })
             .then(() => {
                 userData.favorites = newFavorites;
-                // Si on est sur la page profil, recharger les favoris pour
-                // que l'épreuve disparaisse/apparaisse immédiatement
-                if (document.getElementById('profile-view').classList.contains('active')) {
-                    loadFavorites();
-                }
             })
             .catch(error => {
                 console.error('Erreur lors de la mise à jour des favoris:', error);
@@ -2336,12 +2375,9 @@
                         document.getElementById('exams-uploaded').textContent = userProfile.examsUploaded || 0;
                         document.getElementById('exams-downloaded').textContent = userProfile.examsDownloaded || 0;
                         
-                        // Masquer les parties non pertinentes lors de la vue d'un autre profil
                         document.getElementById('profile-form').style.display = 'none';
                         document.getElementById('favorites-list').style.display = 'none';
-                        document.querySelector('#profile-view .card:nth-of-type(2) .card-title').style.display = 'none';
-                        document.getElementById('logout-btn').style.display = 'none'; // Cacher le bouton déconnexion
-
+                        document.querySelector('.card .card-title:last-child').style.display = 'none';
                         
                         showNotification(`Profil de ${userProfile.prenom} ${userProfile.nom}`, 'success');
                     }
@@ -2495,7 +2531,6 @@
                         auteurId: currentUser.uid,
                         auteurNom: `${userData.prenom} ${userData.nom}`,
                         status: status,
-                        downloadCount: 0, // NOUVEAU: Initialiser le compteur de téléchargements
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
@@ -2543,15 +2578,15 @@
                         notificationElement.className = 'notification-item';
                         notificationElement.setAttribute('data-notification-id', doc.id);
                         
-                        let icon = 'fas fa-bell'; // Icône par défaut
-                        if (notification.type === 'economy' || notification.type === 'points_received') icon = 'fas fa-coins';
-                        else if (notification.type === 'transfer') icon = 'fas fa-paper-plane';
-                        else if (notification.type === 'submission') icon = 'fas fa-file-upload';
-                        else if (notification.type === 'favorite') icon = 'fas fa-heart';
-                        else if (notification.type === 'approval') icon = 'fas fa-check-circle';
+                        let icon = '🔔';
+                        if (notification.type === 'economy' || notification.type === 'points_received') icon = '💰';
+                        else if (notification.type === 'transfer') icon = '📤';
+                        else if (notification.type === 'submission') icon = '📝';
+                        else if (notification.type === 'favorite') icon = '❤️';
+                        else if (notification.type === 'approval') icon = '✅';
                         
                         notificationElement.innerHTML = `
-                            <div class="notification-icon"><i class="${icon}"></i></div>
+                            <div class="notification-icon">${icon}</div>
                             <div class="notification-content">
                                 <p>${notification.message}</p>
                                 <small>${new Date(notification.createdAt?.toDate()).toLocaleDateString('fr-FR', {
@@ -2652,16 +2687,33 @@
                     const unreadCount = querySnapshot.size;
                     const notificationIcon = document.querySelector('.nav-icon[data-view="notifications"]');
                     
-                    let badge = notificationIcon.querySelector('.notification-badge');
-
                     if (unreadCount > 0) {
+                        // Ajouter un badge avec le nombre de notifications non lues
+                        let badge = notificationIcon.querySelector('.notification-badge');
                         if (!badge) {
                             badge = document.createElement('span');
                             badge.className = 'notification-badge';
+                            badge.style.cssText = `
+                                position: absolute;
+                                top: -5px;
+                                right: -5px;
+                                background: var(--error);
+                                color: white;
+                                border-radius: 50%;
+                                width: 18px;
+                                height: 18px;
+                                font-size: 0.7rem;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            `;
+                            notificationIcon.style.position = 'relative';
                             notificationIcon.appendChild(badge);
                         }
                         badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
                     } else {
+                        // Supprimer le badge s'il existe
+                        const badge = notificationIcon.querySelector('.notification-badge');
                         if (badge) {
                             badge.remove();
                         }
@@ -2685,7 +2737,6 @@
                     if (doc.exists) {
                         userData = doc.data();
                         
-                        // --- Mettre à jour le Profil ---
                         document.getElementById('profile-avatar').textContent = 
                             userData.prenom ? userData.prenom.charAt(0).toUpperCase() : 'U';
                         document.getElementById('profile-name').textContent = 
@@ -2702,21 +2753,11 @@
                         document.getElementById('edit-prenom').value = userData.prenom || '';
                         document.getElementById('edit-classe').value = userData.classe || '';
                         
-                        // --- Mettre à jour l'Accueil ---
-                        document.getElementById('welcome-message').textContent = 
-                            `Bonjour, ${userData.prenom || 'Utilisateur'} !`;
-                        document.getElementById('home-points-balance').textContent = userData.points || 0;
-                        document.getElementById('home-exams-uploaded').textContent = userData.examsUploaded || 0;
-                        document.getElementById('home-exams-downloaded').textContent = userData.examsDownloaded || 0;
-
-                        // Afficher les sections du profil propre
                         document.getElementById('profile-form').style.display = 'block';
                         document.getElementById('favorites-list').style.display = 'grid';
-                        document.querySelector('#profile-view .card:nth-of-type(2) .card-title').style.display = 'block';
-                        document.getElementById('logout-btn').style.display = 'block';
-
+                        document.querySelector('.card .card-title:last-child').style.display = 'block';
                         
-                        loadFavorites(); // Charger les favoris pour le profil
+                        loadFavorites();
                     }
                 })
                 .catch(error => {
@@ -2875,7 +2916,6 @@
         function loadAdminPanel() {
             if (!isAdmin) {
                 showNotification('Accès non autorisé', 'error');
-                document.querySelector('.nav-icon[data-view="home"]').click(); // Rediriger
                 return;
             }
             
@@ -2929,95 +2969,7 @@
                         });
                     });
                 });
-                
-            // NOUVEAU: Charger les graphiques
-            renderAdminCharts();
         }
-        
-        // NOUVEAU: Fonction pour afficher les graphiques
-        async function renderAdminCharts() {
-            try {
-                // --- Données Graphique Utilisateurs ---
-                const usersSnapshot = await db.collection('users').get();
-                const userCountsByDate = {};
-                const today = new Date();
-                const N_DAYS = 7;
-                
-                for (let i = 0; i < N_DAYS; i++) {
-                    const d = new Date(today.getTime() - (i * 24 * 60 * 60 * 1000));
-                    const dateString = d.toISOString().split('T')[0];
-                    userCountsByDate[dateString] = 0;
-                }
-
-                usersSnapshot.forEach(doc => {
-                    const user = doc.data();
-                    if (user.createdAt && user.createdAt.toDate) { // Vérifier si toDate existe
-                        const dateString = user.createdAt.toDate().toISOString().split('T')[0];
-                        if (userCountsByDate[dateString] !== undefined) {
-                            userCountsByDate[dateString]++;
-                        }
-                    }
-                });
-
-                const userLabels = Object.keys(userCountsByDate).reverse();
-                const userDataPoints = Object.values(userCountsByDate).reverse();
-                
-                // Rendu Graphique Utilisateurs (Line)
-                const usersCtx = document.getElementById('users-chart').getContext('2d');
-                new Chart(usersCtx, {
-                    type: 'line',
-                    data: {
-                        labels: userLabels,
-                        datasets: [{
-                            label: 'Nouveaux utilisateurs',
-                            data: userDataPoints,
-                            borderColor: 'var(--primary-blue)',
-                            backgroundColor: 'rgba(30, 58, 138, 0.1)',
-                            fill: true,
-                            tension: 0.1
-                        }]
-                    }
-                });
-
-                // --- Données Graphique Épreuves ---
-                const examsSnapshot = await db.collection('epreuves')
-                                            .where('downloadCount', '>', 0)
-                                            .orderBy('downloadCount', 'desc')
-                                            .limit(5)
-                                            .get();
-                                            
-                const examLabels = [];
-                const examDataPoints = [];
-                examsSnapshot.forEach(doc => {
-                    const exam = doc.data();
-                    examLabels.push(exam.nom_epreuve.substring(0, 20) + '...'); // Raccourcir
-                    examDataPoints.push(exam.downloadCount || 0);
-                });
-
-                // Rendu Graphique Épreuves (Bar)
-                const examsCtx = document.getElementById('exams-chart').getContext('2d');
-                new Chart(examsCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: examLabels,
-                        datasets: [{
-                            label: 'Téléchargements',
-                            data: examDataPoints,
-                            backgroundColor: 'var(--secondary-blue)',
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y', // Graphique à barres horizontales
-                    }
-                });
-
-            } catch (error) {
-                console.error("Erreur lors de la génération des graphiques:", error);
-                document.getElementById('users-chart').parentElement.innerHTML = "<p>Erreur chargement graphique.</p>";
-                document.getElementById('exams-chart').parentElement.innerHTML = "<p>Erreur chargement graphique.</p>";
-            }
-        }
-
 
         // CORRECTION: Fonction approveExam avec notification à l'utilisateur
         function approveExam(examId, authorId, points) {
@@ -3145,4 +3097,4 @@
         document.head.appendChild(style);
     </script>
 </body>
-</html>
+    </html>
