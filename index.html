@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     
     <style>
-        /* ... (Toutes les variables CSS sont inchangées) ... */
+        /* ... (TOUT LE CSS EST INCHANGÉ PAR RAPPORT À LA VERSION PRÉCÉDENTE) ... */
         :root {
             --primary-blue: #1e3a8a;
             --secondary-blue: #3b82f6;
@@ -33,8 +33,6 @@
             --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
             --transition: all 0.3s ease;
         }
-
-        /* ... (Reset, Body, Splash Screen, Auth Screen, Header, etc. inchangés) ... */
         * {
             margin: 0;
             padding: 0;
@@ -130,81 +128,19 @@
         .welcome-banner h1 { font-size: 2rem; }
         .home-stats { grid-template-columns: repeat(3, 1fr); }
         
-        /* NOUVEAU: Styles pour le conteneur d'annonces */
-        .announcements-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        
-        /* NOUVEAU: Style pour une carte d'annonce */
-        .announcement-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-        }
-        
-        .announcement-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .announcement-header i { /* Icône Admin */
-            color: var(--primary-blue);
-        }
-        
-        .announcement-header strong {
-            color: var(--text-dark);
-        }
-        
-        .announcement-header small {
-            color: var(--text-light);
-            margin-left: auto;
-        }
-        
-        .announcement-body {
-            line-height: 1.6;
-            margin-bottom: 1rem;
-        }
-        
-        .announcement-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .like-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: var(--text-light);
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .like-btn:hover {
-            color: var(--error);
-        }
-        
-        .like-btn.active .fa-heart {
-            color: var(--error);
-            font-weight: 900; /* fas */
-        }
-        
-        .like-btn span { /* Compteur de likes */
-            font-size: 1rem;
-            color: var(--text-dark);
-        }
+        .announcements-container { display: flex; flex-direction: column; gap: 1.5rem; }
+        .announcement-card { background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 1.5rem; box-shadow: var(--shadow); }
+        .announcement-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .announcement-header i { color: var(--primary-blue); }
+        .announcement-header strong { color: var(--text-dark); }
+        .announcement-header small { color: var(--text-light); margin-left: auto; }
+        .announcement-body { line-height: 1.6; margin-bottom: 1rem; }
+        .announcement-actions { display: flex; align-items: center; gap: 0.5rem; }
+        .like-btn { background: transparent; border: none; cursor: pointer; font-size: 1.5rem; color: var(--text-light); transition: var(--transition); display: flex; align-items: center; gap: 0.5rem; }
+        .like-btn:hover { color: var(--error); }
+        .like-btn.active .fa-heart { color: var(--error); font-weight: 900; }
+        .like-btn span { font-size: 1rem; color: var(--text-dark); }
 
-        /* ... (Reste des styles CSS inchangés - Footer, Cards, Notifications, Exams, Profile, Popups, Admin, etc.) ... */
         footer { background: var(--glass-bg); backdrop-filter: blur(10px); border-top: 1px solid var(--glass-border); padding: 2rem 1rem; }
         .footer-content { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
         .footer-brand { font-size: 1.5rem; font-weight: bold; color: var(--primary-blue); }
@@ -315,7 +251,7 @@
             <h2 class="warning-title">🔒 Avertissement – Utilisation responsable</h2>
             <div class="warning-text">
                 <p>La plateforme hosBac est un espace éducatif collaboratif...</p>
-            </div>
+                </div>
             <button class="accept-btn">J'accepte</button>
         </div>
     </div>
@@ -329,9 +265,44 @@
             <div id="auth-flipper-container">
                 <div class="auth-flipper" id="auth-flipper">
                     <form id="login-form" class="auth-form auth-front active">
-                        </form>
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Mot de passe</label>
+                            <input type="password" id="login-password" required>
+                        </div>
+                        <button type="submit" class="auth-btn">Se connecter</button>
+                        <div class="forgot-password">Mot de passe oublié ?</div>
+                    </form>
                     <form id="signup-form" class="auth-form auth-back">
-                        </form>
+                        <div class="form-group">
+                            <label for="signup-nom">Nom</label>
+                            <input type="text" id="signup-nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-prenom">Prénom</label>
+                            <input type="text" id="signup-prenom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-ecole">École</label>
+                            <input type="text" id="signup-ecole" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email">Email</label>
+                            <input type="email" id="signup-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">Mot de passe</label>
+                            <input type="password" id="signup-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-confirm-password">Confirmer le mot de passe</label>
+                            <input type="password" id="signup-confirm-password" required>
+                        </div>
+                        <button type="submit" class="auth-btn">S'inscrire</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -340,7 +311,20 @@
     <div id="app">
         <header>
             <div class="header-content">
+                <div class="header-left">
+                    <div class="logo" data-view="home">HosBac</div>
                 </div>
+                <div class="header-center nav-icons">
+                    <div class="nav-icon active" data-view="home" title="Accueil"><i class="fas fa-home"></i></div>
+                    <div class="nav-icon" data-view="exams" title="Examens"><i class="fas fa-file-alt"></i></div>
+                    <div class="nav-icon" data-view="search" title="Recherche"><i class="fas fa-search"></i></div>
+                </div>
+                <div class="header-right nav-icons">
+                    <div class="nav-icon" data-view="notifications" title="Notifications"><i class="fas fa-bell"></i></div>
+                    <div class="nav-icon" data-view="profile" title="Profil"><i class="fas fa-user"></i></div>
+                    <div class="nav-icon" id="admin-icon" data-view="admin" title="Admin" style="display: none;"><i class="fas fa-crown"></i></div>
+                </div>
+            </div>
         </header>
 
         <main>
@@ -352,7 +336,19 @@
                 
                 <h2 class="view-title">Vos Statistiques</h2>
                 <div class="profile-stats home-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="home-points-balance">0</div>
+                        <div class="stat-label">Points</div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="home-exams-uploaded">0</div>
+                        <div class="stat-label">Épreuves partagées</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="home-exams-downloaded">0</div>
+                        <div class="stat-label">Épreuves téléchargées</div>
+                    </div>
+                </div>
 
                 <h2 class="view-title">Annonces de l'équipe</h2>
                 <div id="announcements-list" class="announcements-container">
@@ -366,29 +362,143 @@
             </div>
 
             <div id="notifications-view" class="view">
-                </div>
+                <h1 class="view-title">Notifications</h1>
+                <button id="delete-all-notifications" class="notification-delete-all">Supprimer toutes les notifications</button>
+                <div id="notifications-list"></div>
+            </div>
 
             <div id="exams-view" class="view">
+                <h1 class="view-title">Examens</h1>
+                <div class="exam-filters">
+                    <select id="filter-class" class="filter-select">
+                        <option value="">Toutes les classes</option>
+                        <option value="6ème">6ème</option>
+                        <option value="5ème">5ème</option>
+                        <option value="4ème">4ème</option>
+                        <option value="3ème">3ème</option>
+                        <option value="2nd">2nd</option>
+                        <option value="1ère">1ère</option>
+                        <option value="Terminale">Terminale</option>
+                    </select>
+                    <select id="filter-subject" class="filter-select">
+                        <option value="">Toutes les matières</option>
+                         <option value="Mathématique">Mathématique</option>
+                        <option value="Français">Français</option>
+                        <option value="Histoire-géographie">Histoire-géographie</option>
+                        <option value="Allemand">Allemand</option>
+                        <option value="Économie">Économie</option>
+                        <option value="T-bad">T-bad</option>
+                        <option value="Espagnol">Espagnol</option>
+                        <option value="Anglais">Anglais</option>
+                        <option value="SVT">SVT</option>
+                        <option value="PCT">PCT</option>
+                        <option value="Droit">Droit</option>
+                    </select>
+                    <select id="filter-series" class="filter-select">
+                        <option value="">Toutes les séries</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="G">G</option>
+                    </select>
+                    <input type="text" id="search-exams" class="search-bar" placeholder="Rechercher une épreuve...">
+                    <button id="add-exam-btn" class="add-exam-btn">
+                        <i class="fas fa-plus"></i> Ajouter une épreuve
+                    </button>
                 </div>
+                <div id="exams-list" class="exam-list"></div>
+            </div>
 
             <div id="search-view" class="view">
+                <h1 class="view-title">Recherche</h1>
+                <div class="card">
+                    <input type="text" id="global-search" class="search-bar" placeholder="Rechercher des épreuves, utilisateurs...">
+                    <div id="search-results" class="search-results"></div>
                 </div>
+            </div>
 
             <div id="profile-view" class="view">
+                <h1 class="view-title">Profil</h1>
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profile-avatar">U</div>
+                    <div class="profile-info">
+                        <h2 id="profile-name">Utilisateur</h2>
+                        <p id="profile-email">email@exemple.com</p>
+                        <p id="profile-class">Classe: Non définie</p>
+                    </div>
                 </div>
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="points-balance">0</div>
+                        <div class="stat-label">Points</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="exams-uploaded">0</div>
+                        <div class="stat-label">Épreuves partagées</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="exams-downloaded">0</div>
+                        <div class="stat-label">Épreuves téléchargées</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">Modifier le profil</h2>
+                    <form id="profile-form">
+                         <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-nom">Nom</label>
+                                <input type="text" id="edit-nom">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-prenom">Prénom</label>
+                                <input type="text" id="edit-prenom">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-classe">Classe</label>
+                            <input type="text" id="edit-classe">
+                        </div>
+                        <button type="submit" class="submit-btn">Sauvegarder</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">Épreuves favorites</h2>
+                    <div id="favorites-list" class="favorites-list"></div>
+                </div>
+                <button id="logout-btn" class="auth-btn" style="margin-top: 2rem;">Se Déconnecter</button>
+            </div>
 
             <div id="admin-view" class="view">
                 <h1 class="view-title">Panneau d'Administration</h1>
-                
                 <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-users">0</div>
+                        <div class="stat-label">Utilisateurs</div>
                     </div>
-                
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-exams">0</div>
+                        <div class="stat-label">Épreuves</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="pending-exams-count">0</div>
+                        <div class="stat-label">En attente</div>
+                    </div>
+                </div>
                 <div class="card">
                     <h2 class="card-title">Statistiques du Site</h2>
                     <div class="admin-charts">
+                        <div class="chart-container">
+                            <h3>Nouveaux utilisateurs (7 derniers jours)</h3>
+                            <canvas id="users-chart"></canvas>
                         </div>
+                        <div class="chart-container">
+                            <h3>Top 5 Épreuves (Téléchargements)</h3>
+                            <canvas id="exams-chart"></canvas>
+                        </div>
+                    </div>
                 </div>
-
+                
                 <div class="card">
                     <h2 class="card-title">Publier une annonce</h2>
                     <form id="announcement-form">
@@ -402,16 +512,127 @@
                 
                 <div class="pending-exams card">
                     <h3 class="card-title">Épreuves en attente d'approbation</h3>
-                    <div id="pending-exams-list">
-                        </div>
+                    <div id="pending-exams-list"></div>
                 </div>
             </div>
         </main>
 
         <footer>
             <div class="footer-content">
+                <div class="footer-brand">HosBac</div>
+                <div class="footer-contact">
+                    <a href="https://www.facebook.com/profile.php?id=61579985138308" target="_blank" class="contact-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://wa.me/qr/73EC225KOITDD1" target="_blank" class="contact-icon" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="mailto:mickaelpcs14@gmail.com" class="contact-icon" title="Email"><i class="fas fa-envelope"></i></a>
+                    <a href="tel:+2290198860752" class="contact-icon" title="Téléphone"><i class="fas fa-phone"></i></a>
                 </div>
+                <div class="footer-links">
+                    <div class="footer-link" id="terms-link">Conditions Générales d'Utilisation</div>
+                    <div class="footer-link" id="privacy-link">Politique de Confidentialité</div>
+                </div>
+            </div>
         </footer>
+    </div>
+
+    <div id="add-exam-popup" class="popup-overlay">
+        <div class="popup-content">
+             <button class="popup-close"><i class="fas fa-times"></i></button>
+            <h2 class="popup-title">Ajouter une épreuve</h2>
+            <form id="add-exam-form">
+                 <div class="form-group">
+                    <label for="exam-matiere">Matière</label>
+                    <select id="exam-matiere" required>
+                        <option value="">Sélectionnez une matière</option>
+                        <option value="Mathématique">Mathématique</option>
+                        <option value="Français">Français</option>
+                        <option value="SVT">SVT</option>
+                        <option value="PCT">PCT</option>
+                        <option value="Espagnol">Espagnol</option>
+                        <option value="Histoire-géographie">Histoire-géographie</option>
+                        <option value="Allemand">Allemand</option>
+                        <option value="Économie">Économie</option>
+                        <option value="Anglais">Anglais</option>
+                        <option value="Comptabilité">Comptabilité</option>
+                        <option value="T-bad">T-bad</option>
+                        <option value="Philosophie">Philosophie</option>
+                        <option value="Droit">Droit</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exam-classe">Classe</label>
+                    <select id="exam-classe" required>
+                        <option value="">Sélectionnez une classe</option>
+                        <option value="6ème">6ème</option>
+                        <option value="5ème">5ème</option>
+                        <option value="4ème">4ème</option>
+                        <option value="3ème">3ème</option>
+                        <option value="2nd">2nd</option>
+                        <option value="1ère">1ère</option>
+                        <option value="Terminale">Terminale</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exam-serie">Série</label>
+                    <select id="exam-serie" required>
+                        <option value="">Sélectionnez une série</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="G">G</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exam-nom">Nom de l'épreuve</label>
+                    <input type="text" id="exam-nom" required>
+                </div>
+                <div class="form-group">
+                    <label for="exam-sujet">Fichier sujet (PDF)</label>
+                    <div class="file-upload" id="sujet-upload">
+                        <p>Cliquez pour télécharger le fichier sujet</p>
+                    </div>
+                    <input type="hidden" id="exam-sujet-url">
+                </div>
+                <div class="form-group">
+                    <label for="exam-corrige">Fichier corrigé (PDF) - Facultatif</label>
+                    <div class="file-upload" id="corrige-upload">
+                        <p>Cliquez pour télécharger le fichier corrigé</p>
+                    </div>
+                    <input type="hidden" id="exam-corrige-url">
+                </div>
+                <button type="submit" class="submit-btn">Soumettre l'épreuve</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="transfer-popup" class="popup-overlay">
+        <div class="popup-content">
+            <button class="popup-close"><i class="fas fa-times"></i></button>
+            <h2 class="popup-title">Transférer l'épreuve</h2>
+            <div class="form-group">
+                <input type="text" id="user-search" class="search-bar" placeholder="Rechercher un utilisateur par email...">
+            </div>
+            <div id="search-results-list"></div>
+            <button id="send-transfer-btn" class="submit-btn">Envoyer</button>
+        </div>
+    </div>
+
+    <div id="terms-popup" class="popup-overlay">
+        <div class="popup-content">
+            <button class="popup-close"><i class="fas fa-times"></i></button>
+            <h2 class="popup-title">Conditions Générales d'Utilisation</h2>
+            <div class="warning-text">
+                </div>
+        </div>
+    </div>
+
+    <div id="privacy-popup" class="popup-overlay">
+        <div class="popup-content">
+            <button class="popup-close"><i class="fas fa-times"></i></button>
+            <h2 class="popup-title">Politique de Confidentialité</h2>
+            <div class="warning-text">
+                </div>
+        </div>
     </div>
 
     <audio id="notification-sound" preload="auto">
@@ -444,21 +665,18 @@
         let userData = null;
         let notificationListener = null;
 
-        // CORRIGÉ: Définition des variables (sans assignation)
-        let splashScreen, warningScreen, authScreen, app, navIcons, views;
+        // Définition des variables (sans assignation)
+        let authScreen, app, navIcons, views;
         let authContainer, authFlipperContainer, authTabs, loginForm, signupForm;
         let addExamBtn, addExamPopup, addExamForm, transferPopup, termsPopup, privacyPopup;
         let logoutBtn, profileForm, termsLink, privacyLink, popupCloseButtons;
         let adminIcon, filterClass, filterSubject, filterSeries, searchExams, globalSearch;
         let searchResults, deleteAllNotificationsBtn, notificationSound;
-        
-        // NOUVEAU: Variables pour les annonces
         let announcementForm, announcementsList;
 
 
-        // NOUVEAU: Fonction pour ajuster la hauteur du "flipper"
+        // Fonction pour ajuster la hauteur du "flipper"
         function setFlipperHeight() {
-            // S'assurer que les éléments existent (ils sont définis dans DOMContentLoaded)
             if (!authContainer || !authFlipperContainer || !signupForm || !loginForm) return;
             
             if (authContainer.classList.contains('is-flipped')) {
@@ -468,375 +686,332 @@
             }
         }
 
-        // Initialisation de l'application
+        // --- CORRIGÉ: Logique de démarrage de l'application ---
         document.addEventListener('DOMContentLoaded', function() {
             
-            // CORRIGÉ: Assignation de TOUTES les variables DOM ici
-            splashScreen = document.getElementById('splash-screen');
-            warningScreen = document.getElementById('warning-screen');
-            authScreen = document.getElementById('auth-screen');
-            app = document.getElementById('app');
-            navIcons = document.querySelectorAll('.nav-icon');
-            views = document.querySelectorAll('.view');
-            
-            authContainer = document.getElementById('auth-container');
-            authFlipperContainer = document.getElementById('auth-flipper-container');
-            authTabs = document.querySelectorAll('.auth-tab');
-            loginForm = document.getElementById('login-form');
-            signupForm = document.getElementById('signup-form');
-            
-            addExamBtn = document.getElementById('add-exam-btn');
-            addExamPopup = document.getElementById('add-exam-popup');
-            addExamForm = document.getElementById('add-exam-form');
-            transferPopup = document.getElementById('transfer-popup');
-            termsPopup = document.getElementById('terms-popup');
-            privacyPopup = document.getElementById('privacy-popup');
-            
-            logoutBtn = document.getElementById('logout-btn');
-            profileForm = document.getElementById('profile-form');
-            termsLink = document.getElementById('terms-link');
-            privacyLink = document.getElementById('privacy-link');
-            popupCloseButtons = document.querySelectorAll('.popup-close');
-            
-            adminIcon = document.getElementById('admin-icon');
-            filterClass = document.getElementById('filter-class');
-            filterSubject = document.getElementById('filter-subject');
-            filterSeries = document.getElementById('filter-series');
-            searchExams = document.getElementById('search-exams');
-            globalSearch = document.getElementById('global-search');
-            
-            searchResults = document.getElementById('search-results');
-            deleteAllNotificationsBtn = document.getElementById('delete-all-notifications');
-            notificationSound = document.getElementById('notification-sound');
+            // --- ÉTAPE 1 : Gérer le Splash Screen (Priorité Absolue) ---
+            const splash = document.getElementById('splash-screen');
+            const warning = document.getElementById('warning-screen');
 
-            // NOUVEAU: Assignation des variables d'annonce
-            announcementForm = document.getElementById('announcement-form');
-            announcementsList = document.getElementById('announcements-list');
-
-
-            // CORRIGÉ: Logique du Splash Screen (maintenant garantie de fonctionner)
-            setTimeout(() => {
-                splashScreen.style.opacity = '0';
+            if (splash && warning) {
+                // Lancement de la transition (2 secondes)
                 setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    warningScreen.style.display = 'flex';
-                }, 500);
-            }, 4000);
-
-            // Gestionnaire pour le bouton "J'accepte"
-            document.querySelector('.accept-btn').addEventListener('click', () => {
-                warningScreen.style.display = 'none';
-                
-                auth.onAuthStateChanged(user => {
-                    if (user) {
-                        currentUser = user;
-                        checkUserRole();
-                        app.style.display = 'block';
-                        loadUserData();
-                        startNotificationListener();
-                    } else {
-                        authScreen.style.display = 'flex';
-                        setFlipperHeight(); 
-                    }
-                });
-            });
-
-            // Gestionnaires pour les onglets d'authentification (Flip)
-            authTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.getAttribute('data-tab');
-                    
-                    authTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    if (tabName === 'signup') {
-                        authContainer.classList.add('is-flipped');
-                    } else {
-                        authContainer.classList.remove('is-flipped');
-                    }
-                    setFlipperHeight();
-                });
-            });
-            
-            window.addEventListener('resize', setFlipperHeight);
-
-            // ... (Gestionnaires loginForm, signupForm, forgot-password, navIcons, logo... inchangés) ...
-            
-            loginForm.addEventListener('submit', e => {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                auth.signInWithEmailAndPassword(email, password)
-                    .then(userCredential => {
-                        currentUser = userCredential.user;
-                        authScreen.style.display = 'none';
-                        app.style.display = 'block';
-                        checkUserRole(); loadUserData(); startNotificationListener();
-                        showNotification('Connexion réussie', 'success');
-                    })
-                    .catch(error => showNotification('Erreur de connexion', 'error'));
-            });
-
-            signupForm.addEventListener('submit', e => {
-                e.preventDefault();
-                const nom = document.getElementById('signup-nom').value;
-                const prenom = document.getElementById('signup-prenom').value;
-                const ecole = document.getElementById('signup-ecole').value;
-                const email = document.getElementById('signup-email').value;
-                const password = document.getElementById('signup-password').value;
-                const confirmPassword = document.getElementById('signup-confirm-password').value;
-                if (password !== confirmPassword) { showNotification('Les mots de passe ne correspondent pas', 'error'); return; }
-                
-                auth.createUserWithEmailAndPassword(email, password)
-                    .then(userCredential => {
-                        currentUser = userCredential.user;
-                        return db.collection('users').doc(currentUser.uid).set({
-                            nom, prenom, ecole, email, classe: '', points: 0,
-                            examsUploaded: 0, examsDownloaded: 0, role: 'user',
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    })
-                    .then(() => {
-                        authScreen.style.display = 'none'; app.style.display = 'block';
-                        checkUserRole(); loadUserData(); startNotificationListener();
-                        showNotification('Inscription réussie', 'success');
-                    })
-                    .catch(error => showNotification('Erreur d\'inscription', 'error'));
-            });
-
-            document.querySelector('.forgot-password').addEventListener('click', () => {
-                const email = document.getElementById('login-email').value;
-                if (!email) { showNotification('Veuillez entrer votre email', 'warning'); return; }
-                auth.sendPasswordResetEmail(email)
-                    .then(() => showNotification('Lien de réinitialisation envoyé', 'success'))
-                    .catch(error => showNotification('Erreur d'envoi du lien', 'error'));
-            });
-
-            navIcons.forEach(icon => {
-                icon.addEventListener('click', () => {
-                    const viewName = icon.getAttribute('data-view');
-                    if (!viewName) return;
-                    navIcons.forEach(i => i.classList.remove('active'));
-                    document.querySelectorAll(`.nav-icon[data-view="${viewName}"]`).forEach(activeIcon => {
-                        activeIcon.classList.add('active');
-                    });
-                    views.forEach(view => {
-                        view.classList.remove('active');
-                        if (view.id === `${viewName}-view`) view.classList.add('active');
-                    });
-                    switch(viewName) {
-                        case 'home': loadRecentExams(); loadAnnouncements(); break; // NOUVEAU: loadAnnouncements
-                        case 'notifications': loadNotifications(); break;
-                        case 'exams': loadAllExams(); break;
-                        case 'profile': loadProfileData(); break;
-                        case 'admin': loadAdminPanel(); break;
-                    }
-                });
-            });
-            
-            document.querySelector('.logo').addEventListener('click', () => {
-                 document.querySelector('.nav-icon[data-view="home"]').click();
-            });
-
-            addExamBtn.addEventListener('click', () => addExamPopup.style.display = 'flex');
-            addExamForm.addEventListener('submit', e => { e.preventDefault(); submitExam(); });
-            logoutBtn.addEventListener('click', () => {
-                if (notificationListener) notificationListener();
-                auth.signOut().then(() => {
-                    currentUser = null; isAdmin = false; userData = null;
-                    app.style.display = 'none';
-                    authScreen.style.display = 'flex';
-                    setFlipperHeight(); 
-                    showNotification('Déconnexion réussie', 'success');
-                });
-            });
-            profileForm.addEventListener('submit', e => { e.preventDefault(); updateProfile(); });
-            termsLink.addEventListener('click', () => termsPopup.style.display = 'flex');
-            privacyLink.addEventListener('click', () => privacyPopup.style.display = 'flex');
-            deleteAllNotificationsBtn.addEventListener('click', deleteAllNotifications);
-            popupCloseButtons.forEach(button => {
-                button.addEventListener('click', () => button.closest('.popup-overlay').style.display = 'none');
-            });
-            document.querySelectorAll('.popup-overlay').forEach(popup => {
-                popup.addEventListener('click', e => { if (e.target === popup) popup.style.display = 'none'; });
-            });
-            
-            // NOUVEAU: Gestionnaire pour le formulaire d'annonce (s'il existe)
-            if (announcementForm) {
-                announcementForm.addEventListener('submit', handlePublishAnnouncement);
+                    splash.style.opacity = '0';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        warning.style.display = 'flex';
+                    }, 500); // 0.5s pour l'animation de fondu
+                }, 2000); // 2 secondes, comme demandé
+            } else {
+                console.error("Impossible de trouver le Splash Screen ou le Warning Screen! Vérifiez les ID HTML.");
+                if (warning) warning.style.display = 'flex'; // Forcer l'affichage
+                if (splash) splash.style.display = 'none';
             }
 
-            // ... (Configuration Cloudinary, inchangée) ...
-            let sujetUploadWidget, corrigeUploadWidget;
+            // --- ÉTAPE 2 : Charger le reste de l'application (dans un bloc sécurisé) ---
             try {
-                sujetUploadWidget = cloudinary.createUploadWidget({ cloudName, uploadPreset, sources: ['local'], multiple: false, resourceType: 'raw', clientAllowedFormats: ['pdf'], maxFileSize: 5000000 }, 
-                    (error, result) => {
-                        if (!error && result && result.event === 'success') {
-                            document.getElementById('exam-sujet-url').value = result.info.secure_url;
-                            document.getElementById('sujet-upload').innerHTML = `<p>Fichier sujet téléchargé: ${result.info.original_filename}</p>`;
-                            showNotification('Fichier sujet uploadé avec succès', 'success');
-                        } else if (error) { console.error('Erreur upload Cloudinary sujet:', error); showNotification('Erreur lors du téléchargement du fichier sujet', 'error'); }
+                // Assignation de TOUTES les autres variables DOM
+                authScreen = document.getElementById('auth-screen');
+                app = document.getElementById('app');
+                navIcons = document.querySelectorAll('.nav-icon');
+                views = document.querySelectorAll('.view');
+                
+                authContainer = document.getElementById('auth-container');
+                authFlipperContainer = document.getElementById('auth-flipper-container');
+                authTabs = document.querySelectorAll('.auth-tab');
+                loginForm = document.getElementById('login-form');
+                signupForm = document.getElementById('signup-form');
+                
+                addExamBtn = document.getElementById('add-exam-btn');
+                addExamPopup = document.getElementById('add-exam-popup');
+                addExamForm = document.getElementById('add-exam-form');
+                transferPopup = document.getElementById('transfer-popup');
+                termsPopup = document.getElementById('terms-popup');
+                privacyPopup = document.getElementById('privacy-popup');
+                
+                logoutBtn = document.getElementById('logout-btn');
+                profileForm = document.getElementById('profile-form');
+                termsLink = document.getElementById('terms-link');
+                privacyLink = document.getElementById('privacy-link');
+                popupCloseButtons = document.querySelectorAll('.popup-close');
+                
+                adminIcon = document.getElementById('admin-icon');
+                filterClass = document.getElementById('filter-class');
+                filterSubject = document.getElementById('filter-subject');
+                filterSeries = document.getElementById('filter-series');
+                searchExams = document.getElementById('search-exams');
+                globalSearch = document.getElementById('global-search');
+                
+                searchResults = document.getElementById('search-results');
+                deleteAllNotificationsBtn = document.getElementById('delete-all-notifications');
+                notificationSound = document.getElementById('notification-sound');
+
+                announcementForm = document.getElementById('announcement-form');
+                announcementsList = document.getElementById('announcements-list');
+
+
+                // --- ÉTAPE 3 : Attacher tous les écouteurs d'événements ---
+
+                // Bouton "J'accepte" de l'avertissement
+                document.querySelector('.accept-btn').addEventListener('click', () => {
+                    document.getElementById('warning-screen').style.display = 'none'; // Utilise l'ID direct
+                    
+                    auth.onAuthStateChanged(user => {
+                        if (user) {
+                            currentUser = user;
+                            checkUserRole();
+                            app.style.display = 'block';
+                            loadUserData();
+                            startNotificationListener();
+                        } else {
+                            authScreen.style.display = 'flex';
+                            setFlipperHeight(); 
+                        }
+                    });
                 });
-                corrigeUploadWidget = cloudinary.createUploadWidget({ cloudName, uploadPreset, sources: ['local'], multiple: false, resourceType: 'raw', clientAllowedFormats: ['pdf'], maxFileSize: 5000000 }, 
-                    (error, result) => {
-                        if (!error && result && result.event === 'success') {
-                            document.getElementById('exam-corrige-url').value = result.info.secure_url;
-                            document.getElementById('corrige-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
-                            showNotification('Fichier corrigé uploadé avec succès', 'success');
-                        } else if (error) { console.error('Erreur upload Cloudinary corrigé:', error); showNotification('Erreur lors du téléchargement du fichier corrigé', 'error'); }
+
+                // Onglets d'authentification (Flip)
+                authTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabName = tab.getAttribute('data-tab');
+                        authTabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        if (tabName === 'signup') authContainer.classList.add('is-flipped');
+                        else authContainer.classList.remove('is-flipped');
+                        setFlipperHeight();
+                    });
                 });
-            } catch (error) { console.error('Erreur initialisation Cloudinary:', error); showNotification('Erreur d\'initialisation du système de fichier', 'error'); }
-            document.getElementById('sujet-upload').addEventListener('click', () => sujetUploadWidget.open());
-            document.getElementById('corrige-upload').addEventListener('click', () => corrigeUploadWidget.open());
-            
-            filterClass.addEventListener('change', applyFilters);
-            filterSubject.addEventListener('change', applyFilters);
-            filterSeries.addEventListener('change', applyFilters);
-            searchExams.addEventListener('input', debounce(applyFilters, 300));
-            globalSearch.addEventListener('input', debounce(() => performGlobalSearch(globalSearch.value), 300));
+                
+                window.addEventListener('resize', setFlipperHeight);
+
+                // Formulaire de Connexion
+                loginForm.addEventListener('submit', e => {
+                    e.preventDefault();
+                    const email = document.getElementById('login-email').value;
+                    const password = document.getElementById('login-password').value;
+                    auth.signInWithEmailAndPassword(email, password)
+                        .then(userCredential => {
+                            currentUser = userCredential.user;
+                            authScreen.style.display = 'none';
+                            app.style.display = 'block';
+                            checkUserRole(); loadUserData(); startNotificationListener();
+                            showNotification('Connexion réussie', 'success');
+                        })
+                        .catch(error => showNotification('Erreur de connexion', 'error'));
+                });
+
+                // Formulaire d'inscription
+                signupForm.addEventListener('submit', e => {
+                    e.preventDefault();
+                    const nom = document.getElementById('signup-nom').value;
+                    const prenom = document.getElementById('signup-prenom').value;
+                    const ecole = document.getElementById('signup-ecole').value;
+                    const email = document.getElementById('signup-email').value;
+                    const password = document.getElementById('signup-password').value;
+                    const confirmPassword = document.getElementById('signup-confirm-password').value;
+                    if (password !== confirmPassword) { showNotification('Les mots de passe ne correspondent pas', 'error'); return; }
+                    
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .then(userCredential => {
+                            currentUser = userCredential.user;
+                            return db.collection('users').doc(currentUser.uid).set({
+                                nom, prenom, ecole, email, classe: '', points: 0,
+                                examsUploaded: 0, examsDownloaded: 0, role: 'user',
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        })
+                        .then(() => {
+                            authScreen.style.display = 'none'; app.style.display = 'block';
+                            checkUserRole(); loadUserData(); startNotificationListener();
+                            showNotification('Inscription réussie', 'success');
+                        })
+                        .catch(error => showNotification('Erreur d\'inscription', 'error'));
+                });
+
+                // Mot de passe oublié
+                document.querySelector('.forgot-password').addEventListener('click', () => {
+                    const email = document.getElementById('login-email').value;
+                    if (!email) { showNotification('Veuillez entrer votre email', 'warning'); return; }
+                    auth.sendPasswordResetEmail(email)
+                        .then(() => showNotification('Lien de réinitialisation envoyé', 'success'))
+                        .catch(error => showNotification('Erreur d'envoi du lien', 'error'));
+                });
+
+                // Navigation principale
+                navIcons.forEach(icon => {
+                    icon.addEventListener('click', () => {
+                        const viewName = icon.getAttribute('data-view');
+                        if (!viewName) return;
+                        navIcons.forEach(i => i.classList.remove('active'));
+                        document.querySelectorAll(`.nav-icon[data-view="${viewName}"]`).forEach(activeIcon => {
+                            activeIcon.classList.add('active');
+                        });
+                        views.forEach(view => {
+                            view.classList.remove('active');
+                            if (view.id === `${viewName}-view`) view.classList.add('active');
+                        });
+                        switch(viewName) {
+                            case 'home': loadRecentExams(); loadAnnouncements(); break;
+                            case 'notifications': loadNotifications(); break;
+                            case 'exams': loadAllExams(); break;
+                            case 'profile': loadProfileData(); break;
+                            case 'admin': loadAdminPanel(); break;
+                        }
+                    });
+                });
+                
+                // Clic sur le Logo
+                document.querySelector('.logo').addEventListener('click', () => {
+                     document.querySelector('.nav-icon[data-view="home"]').click();
+                });
+
+                // Boutons d'action (Popups, Déconnexion, etc.)
+                addExamBtn.addEventListener('click', () => addExamPopup.style.display = 'flex');
+                addExamForm.addEventListener('submit', e => { e.preventDefault(); submitExam(); });
+                logoutBtn.addEventListener('click', () => {
+                    if (notificationListener) notificationListener();
+                    auth.signOut().then(() => {
+                        currentUser = null; isAdmin = false; userData = null;
+                        app.style.display = 'none';
+                        authScreen.style.display = 'flex';
+                        setFlipperHeight(); 
+                        showNotification('Déconnexion réussie', 'success');
+                    });
+                });
+                profileForm.addEventListener('submit', e => { e.preventDefault(); updateProfile(); });
+                termsLink.addEventListener('click', () => termsPopup.style.display = 'flex');
+                privacyLink.addEventListener('click', () => privacyPopup.style.display = 'flex');
+                deleteAllNotificationsBtn.addEventListener('click', deleteAllNotifications);
+                
+                // Fermeture des Popups
+                popupCloseButtons.forEach(button => {
+                    button.addEventListener('click', () => button.closest('.popup-overlay').style.display = 'none');
+                });
+                document.querySelectorAll('.popup-overlay').forEach(popup => {
+                    popup.addEventListener('click', e => { if (e.target === popup) popup.style.display = 'none'; });
+                });
+                
+                // Formulaire d'annonce (Admin)
+                if (announcementForm) {
+                    announcementForm.addEventListener('submit', handlePublishAnnouncement);
+                }
+
+                // Configuration Cloudinary
+                let sujetUploadWidget, corrigeUploadWidget;
+                try {
+                    sujetUploadWidget = cloudinary.createUploadWidget({ cloudName, uploadPreset, sources: ['local'], multiple: false, resourceType: 'raw', clientAllowedFormats: ['pdf'], maxFileSize: 5000000 }, 
+                        (error, result) => {
+                            if (!error && result && result.event === 'success') {
+                                document.getElementById('exam-sujet-url').value = result.info.secure_url;
+                                document.getElementById('sujet-upload').innerHTML = `<p>Fichier sujet téléchargé: ${result.info.original_filename}</p>`;
+                                showNotification('Fichier sujet uploadé avec succès', 'success');
+                            } else if (error) { console.error('Erreur upload Cloudinary sujet:', error); showNotification('Erreur lors du téléchargement du fichier sujet', 'error'); }
+                    });
+                    corrigeUploadWidget = cloudinary.createUploadWidget({ cloudName, uploadPreset, sources: ['local'], multiple: false, resourceType: 'raw', clientAllowedFormats: ['pdf'], maxFileSize: 5000000 }, 
+                        (error, result) => {
+                            if (!error && result && result.event === 'success') {
+                                document.getElementById('exam-corrige-url').value = result.info.secure_url;
+                                document.getElementById('corrige-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
+                                showNotification('Fichier corrigé uploadé avec succès', 'success');
+                            } else if (error) { console.error('Erreur upload Cloudinary corrigé:', error); showNotification('Erreur lors du téléchargement du fichier corrigé', 'error'); }
+                    });
+                } catch (error) { console.error('Erreur initialisation Cloudinary:', error); showNotification('Erreur d\'initialisation du système de fichier', 'error'); }
+                
+                // Clics sur les zones d'upload
+                document.getElementById('sujet-upload').addEventListener('click', () => sujetUploadWidget.open());
+                document.getElementById('corrige-upload').addEventListener('click', () => corrigeUploadWidget.open());
+                
+                // Filtres et Recherche
+                filterClass.addEventListener('change', applyFilters);
+                filterSubject.addEventListener('change', applyFilters);
+                filterSeries.addEventListener('change', applyFilters);
+                searchExams.addEventListener('input', debounce(applyFilters, 300));
+                globalSearch.addEventListener('input', debounce(() => performGlobalSearch(globalSearch.value), 300));
+
+            } catch (error) {
+                console.error("Une erreur est survenue lors de l'initialisation des éléments de l'application:", error);
+                alert("Erreur critique. Impossible de charger l'application. Vérifiez la console.");
+            }
         });
 
-        // TOUTES LES FONCTIONS SUIVANTES SONT LÀ
-        // (La plupart sont inchangées, j'ajoute les nouvelles)
-        
-        // NOUVEAU: Publier une annonce
-        function handlePublishAnnouncement(e) {
+        // --- TOUTES LES FONCTIONS DE L'APPLICATION (Annonces, Épreuves, Notifications, etc.) ---
+
+        function handlePublishAnnouncement(e) { /* ... (Inchangé) ... */ 
             e.preventDefault();
             const messageInput = document.getElementById('announcement-message');
             const message = messageInput.value;
-
-            if (!message.trim()) {
-                showNotification("L'annonce ne peut pas être vide", "warning");
-                return;
-            }
-
+            if (!message.trim()) { showNotification("L'annonce ne peut pas être vide", "warning"); return; }
             db.collection('announcements').add({
-                message: message,
-                adminId: currentUser.uid,
+                message: message, adminId: currentUser.uid,
                 adminName: `${userData.prenom} ${userData.nom}`,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 likes: []
-            })
-            .then(() => {
+            }).then(() => {
                 showNotification('Annonce publiée avec succès', 'success');
-                messageInput.value = ''; // Réinitialiser le formulaire
-                loadAnnouncements(); // Recharger les annonces sur la page d'accueil
-            })
-            .catch(error => {
-                console.error("Erreur publication annonce:", error);
-                showNotification("Erreur lors de la publication", "error");
-            });
+                messageInput.value = ''; loadAnnouncements();
+            }).catch(error => showNotification("Erreur lors de la publication", "error"));
         }
 
-        // NOUVEAU: Charger les annonces
-        function loadAnnouncements() {
-            if (!announcementsList) return; // Ne rien faire si on n'est pas sur la bonne page
-
+        function loadAnnouncements() { /* ... (Inchangé) ... */ 
+            if (!announcementsList) return; 
             announcementsList.innerHTML = '<p>Chargement des annonces...</p>';
-            
             db.collection('announcements').orderBy('createdAt', 'desc').limit(5).get()
                 .then(snapshot => {
-                    if (snapshot.empty) {
-                        announcementsList.innerHTML = '<p>Aucune annonce pour le moment.</p>';
-                        return;
-                    }
-                    
+                    if (snapshot.empty) { announcementsList.innerHTML = '<p>Aucune annonce pour le moment.</p>'; return; }
                     announcementsList.innerHTML = '';
                     snapshot.forEach(doc => {
-                        const announcement = doc.data();
-                        const docId = doc.id;
-                        
+                        const announcement = doc.data(); const docId = doc.id;
                         const isLiked = announcement.likes.includes(currentUser.uid);
-                        
-                        const card = document.createElement('div');
-                        card.className = 'announcement-card';
-                        
-                        const date = announcement.createdAt?.toDate()
-                            ? new Date(announcement.createdAt.toDate()).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
-                            : '...';
-
+                        const card = document.createElement('div'); card.className = 'announcement-card';
+                        const date = announcement.createdAt?.toDate() ? new Date(announcement.createdAt.toDate()).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '...';
                         card.innerHTML = `
                             <div class="announcement-header">
-                                <i class="fas fa-bullhorn"></i>
-                                <strong>${announcement.adminName}</strong>
-                                <small>${date}</small>
+                                <i class="fas fa-bullhorn"></i> <strong>${announcement.adminName}</strong> <small>${date}</small>
                             </div>
-                            <div class="announcement-body">
-                                <p>${announcement.message.replace(/\n/g, '<br>')}</p>
-                            </div>
+                            <div class="announcement-body"><p>${announcement.message.replace(/\n/g, '<br>')}</p></div>
                             <div class="announcement-actions">
                                 <button class="like-btn ${isLiked ? 'active' : ''}" data-id="${docId}">
-                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
-                                    <span>${announcement.likes.length}</span>
+                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> <span>${announcement.likes.length}</span>
                                 </button>
-                            </div>
-                        `;
-                        
+                            </div>`;
                         announcementsList.appendChild(card);
                     });
-                    
-                    // Ajouter les écouteurs d'événements après avoir ajouté les éléments au DOM
                     announcementsList.querySelectorAll('.like-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            toggleAnnouncementLike(btn.dataset.id, btn);
-                        });
+                        btn.addEventListener('click', () => toggleAnnouncementLike(btn.dataset.id, btn));
                     });
-                })
-                .catch(error => {
-                    console.error("Erreur chargement annonces:", error);
-                    announcementsList.innerHTML = '<p>Erreur de chargement des annonces.</p>';
-                });
+                }).catch(error => announcementsList.innerHTML = '<p>Erreur de chargement des annonces.</p>');
         }
 
-        // NOUVEAU: Gérer le "Like" d'une annonce
-        function toggleAnnouncementLike(id, buttonEl) {
+        function toggleAnnouncementLike(id, buttonEl) { /* ... (Inchangé) ... */ 
             const docRef = db.collection('announcements').doc(id);
             const likeIcon = buttonEl.querySelector('i');
             const likeCountSpan = buttonEl.querySelector('span');
             let currentCount = parseInt(likeCountSpan.textContent);
-            
             const isLiked = buttonEl.classList.contains('active');
             
             if (isLiked) {
-                // Retirer le like
-                docRef.update({
-                    likes: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
-                });
+                docRef.update({ likes: firebase.firestore.FieldValue.arrayRemove(currentUser.uid) });
                 buttonEl.classList.remove('active');
-                likeIcon.classList.remove('fas');
-                likeIcon.classList.add('far');
+                likeIcon.classList.remove('fas'); likeIcon.classList.add('far');
                 likeCountSpan.textContent = currentCount - 1;
-
             } else {
-                // Ajouter le like
-                docRef.update({
-                    likes: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-                });
+                docRef.update({ likes: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
                 buttonEl.classList.add('active');
-                likeIcon.classList.remove('far');
-                likeIcon.classList.add('fas');
+                likeIcon.classList.remove('far'); likeIcon.classList.add('fas');
                 likeCountSpan.textContent = currentCount + 1;
-
-                // Envoyer la notification à l'admin
                 docRef.get().then(doc => {
-                    const announcement = doc.data();
-                    const adminId = announcement.adminId;
-                    
-                    // Ne pas notifier si l'admin like son propre post
+                    const announcement = doc.data(); const adminId = announcement.adminId;
                     if (adminId !== currentUser.uid) {
                         db.collection('notifications').add({
-                            userId: adminId,
-                            type: 'like', // Nouveau type
+                            userId: adminId, type: 'like',
                             message: `${userData.prenom} ${userData.nom} a aimé votre annonce : "${announcement.message.substring(0, 20)}..."`,
-                            read: false,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     }
                 });
             }
         }
 
-        // --- Fonctions existantes (inchangées) ---
         function startNotificationListener() { /* ... (inchangé) ... */ 
             if (!currentUser) return;
             notificationListener = db.collection('notifications').where('userId', '==', currentUser.uid).orderBy('createdAt', 'desc').limit(1)
@@ -869,12 +1044,12 @@
                 })
                 .catch(error => console.error('Erreur lors de la vérification du rôle:', error));
         }
-        function loadUserData() { 
+        function loadUserData() { /* ... (inchangé) ... */ 
             loadRecentExams();
             loadNotifications();
             loadProfileData();
             updateNotificationBadge();
-            loadAnnouncements(); // NOUVEAU: Charger les annonces au démarrage
+            loadAnnouncements();
         }
         function loadRecentExams() { /* ... (inchangé) ... */ 
             const recentExamsContainer = document.getElementById('recent-exams');
@@ -1096,8 +1271,7 @@
                     querySnapshot.forEach(doc => {
                         const user = doc.data();
                         if (doc.id !== currentUser.uid) {
-                            const userElement = document.createElement('div');
-                            userElement.className = 'user-result'; userElement.setAttribute('data-user-id', doc.id);
+                            const userElement = document.createElement('div'); userElement.className = 'user-result'; userElement.setAttribute('data-user-id', doc.id);
                             userElement.innerHTML = `<p>${user.prenom} ${user.nom} - ${user.email}</p>`;
                             userElement.addEventListener('click', () => {
                                 document.querySelectorAll('.user-result').forEach(el => el.classList.remove('selected'));
@@ -1154,18 +1328,15 @@
                     notificationsContainer.innerHTML = '';
                     if (querySnapshot.empty) { notificationsContainer.innerHTML = '<p>Aucune notification.</p>'; return; }
                     querySnapshot.forEach(doc => {
-                        const notification = doc.data();
-                        const notificationElement = document.createElement('div');
-                        notificationElement.className = 'notification-item';
-                        notificationElement.setAttribute('data-notification-id', doc.id);
+                        const notification = doc.data(); const notificationElement = document.createElement('div');
+                        notificationElement.className = 'notification-item'; notificationElement.setAttribute('data-notification-id', doc.id);
                         let icon = 'fas fa-bell';
                         if (notification.type === 'economy' || notification.type === 'points_received') icon = 'fas fa-coins';
                         else if (notification.type === 'transfer') icon = 'fas fa-paper-plane';
                         else if (notification.type === 'submission') icon = 'fas fa-file-upload';
                         else if (notification.type === 'favorite') icon = 'fas fa-heart';
                         else if (notification.type === 'approval') icon = 'fas fa-check-circle';
-                        else if (notification.type === 'like') icon = 'fas fa-thumbs-up'; // NOUVEAU: Icône pour les likes
-                        
+                        else if (notification.type === 'like') icon = 'fas fa-thumbs-up';
                         notificationElement.innerHTML = `
                             <div class="notification-icon"><i class="${icon}"></i></div>
                             <div class="notification-content">
