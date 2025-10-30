@@ -1129,16 +1129,16 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
-        /* Styles pour l'écran de design complexe */
-        #complex-design-screen {
-            display: none;
+        /* Styles pour la page de design complexe */
+        .design-complexe {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6, #1e40af);
-            z-index: 9999;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 9996;
+            display: none;
             justify-content: center;
             align-items: center;
             flex-direction: column;
@@ -1147,29 +1147,25 @@
             padding: 2rem;
         }
 
-        .complex-design-content {
-            max-width: 800px;
-            animation: fadeIn 1s ease;
-        }
-
-        .complex-design-title {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .design-logo {
+            font-size: 4rem;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
         }
 
-        .complex-design-subtitle {
+        .design-text {
             font-size: 1.5rem;
             margin-bottom: 2rem;
-            opacity: 0.9;
+            max-width: 600px;
         }
 
-        .complex-design-features {
+        .design-features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
             margin-bottom: 3rem;
+            max-width: 800px;
         }
 
         .feature-card {
@@ -1181,49 +1177,35 @@
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-10px);
             background: rgba(255, 255, 255, 0.2);
         }
 
         .feature-icon {
             font-size: 2.5rem;
             margin-bottom: 1rem;
-            color: #dbeafe;
         }
 
-        .feature-title {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        .complex-design-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .design-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+        .enter-btn {
+            background: white;
+            color: #667eea;
+            border: none;
             padding: 1rem 2rem;
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
             cursor: pointer;
             transition: var(--transition);
-            backdrop-filter: blur(10px);
         }
 
-        .design-btn.primary {
-            background: rgba(255, 255, 255, 0.3);
-            font-weight: bold;
+        .enter-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .design-btn:hover {
-            background: rgba(255, 255, 255, 0.4);
-            transform: translateY(-2px);
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         /* Animations */
@@ -1294,22 +1276,40 @@
             .exam-btn {
                 min-width: 100%;
             }
-
-            .complex-design-title {
-                font-size: 2rem;
-            }
-
-            .complex-design-subtitle {
-                font-size: 1.2rem;
-            }
-
-            .complex-design-features {
+            
+            .design-features {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Écran de design complexe -->
+    <div id="design-complexe" class="design-complexe">
+        <div class="design-logo">HosBac</div>
+        <div class="design-text">
+            Plateforme éducative collaborative pour le partage d'épreuves et de ressources pédagogiques
+        </div>
+        <div class="design-features">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-book"></i></div>
+                <h3>Épreuves Complètes</h3>
+                <p>Accédez à des milliers d'épreuves classées par matière et niveau</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h3>Corrigés Détaillés</h3>
+                <p>Bénéficiez de corrigés complets pour mieux comprendre</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>Communauté Active</h3>
+                <p>Échangez avec d'autres étudiants et partagez vos connaissances</p>
+            </div>
+        </div>
+        <button class="enter-btn" id="enter-platform">Accéder à la Plateforme</button>
+    </div>
+
     <div id="splash-screen">
         <div class="splash-logo">
             <span class="hos">Hos</span><span class="bac">Bac</span>
@@ -1332,48 +1332,6 @@
                 <p>En utilisant cette plateforme, vous vous engagez à respecter ces principes et à contribuer positivement à la communauté éducative.</p>
             </div>
             <button class="accept-btn">J'accepte</button>
-        </div>
-    </div>
-
-    <div id="complex-design-screen">
-        <div class="complex-design-content">
-            <h1 class="complex-design-title">Bienvenue sur HosBac</h1>
-            <p class="complex-design-subtitle">La plateforme éducative collaborative pour réussir ensemble</p>
-            
-            <div class="complex-design-features">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                    <h3 class="feature-title">Épreuves Partagées</h3>
-                    <p>Accédez à des milliers d'épreuves partagées par la communauté</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <h3 class="feature-title">Corrigés Détaillés</h3>
-                    <p>Bénéficiez de corrigés détaillés pour mieux comprendre</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3 class="feature-title">Communauté Active</h3>
-                    <p>Échangez avec une communauté d'étudiants motivés</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3 class="feature-title">Progression</h3>
-                    <p>Suivez votre progression et gagnez des points</p>
-                </div>
-            </div>
-            
-            <div class="complex-design-actions">
-                <button class="design-btn primary" id="continue-to-warning">Continuer vers la plateforme</button>
-            </div>
         </div>
     </div>
 
@@ -1541,7 +1499,7 @@
                         <i class="fas fa-plus"></i> Ajouter une épreuve
                     </button>
                     <button id="add-corrige-only-btn" class="add-exam-btn" style="background: var(--success);">
-                        <i class="fas fa-file-pdf"></i> Ajouter un corrigé seulement
+                        <i class="fas fa-file-medical"></i> Ajouter un corrigé
                     </button>
                 </div>
                 <div id="exams-list" class="exam-list">
@@ -1768,7 +1726,7 @@
                 <div class="form-group">
                     <label for="corrige-exam-select">Sélectionner l'épreuve</label>
                     <select id="corrige-exam-select" required>
-                        <option value="">Sélectionnez une épreuve existante</option>
+                        <option value="">Sélectionnez une épreuve</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1839,7 +1797,7 @@
     </div>
 
     <audio id="notification-sound" preload="auto">
-        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5dfadf2a3f.mp3" type="audio/mp3">
+        <source src="https://assets.mixkit.co/active_storage/sfx/250/250-preview.mp3" type="audio/mp3">
     </audio>
 
     <script>
@@ -1871,9 +1829,9 @@
         let pendingExamsListener = null;
 
         // Éléments DOM
+        const designComplexe = document.getElementById('design-complexe');
         const splashScreen = document.getElementById('splash-screen');
         const warningScreen = document.getElementById('warning-screen');
-        const complexDesignScreen = document.getElementById('complex-design-screen');
         const authScreen = document.getElementById('auth-screen');
         const app = document.getElementById('app');
         const navIcons = document.querySelectorAll('.nav-icon');
@@ -1911,33 +1869,24 @@
         const tomLight = document.getElementById('tom-light');
         const announcementForm = document.getElementById('announcement-form');
         const announcementsList = document.getElementById('announcements-list');
-        const continueToWarningBtn = document.getElementById('continue-to-warning');
-
-        // Vérifier si l'URL contient un paramètre de partage d'épreuve
-        const urlParams = new URLSearchParams(window.location.search);
-        const sharedExamId = urlParams.get('exam');
+        const enterPlatformBtn = document.getElementById('enter-platform');
 
         // Initialisation de l'application
         document.addEventListener('DOMContentLoaded', function() {
-            // Afficher l'écran de démarrage pendant 4 secondes
-            setTimeout(() => {
-                splashScreen.style.opacity = '0';
+            // Afficher l'écran de design complexe d'abord
+            designComplexe.style.display = 'flex';
+            
+            // Gestionnaire pour le bouton "Accéder à la Plateforme"
+            enterPlatformBtn.addEventListener('click', () => {
+                designComplexe.style.display = 'none';
+                // Afficher l'écran de démarrage pendant 4 secondes
                 setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    
-                    // Si un ID d'épreuve partagée est présent dans l'URL, afficher l'écran de design complexe
-                    if (sharedExamId) {
-                        complexDesignScreen.style.display = 'flex';
-                    } else {
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
                         warningScreen.style.display = 'flex';
-                    }
-                }, 500);
-            }, 4000);
-
-            // Gestionnaire pour le bouton "Continuer vers la plateforme" sur l'écran de design complexe
-            continueToWarningBtn.addEventListener('click', () => {
-                complexDesignScreen.style.display = 'none';
-                warningScreen.style.display = 'flex';
+                    }, 500);
+                }, 4000);
             });
 
             // Gestionnaire pour le bouton "J'accepte"
@@ -1955,11 +1904,6 @@
                         startNotificationListener();
                         startAnnouncementsListener();
                         startPendingExamsListener();
-                        
-                        // Si un ID d'épreuve partagée est présent, rediriger vers la vue des examens
-                        if (sharedExamId) {
-                            document.querySelector('.nav-icon[data-view="exams"]').click();
-                        }
                     } else {
                         // L'utilisateur n'est pas connecté
                         authScreen.style.display = 'flex';
@@ -2102,8 +2046,8 @@
                             examsUploaded: 0,
                             examsDownloaded: 0,
                             role: 'user',
-                            likedAnnouncements: [],
                             favorites: [],
+                            likedAnnouncements: [],
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     })
@@ -2203,7 +2147,7 @@
 
             // Gestionnaire pour le bouton d'ajout de corrigé seulement
             addCorrigeOnlyBtn.addEventListener('click', () => {
-                loadExistingExamsForCorrige();
+                loadExamsForCorrige();
                 addCorrigeOnlyPopup.style.display = 'flex';
             });
 
@@ -2236,7 +2180,7 @@
                         isAdmin = false;
                         userData = null;
                         app.style.display = 'none';
-                        authScreen.style.display = 'flex';
+                        designComplexe.style.display = 'flex';
                         showNotification('Déconnexion réussie', 'success');
                     })
                     .catch(error => {
@@ -2490,9 +2434,6 @@
             loadProfileData();
             loadAnnouncements();
             updateNotificationBadge();
-            if (isAdmin) {
-                updatePendingExamsCount();
-            }
         }
 
         function loadAnnouncements() {
@@ -2588,14 +2529,24 @@
                         .then(doc => {
                             if (doc.exists) {
                                 const announcement = doc.data();
-                                db.collection('notifications').add({
-                                    userId: announcement.authorId,
-                                    type: 'announcement_like',
-                                    message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
-                                    announcementId: announcementId,
-                                    read: false,
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
+                                // Trouver l'admin pour lui envoyer une notification
+                                db.collection('users')
+                                    .where('role', '==', 'admin')
+                                    .limit(1)
+                                    .get()
+                                    .then(adminSnapshot => {
+                                        if (!adminSnapshot.empty) {
+                                            const adminId = adminSnapshot.docs[0].id;
+                                            db.collection('notifications').add({
+                                                userId: adminId,
+                                                type: 'announcement_like',
+                                                message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
+                                                announcementId: announcementId,
+                                                read: false,
+                                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                            });
+                                        }
+                                    });
                             }
                         })
                         .catch(error => {
@@ -3165,8 +3116,6 @@
                 .then(doc => {
                     if (doc.exists) {
                         const exam = doc.data();
-                        
-                        // Créer une notification pour le destinataire
                         return db.collection('notifications').add({
                             userId: recipientId,
                             type: 'transfer',
@@ -3242,13 +3191,54 @@
                     } else {
                         showNotification('Épreuve soumise avec succès, en attente d\'approbation', 'success');
                         
-                        // Notifier les administrateurs
-                        notifyAdminsAboutPendingExam();
+                        // Notification à l'admin
+                        db.collection('users')
+                            .where('role', '==', 'admin')
+                            .limit(1)
+                            .get()
+                            .then(adminSnapshot => {
+                                if (!adminSnapshot.empty) {
+                                    const adminId = adminSnapshot.docs[0].id;
+                                    return db.collection('notifications').add({
+                                        userId: adminId,
+                                        type: 'submission',
+                                        message: `${userData.prenom} ${userData.nom} a soumis une nouvelle épreuve en attente d'approbation: ${nom_epreuve}`,
+                                        examId: examId,
+                                        read: false,
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erreur lors de la notification à l\'admin:', error);
+                            });
                     }
                 })
                 .catch(error => {
                     console.error('Erreur lors de la soumission de l\'épreuve:', error);
                     showNotification('Erreur lors de la soumission de l\'épreuve', 'error');
+                });
+        }
+
+        function loadExamsForCorrige() {
+            const examSelect = document.getElementById('corrige-exam-select');
+            examSelect.innerHTML = '<option value="">Sélectionnez une épreuve</option>';
+            
+            db.collection('epreuves')
+                .where('auteurId', '==', currentUser.uid)
+                .where('fichier_corrige', '==', null)
+                .get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        const exam = doc.data();
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.textContent = `${exam.nom_epreuve} - ${exam.matiere} - ${exam.classe}`;
+                        examSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des épreuves:', error);
                 });
         }
 
@@ -3271,88 +3261,25 @@
                 return;
             }
             
-            // Vérifier que l'utilisateur est l'auteur de l'épreuve
-            db.collection('epreuves').doc(examId).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const exam = doc.data();
-                        
-                        if (exam.auteurId !== currentUser.uid) {
-                            showNotification('Vous ne pouvez ajouter un corrigé que pour vos propres épreuves', 'error');
-                            return;
-                        }
-                        
-                        // Mettre à jour l'épreuve avec le nouveau corrigé
-                        return db.collection('epreuves').doc(examId).update({
-                            fichier_corrige: fichier_corrige
-                        });
-                    } else {
-                        showNotification('Épreuve non trouvée', 'error');
-                    }
-                })
-                .then(() => {
-                    addCorrigeOnlyPopup.style.display = 'none';
-                    addCorrigeOnlyForm.reset();
-                    document.getElementById('corrige-only-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
-                    
-                    showNotification('Corrigé ajouté avec succès', 'success');
-                    
-                    // Si l'admin, attribuer les points supplémentaires
-                    if (isAdmin) {
-                        assignPointsAfterApproval(currentUser.uid, 2); // 2 points supplémentaires pour le corrigé
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur lors de l\'ajout du corrigé:', error);
-                    showNotification('Erreur lors de l\'ajout du corrigé', 'error');
+            db.collection('epreuves').doc(examId).update({
+                fichier_corrige: fichier_corrige
+            })
+            .then(() => {
+                addCorrigeOnlyPopup.style.display = 'none';
+                addCorrigeOnlyForm.reset();
+                document.getElementById('corrige-only-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
+                
+                // Attribuer 2 points supplémentaires pour le corrigé
+                db.collection('users').doc(currentUser.uid).update({
+                    points: firebase.firestore.FieldValue.increment(2)
                 });
-        }
-
-        function loadExistingExamsForCorrige() {
-            const examSelect = document.getElementById('corrige-exam-select');
-            examSelect.innerHTML = '<option value="">Sélectionnez une épreuve existante</option>';
-            
-            // Charger seulement les épreuves de l'utilisateur actuel qui n'ont pas de corrigé
-            db.collection('epreuves')
-                .where('auteurId', '==', currentUser.uid)
-                .where('fichier_corrige', '==', null)
-                .where('status', '==', 'approved')
-                .get()
-                .then(querySnapshot => {
-                    querySnapshot.forEach(doc => {
-                        const exam = doc.data();
-                        const option = document.createElement('option');
-                        option.value = doc.id;
-                        option.textContent = `${exam.nom_epreuve} - ${exam.matiere} - ${exam.classe}`;
-                        examSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Erreur lors du chargement des épreuves:', error);
-                });
-        }
-
-        function notifyAdminsAboutPendingExam() {
-            // Récupérer tous les administrateurs
-            db.collection('users')
-                .where('role', '==', 'admin')
-                .get()
-                .then(querySnapshot => {
-                    querySnapshot.forEach(doc => {
-                        const admin = doc.data();
-                        // Créer une notification pour chaque admin
-                        db.collection('notifications').add({
-                            userId: doc.id,
-                            type: 'pending_exam',
-                            message: `Une nouvelle épreuve est en attente d'approbation`,
-                            read: false,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    });
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la notification des admins:', error);
-                });
+                
+                showNotification('Corrigé ajouté avec succès! +2 points attribués', 'success');
+            })
+            .catch(error => {
+                console.error('Erreur lors de l\'ajout du corrigé:', error);
+                showNotification('Erreur lors de l\'ajout du corrigé', 'error');
+            });
         }
 
         function loadNotifications() {
@@ -3385,7 +3312,6 @@
                         else if (notification.type === 'favorite') icon = 'fas fa-heart';
                         else if (notification.type === 'approval') icon = 'fas fa-check-circle';
                         else if (notification.type === 'announcement_like') icon = 'fas fa-heart';
-                        else if (notification.type === 'pending_exam') icon = 'fas fa-clock';
                         
                         notificationElement.innerHTML = `
                             <div class="notification-icon"><i class="${icon}"></i></div>
@@ -3503,6 +3429,20 @@
                 })
                 .catch(error => {
                     console.error('Erreur lors du comptage des notifications:', error);
+                });
+        }
+
+        function updatePendingExamsCount() {
+            if (!isAdmin) return;
+            
+            db.collection('epreuves')
+                .where('status', '==', 'pending')
+                .get()
+                .then(querySnapshot => {
+                    document.getElementById('pending-exams-count').textContent = querySnapshot.size;
+                })
+                .catch(error => {
+                    console.error('Erreur lors du comptage des épreuves en attente:', error);
                 });
         }
 
@@ -3713,7 +3653,6 @@
                 return;
             }
             
-            // Charger les statistiques
             db.collection('users').get()
                 .then(querySnapshot => {
                     document.getElementById('total-users').textContent = querySnapshot.size;
@@ -3724,7 +3663,6 @@
                     document.getElementById('total-exams').textContent = querySnapshot.size;
                 });
                 
-            updatePendingExamsCount();
             loadPendingExams();
             renderAdminCharts();
         }
@@ -3733,7 +3671,9 @@
             const pendingExamsContainer = document.getElementById('pending-exams-list');
             pendingExamsContainer.innerHTML = '<p>Chargement des épreuves en attente...</p>';
             
-            db.collection('epreuves').where('status', '==', 'pending').get()
+            db.collection('epreuves')
+                .where('status', '==', 'pending')
+                .get()
                 .then(querySnapshot => {
                     pendingExamsContainer.innerHTML = '';
                     
@@ -3772,18 +3712,6 @@
                 .catch(error => {
                     console.error('Erreur lors du chargement des épreuves en attente:', error);
                     pendingExamsContainer.innerHTML = '<p>Erreur lors du chargement des épreuves en attente.</p>';
-                });
-        }
-        
-        function updatePendingExamsCount() {
-            if (!isAdmin) return;
-            
-            db.collection('epreuves').where('status', '==', 'pending').get()
-                .then(querySnapshot => {
-                    document.getElementById('pending-exams-count').textContent = querySnapshot.size;
-                })
-                .catch(error => {
-                    console.error('Erreur lors du comptage des épreuves en attente:', error);
                 });
         }
         
@@ -3889,7 +3817,8 @@
             })
             .then(() => {
                 showNotification('Épreuve approuvée avec succès', 'success');
-                loadAdminPanel();
+                loadPendingExams();
+                updatePendingExamsCount();
             })
             .catch(error => {
                 console.error('Erreur lors de l\'approbation de l\'épreuve:', error);
@@ -3917,7 +3846,8 @@
             })
             .then(() => {
                 showNotification('Épreuve rejetée', 'success');
-                loadAdminPanel();
+                loadPendingExams();
+                updatePendingExamsCount();
             })
             .catch(error => {
                 console.error('Erreur lors du rejet de l\'épreuve:', error);
