@@ -114,163 +114,6 @@
             100% { background-position: 200px 0; }
         }
 
-        /* Nouveau design d'accueil complexe */
-        #welcome-design {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
-            z-index: 9998;
-            overflow: hidden;
-        }
-
-        .welcome-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            text-align: center;
-            color: white;
-        }
-
-        .floating-elements {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .floating-element {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 15s infinite linear;
-        }
-
-        .floating-element:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 10%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .floating-element:nth-child(2) {
-            width: 120px;
-            height: 120px;
-            top: 70%;
-            left: 80%;
-            animation-delay: -5s;
-        }
-
-        .floating-element:nth-child(3) {
-            width: 60px;
-            height: 60px;
-            top: 20%;
-            left: 80%;
-            animation-delay: -10s;
-        }
-
-        .floating-element:nth-child(4) {
-            width: 100px;
-            height: 100px;
-            top: 80%;
-            left: 20%;
-            animation-delay: -7s;
-        }
-
-        @keyframes float {
-            0% {
-                transform: translate(0, 0) rotate(0deg);
-            }
-            33% {
-                transform: translate(30px, -50px) rotate(120deg);
-            }
-            66% {
-                transform: translate(-20px, 20px) rotate(240deg);
-            }
-            100% {
-                transform: translate(0, 0) rotate(360deg);
-            }
-        }
-
-        .welcome-title {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .welcome-subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            max-width: 600px;
-            line-height: 1.6;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin: 2rem 0;
-            max-width: 900px;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: var(--transition);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: var(--light-blue);
-        }
-
-        .feature-title {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        .welcome-btn {
-            background: var(--white);
-            color: var(--primary-blue);
-            border: none;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-top: 1rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .welcome-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
         /* Styles pour l'avertissement */
         #warning-screen {
             display: none;
@@ -280,7 +123,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 9997;
+            z-index: 9998;
             justify-content: center;
             align-items: center;
         }
@@ -332,7 +175,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 9996;
+            z-index: 9997;
             justify-content: center;
             align-items: center;
         }
@@ -1286,6 +1129,103 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
+        /* Styles pour l'écran de design complexe */
+        #complex-design-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6, #1e40af);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .complex-design-content {
+            max-width: 800px;
+            animation: fadeIn 1s ease;
+        }
+
+        .complex-design-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .complex-design-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .complex-design-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #dbeafe;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .complex-design-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .design-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .design-btn.primary {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+        }
+
+        .design-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
         /* Animations */
         @keyframes slideUp {
             from { transform: translateY(50px); opacity: 0; }
@@ -1354,17 +1294,17 @@
             .exam-btn {
                 min-width: 100%;
             }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
+
+            .complex-design-title {
+                font-size: 2rem;
             }
-            
-            .welcome-title {
-                font-size: 2.5rem;
-            }
-            
-            .welcome-subtitle {
+
+            .complex-design-subtitle {
                 font-size: 1.2rem;
+            }
+
+            .complex-design-features {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -1383,45 +1323,6 @@
         </div>
     </div>
 
-    <div id="welcome-design">
-        <div class="floating-elements">
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-        </div>
-        <div class="welcome-container">
-            <h1 class="welcome-title">Bienvenue sur HosBac</h1>
-            <p class="welcome-subtitle">La plateforme éducative collaborative pour partager et découvrir des épreuves académiques</p>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-share-alt"></i>
-                    </div>
-                    <h3 class="feature-title">Partage d'Épreuves</h3>
-                    <p>Partagez vos épreuves avec la communauté et aidez vos pairs</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-download"></i>
-                    </div>
-                    <h3 class="feature-title">Téléchargement</h3>
-                    <p>Accédez à des milliers d'épreuves et de corrigés</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <h3 class="feature-title">Système de Points</h3>
-                    <p>Gagnez des points en partageant et en aidant les autres</p>
-                </div>
-            </div>
-            
-            <button class="welcome-btn" id="enter-site-btn">Accéder à la Plateforme</button>
-        </div>
-    </div>
-
     <div id="warning-screen">
         <div class="warning-container">
             <h2 class="warning-title">🔒 Avertissement – Utilisation responsable</h2>
@@ -1431,6 +1332,48 @@
                 <p>En utilisant cette plateforme, vous vous engagez à respecter ces principes et à contribuer positivement à la communauté éducative.</p>
             </div>
             <button class="accept-btn">J'accepte</button>
+        </div>
+    </div>
+
+    <div id="complex-design-screen">
+        <div class="complex-design-content">
+            <h1 class="complex-design-title">Bienvenue sur HosBac</h1>
+            <p class="complex-design-subtitle">La plateforme éducative collaborative pour réussir ensemble</p>
+            
+            <div class="complex-design-features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3 class="feature-title">Épreuves Partagées</h3>
+                    <p>Accédez à des milliers d'épreuves partagées par la communauté</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="feature-title">Corrigés Détaillés</h3>
+                    <p>Bénéficiez de corrigés détaillés pour mieux comprendre</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="feature-title">Communauté Active</h3>
+                    <p>Échangez avec une communauté d'étudiants motivés</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">Progression</h3>
+                    <p>Suivez votre progression et gagnez des points</p>
+                </div>
+            </div>
+            
+            <div class="complex-design-actions">
+                <button class="design-btn primary" id="continue-to-warning">Continuer vers la plateforme</button>
+            </div>
         </div>
     </div>
 
@@ -1596,6 +1539,9 @@
                     <input type="text" id="search-exams" class="search-bar" placeholder="Rechercher une épreuve...">
                     <button id="add-exam-btn" class="add-exam-btn">
                         <i class="fas fa-plus"></i> Ajouter une épreuve
+                    </button>
+                    <button id="add-corrige-only-btn" class="add-exam-btn" style="background: var(--success);">
+                        <i class="fas fa-file-pdf"></i> Ajouter un corrigé seulement
                     </button>
                 </div>
                 <div id="exams-list" class="exam-list">
@@ -1814,6 +1760,29 @@
         </div>
     </div>
 
+    <div id="add-corrige-only-popup" class="popup-overlay">
+        <div class="popup-content">
+            <button class="popup-close"><i class="fas fa-times"></i></button>
+            <h2 class="popup-title">Ajouter un corrigé seulement</h2>
+            <form id="add-corrige-only-form">
+                <div class="form-group">
+                    <label for="corrige-exam-select">Sélectionner l'épreuve</label>
+                    <select id="corrige-exam-select" required>
+                        <option value="">Sélectionnez une épreuve existante</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="corrige-only-upload">Fichier corrigé (PDF)</label>
+                    <div class="file-upload" id="corrige-only-upload">
+                        <p>Cliquez pour télécharger le fichier corrigé</p>
+                    </div>
+                    <input type="hidden" id="corrige-only-url">
+                </div>
+                <button type="submit" class="submit-btn">Soumettre le corrigé</button>
+            </form>
+        </div>
+    </div>
+
     <div id="transfer-popup" class="popup-overlay">
         <div class="popup-content">
             <button class="popup-close"><i class="fas fa-times"></i></button>
@@ -1903,11 +1872,10 @@
 
         // Éléments DOM
         const splashScreen = document.getElementById('splash-screen');
-        const welcomeDesign = document.getElementById('welcome-design');
         const warningScreen = document.getElementById('warning-screen');
+        const complexDesignScreen = document.getElementById('complex-design-screen');
         const authScreen = document.getElementById('auth-screen');
         const app = document.getElementById('app');
-        const enterSiteBtn = document.getElementById('enter-site-btn');
         const navIcons = document.querySelectorAll('.nav-icon');
         const views = document.querySelectorAll('.view');
         const authTabs = document.querySelectorAll('.auth-tab');
@@ -1915,8 +1883,11 @@
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
         const addExamBtn = document.getElementById('add-exam-btn');
+        const addCorrigeOnlyBtn = document.getElementById('add-corrige-only-btn');
         const addExamPopup = document.getElementById('add-exam-popup');
+        const addCorrigeOnlyPopup = document.getElementById('add-corrige-only-popup');
         const addExamForm = document.getElementById('add-exam-form');
+        const addCorrigeOnlyForm = document.getElementById('add-corrige-only-form');
         const transferPopup = document.getElementById('transfer-popup');
         const termsPopup = document.getElementById('terms-popup');
         const privacyPopup = document.getElementById('privacy-popup');
@@ -1940,6 +1911,11 @@
         const tomLight = document.getElementById('tom-light');
         const announcementForm = document.getElementById('announcement-form');
         const announcementsList = document.getElementById('announcements-list');
+        const continueToWarningBtn = document.getElementById('continue-to-warning');
+
+        // Vérifier si l'URL contient un paramètre de partage d'épreuve
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedExamId = urlParams.get('exam');
 
         // Initialisation de l'application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1948,13 +1924,19 @@
                 splashScreen.style.opacity = '0';
                 setTimeout(() => {
                     splashScreen.style.display = 'none';
-                    welcomeDesign.style.display = 'block';
+                    
+                    // Si un ID d'épreuve partagée est présent dans l'URL, afficher l'écran de design complexe
+                    if (sharedExamId) {
+                        complexDesignScreen.style.display = 'flex';
+                    } else {
+                        warningScreen.style.display = 'flex';
+                    }
                 }, 500);
             }, 4000);
 
-            // Gestionnaire pour le bouton "Accéder à la Plateforme"
-            enterSiteBtn.addEventListener('click', () => {
-                welcomeDesign.style.display = 'none';
+            // Gestionnaire pour le bouton "Continuer vers la plateforme" sur l'écran de design complexe
+            continueToWarningBtn.addEventListener('click', () => {
+                complexDesignScreen.style.display = 'none';
                 warningScreen.style.display = 'flex';
             });
 
@@ -1973,6 +1955,11 @@
                         startNotificationListener();
                         startAnnouncementsListener();
                         startPendingExamsListener();
+                        
+                        // Si un ID d'épreuve partagée est présent, rediriger vers la vue des examens
+                        if (sharedExamId) {
+                            document.querySelector('.nav-icon[data-view="exams"]').click();
+                        }
                     } else {
                         // L'utilisateur n'est pas connecté
                         authScreen.style.display = 'flex';
@@ -2115,8 +2102,8 @@
                             examsUploaded: 0,
                             examsDownloaded: 0,
                             role: 'user',
-                            favorites: [],
                             likedAnnouncements: [],
+                            favorites: [],
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     })
@@ -2214,10 +2201,22 @@
                 addExamPopup.style.display = 'flex';
             });
 
+            // Gestionnaire pour le bouton d'ajout de corrigé seulement
+            addCorrigeOnlyBtn.addEventListener('click', () => {
+                loadExistingExamsForCorrige();
+                addCorrigeOnlyPopup.style.display = 'flex';
+            });
+
             // Gestionnaire pour le formulaire d'ajout d'épreuve
             addExamForm.addEventListener('submit', e => {
                 e.preventDefault();
                 submitExam();
+            });
+
+            // Gestionnaire pour le formulaire d'ajout de corrigé seulement
+            addCorrigeOnlyForm.addEventListener('submit', e => {
+                e.preventDefault();
+                submitCorrigeOnly();
             });
 
             // Gestionnaire pour le bouton de déconnexion
@@ -2282,7 +2281,7 @@
             });
 
             // Configuration Cloudinary
-            let sujetUploadWidget, corrigeUploadWidget;
+            let sujetUploadWidget, corrigeUploadWidget, corrigeOnlyUploadWidget;
             
             try {
                 sujetUploadWidget = cloudinary.createUploadWidget({
@@ -2326,6 +2325,27 @@
                         showNotification('Erreur lors du téléchargement du fichier corrigé', 'error');
                     }
                 });
+
+                corrigeOnlyUploadWidget = cloudinary.createUploadWidget({
+                    cloudName: cloudName,
+                    uploadPreset: uploadPreset,
+                    sources: ['local'],
+                    multiple: false,
+                    resourceType: 'raw',
+                    clientAllowedFormats: ['pdf'],
+                    maxFileSize: 5000000
+                }, (error, result) => {
+                    if (!error && result && result.event === 'success') {
+                        const fileUrl = result.info.secure_url;
+                        console.log('URL Cloudinary corrigé seulement:', fileUrl);
+                        document.getElementById('corrige-only-url').value = fileUrl;
+                        document.getElementById('corrige-only-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
+                        showNotification('Fichier corrigé uploadé avec succès', 'success');
+                    } else if (error) {
+                        console.error('Erreur upload Cloudinary corrigé seulement:', error);
+                        showNotification('Erreur lors du téléchargement du fichier corrigé', 'error');
+                    }
+                });
             } catch (error) {
                 console.error('Erreur initialisation Cloudinary:', error);
                 showNotification('Erreur d\'initialisation du système de fichier', 'error');
@@ -2342,6 +2362,14 @@
             document.getElementById('corrige-upload').addEventListener('click', () => {
                 if (corrigeUploadWidget) {
                     corrigeUploadWidget.open();
+                } else {
+                    showNotification('Erreur: Système de fichier non initialisé', 'error');
+                }
+            });
+
+            document.getElementById('corrige-only-upload').addEventListener('click', () => {
+                if (corrigeOnlyUploadWidget) {
+                    corrigeOnlyUploadWidget.open();
                 } else {
                     showNotification('Erreur: Système de fichier non initialisé', 'error');
                 }
@@ -2398,29 +2426,17 @@
                 });
         }
 
-        // Démarrer l'écoute des épreuves en attente (pour les admins)
+        // Démarrer l'écoute des épreuves en attente pour l'admin
         function startPendingExamsListener() {
             if (!isAdmin) return;
             
             pendingExamsListener = db.collection('epreuves')
                 .where('status', '==', 'pending')
                 .onSnapshot(snapshot => {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added') {
-                            // Nouvelle épreuve en attente - notifier l'admin
-                            playNotificationSound();
-                            vibratePhone();
-                            showNotification('Nouvelle épreuve en attente d\'approbation', 'warning');
-                            
-                            // Recharger le panneau admin si on est dessus
-                            if (document.getElementById('admin-view').classList.contains('active')) {
-                                loadAdminPanel();
-                            }
-                            
-                            // Mettre à jour le badge de notification
-                            updateNotificationBadge();
-                        }
-                    });
+                    if (document.getElementById('admin-view').classList.contains('active')) {
+                        loadPendingExams();
+                    }
+                    updatePendingExamsCount();
                 }, error => {
                     console.error('Erreur écoute épreuves en attente:', error);
                 });
@@ -2457,6 +2473,7 @@
                         
                         if (isAdmin) {
                             adminIcon.style.display = 'flex';
+                            startPendingExamsListener();
                         } else {
                             adminIcon.style.display = 'none';
                         }
@@ -2473,6 +2490,9 @@
             loadProfileData();
             loadAnnouncements();
             updateNotificationBadge();
+            if (isAdmin) {
+                updatePendingExamsCount();
+            }
         }
 
         function loadAnnouncements() {
@@ -2568,20 +2588,14 @@
                         .then(doc => {
                             if (doc.exists) {
                                 const announcement = doc.data();
-                                // Notifier tous les administrateurs
-                                db.collection('users').where('role', '==', 'admin').get()
-                                    .then(adminSnapshot => {
-                                        adminSnapshot.forEach(adminDoc => {
-                                            db.collection('notifications').add({
-                                                userId: adminDoc.id,
-                                                type: 'announcement_like',
-                                                message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
-                                                announcementId: announcementId,
-                                                read: false,
-                                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                            });
-                                        });
-                                    });
+                                db.collection('notifications').add({
+                                    userId: announcement.authorId,
+                                    type: 'announcement_like',
+                                    message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
+                                    announcementId: announcementId,
+                                    read: false,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
                             }
                         })
                         .catch(error => {
@@ -3151,6 +3165,8 @@
                 .then(doc => {
                     if (doc.exists) {
                         const exam = doc.data();
+                        
+                        // Créer une notification pour le destinataire
                         return db.collection('notifications').add({
                             userId: recipientId,
                             type: 'transfer',
@@ -3214,9 +3230,7 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
-                .then((docRef) => {
-                    const examId = docRef.id;
-                    
+                .then(() => {
                     addExamPopup.style.display = 'none';
                     addExamForm.reset();
                     document.getElementById('sujet-upload').innerHTML = '<p>Cliquez pour télécharger le fichier sujet</p>';
@@ -3228,25 +3242,116 @@
                     } else {
                         showNotification('Épreuve soumise avec succès, en attente d\'approbation', 'success');
                         
-                        // Notifier tous les administrateurs de la nouvelle soumission
-                        db.collection('users').where('role', '==', 'admin').get()
-                            .then(adminSnapshot => {
-                                adminSnapshot.forEach(adminDoc => {
-                                    db.collection('notifications').add({
-                                        userId: adminDoc.id,
-                                        type: 'new_submission',
-                                        message: `Nouvelle épreuve soumise par ${userData.prenom} ${userData.nom} : ${nom_epreuve}`,
-                                        examId: examId,
-                                        read: false,
-                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                    });
-                                });
-                            });
+                        // Notifier les administrateurs
+                        notifyAdminsAboutPendingExam();
                     }
                 })
                 .catch(error => {
                     console.error('Erreur lors de la soumission de l\'épreuve:', error);
                     showNotification('Erreur lors de la soumission de l\'épreuve', 'error');
+                });
+        }
+
+        function submitCorrigeOnly() {
+            const examId = document.getElementById('corrige-exam-select').value;
+            const fichier_corrige = document.getElementById('corrige-only-url').value;
+            
+            if (!examId) {
+                showNotification('Veuillez sélectionner une épreuve', 'warning');
+                return;
+            }
+            
+            if (!fichier_corrige) {
+                showNotification('Veuillez télécharger un fichier corrigé', 'warning');
+                return;
+            }
+            
+            if (!fichier_corrige.includes('cloudinary.com') || !fichier_corrige.includes('.pdf')) {
+                showNotification('Erreur: Le fichier corrigé n\'est pas valide', 'error');
+                return;
+            }
+            
+            // Vérifier que l'utilisateur est l'auteur de l'épreuve
+            db.collection('epreuves').doc(examId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const exam = doc.data();
+                        
+                        if (exam.auteurId !== currentUser.uid) {
+                            showNotification('Vous ne pouvez ajouter un corrigé que pour vos propres épreuves', 'error');
+                            return;
+                        }
+                        
+                        // Mettre à jour l'épreuve avec le nouveau corrigé
+                        return db.collection('epreuves').doc(examId).update({
+                            fichier_corrige: fichier_corrige
+                        });
+                    } else {
+                        showNotification('Épreuve non trouvée', 'error');
+                    }
+                })
+                .then(() => {
+                    addCorrigeOnlyPopup.style.display = 'none';
+                    addCorrigeOnlyForm.reset();
+                    document.getElementById('corrige-only-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
+                    
+                    showNotification('Corrigé ajouté avec succès', 'success');
+                    
+                    // Si l'admin, attribuer les points supplémentaires
+                    if (isAdmin) {
+                        assignPointsAfterApproval(currentUser.uid, 2); // 2 points supplémentaires pour le corrigé
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de l\'ajout du corrigé:', error);
+                    showNotification('Erreur lors de l\'ajout du corrigé', 'error');
+                });
+        }
+
+        function loadExistingExamsForCorrige() {
+            const examSelect = document.getElementById('corrige-exam-select');
+            examSelect.innerHTML = '<option value="">Sélectionnez une épreuve existante</option>';
+            
+            // Charger seulement les épreuves de l'utilisateur actuel qui n'ont pas de corrigé
+            db.collection('epreuves')
+                .where('auteurId', '==', currentUser.uid)
+                .where('fichier_corrige', '==', null)
+                .where('status', '==', 'approved')
+                .get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        const exam = doc.data();
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.textContent = `${exam.nom_epreuve} - ${exam.matiere} - ${exam.classe}`;
+                        examSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des épreuves:', error);
+                });
+        }
+
+        function notifyAdminsAboutPendingExam() {
+            // Récupérer tous les administrateurs
+            db.collection('users')
+                .where('role', '==', 'admin')
+                .get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        const admin = doc.data();
+                        // Créer une notification pour chaque admin
+                        db.collection('notifications').add({
+                            userId: doc.id,
+                            type: 'pending_exam',
+                            message: `Une nouvelle épreuve est en attente d'approbation`,
+                            read: false,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la notification des admins:', error);
                 });
         }
 
@@ -3276,10 +3381,11 @@
                         let icon = 'fas fa-bell';
                         if (notification.type === 'economy' || notification.type === 'points_received') icon = 'fas fa-coins';
                         else if (notification.type === 'transfer') icon = 'fas fa-paper-plane';
-                        else if (notification.type === 'new_submission') icon = 'fas fa-file-upload';
+                        else if (notification.type === 'submission') icon = 'fas fa-file-upload';
                         else if (notification.type === 'favorite') icon = 'fas fa-heart';
                         else if (notification.type === 'approval') icon = 'fas fa-check-circle';
                         else if (notification.type === 'announcement_like') icon = 'fas fa-heart';
+                        else if (notification.type === 'pending_exam') icon = 'fas fa-clock';
                         
                         notificationElement.innerHTML = `
                             <div class="notification-icon"><i class="${icon}"></i></div>
@@ -3607,6 +3713,7 @@
                 return;
             }
             
+            // Charger les statistiques
             db.collection('users').get()
                 .then(querySnapshot => {
                     document.getElementById('total-users').textContent = querySnapshot.size;
@@ -3617,11 +3724,17 @@
                     document.getElementById('total-exams').textContent = querySnapshot.size;
                 });
                 
+            updatePendingExamsCount();
+            loadPendingExams();
+            renderAdminCharts();
+        }
+        
+        function loadPendingExams() {
+            const pendingExamsContainer = document.getElementById('pending-exams-list');
+            pendingExamsContainer.innerHTML = '<p>Chargement des épreuves en attente...</p>';
+            
             db.collection('epreuves').where('status', '==', 'pending').get()
                 .then(querySnapshot => {
-                    document.getElementById('pending-exams-count').textContent = querySnapshot.size;
-                    
-                    const pendingExamsContainer = document.getElementById('pending-exams-list');
                     pendingExamsContainer.innerHTML = '';
                     
                     if (querySnapshot.empty) {
@@ -3655,9 +3768,23 @@
                             rejectExam(doc.id, exam.auteurId);
                         });
                     });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des épreuves en attente:', error);
+                    pendingExamsContainer.innerHTML = '<p>Erreur lors du chargement des épreuves en attente.</p>';
                 });
-                
-            renderAdminCharts();
+        }
+        
+        function updatePendingExamsCount() {
+            if (!isAdmin) return;
+            
+            db.collection('epreuves').where('status', '==', 'pending').get()
+                .then(querySnapshot => {
+                    document.getElementById('pending-exams-count').textContent = querySnapshot.size;
+                })
+                .catch(error => {
+                    console.error('Erreur lors du comptage des épreuves en attente:', error);
+                });
         }
         
         async function renderAdminCharts() {
