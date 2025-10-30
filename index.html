@@ -449,6 +449,62 @@
             line-height: 1;
         }
 
+        /* Menu Hamburger pour mobile */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 99;
+            padding: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-nav-icon {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-dark);
+        }
+
+        .mobile-nav-icon.active {
+            background: var(--light-blue);
+            color: var(--primary-blue);
+        }
+
+        .mobile-nav-icon:hover {
+            background: var(--light-blue);
+        }
+
+        .mobile-nav-icon i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
         /* Contenu principal */
         main {
             flex: 1;
@@ -484,11 +540,15 @@
         
         .welcome-banner h1 {
             font-size: 2rem;
+            margin-bottom: 0.5rem;
         }
         
         /* Style pour les stats sur l'accueil */
         .home-stats {
+            display: grid;
             grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         /* Pied de page */
@@ -1250,14 +1310,14 @@
         /* Responsive */
         @media (max-width: 768px) {
             .header-content {
-                grid-template-columns: auto 1fr;
+                grid-template-columns: auto 1fr auto;
                 padding: 0.5rem 1rem;
             }
             .header-center {
                 display: none;
             }
             .header-right {
-                grid-column: 2 / 3;
+                grid-column: 3 / 4;
                 gap: 0.5rem;
             }
             .header-right .nav-icon {
@@ -1265,6 +1325,11 @@
                 width: 40px;
                 height: 40px;
                 font-size: 1.1rem;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+                grid-column: 1 / 2;
             }
             
             .home-stats {
@@ -1305,6 +1370,44 @@
 
             .complex-design-features {
                 grid-template-columns: 1fr;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .announcement-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-banner h1 {
+                font-size: 1.5rem;
+            }
+            
+            .view-title {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            .exam-card {
+                padding: 1rem;
+            }
+            
+            .popup-content {
+                padding: 1.5rem;
             }
         }
     </style>
@@ -1439,6 +1542,9 @@
     <div id="app">
         <header>
             <div class="header-content">
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="header-left">
                     <div class="logo" data-view="home">HosBac</div>
                 </div>
@@ -1455,11 +1561,38 @@
             </div>
         </header>
 
+        <div class="mobile-menu" id="mobile-menu">
+            <div class="mobile-nav-icon active" data-view="home">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </div>
+            <div class="mobile-nav-icon" data-view="exams">
+                <i class="fas fa-file-alt"></i>
+                <span>Examens</span>
+            </div>
+            <div class="mobile-nav-icon" data-view="search">
+                <i class="fas fa-search"></i>
+                <span>Recherche</span>
+            </div>
+            <div class="mobile-nav-icon" data-view="notifications">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </div>
+            <div class="mobile-nav-icon" data-view="profile">
+                <i class="fas fa-user"></i>
+                <span>Profil</span>
+            </div>
+            <div class="mobile-nav-icon" id="mobile-admin-icon" data-view="admin" style="display: none;">
+                <i class="fas fa-crown"></i>
+                <span>Admin</span>
+            </div>
+        </div>
+
         <main>
             <div id="home-view" class="view active">
                 <div class="welcome-banner">
                     <h1 id="welcome-message">Bonjour !</h1>
-                    <p>Bienvenue sur HosBac. Prêt à réviser ?</p>
+                    <p id="welcome-subtitle">Bienvenue sur HosBac. Prêt à réviser ?</p>
                 </div>
                 
                 <h2 class="view-title">Vos Statistiques</h2>
@@ -1877,6 +2010,7 @@
         const authScreen = document.getElementById('auth-screen');
         const app = document.getElementById('app');
         const navIcons = document.querySelectorAll('.nav-icon');
+        const mobileNavIcons = document.querySelectorAll('.mobile-nav-icon');
         const views = document.querySelectorAll('.view');
         const authTabs = document.querySelectorAll('.auth-tab');
         const authForms = document.querySelectorAll('.auth-form');
@@ -1897,6 +2031,7 @@
         const privacyLink = document.getElementById('privacy-link');
         const popupCloseButtons = document.querySelectorAll('.popup-close');
         const adminIcon = document.getElementById('admin-icon');
+        const mobileAdminIcon = document.getElementById('mobile-admin-icon');
         const filterClass = document.getElementById('filter-class');
         const filterSubject = document.getElementById('filter-subject');
         const filterSeries = document.getElementById('filter-series');
@@ -1912,6 +2047,10 @@
         const announcementForm = document.getElementById('announcement-form');
         const announcementsList = document.getElementById('announcements-list');
         const continueToWarningBtn = document.getElementById('continue-to-warning');
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const welcomeSubtitle = document.getElementById('welcome-subtitle');
 
         // Vérifier si l'URL contient un paramètre de partage d'épreuve
         const urlParams = new URLSearchParams(window.location.search);
@@ -1965,6 +2104,18 @@
                         authScreen.style.display = 'flex';
                     }
                 });
+            });
+
+            // Gestionnaire pour le menu hamburger mobile
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Fermer le menu mobile en cliquant à l'extérieur
+            document.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    mobileMenu.classList.remove('active');
+                }
             });
 
             // Gestionnaires pour les onglets d'authentification avec animations Tom et Jerry
@@ -2148,7 +2299,7 @@
                 submitAnnouncement();
             });
 
-            // Gestionnaires pour la navigation
+            // Gestionnaires pour la navigation desktop
             navIcons.forEach(icon => {
                 icon.addEventListener('click', () => {
                     const viewName = icon.getAttribute('data-view');
@@ -2161,39 +2312,71 @@
                     });
                     
                     // Afficher la vue correspondante
-                    views.forEach(view => {
-                        view.classList.remove('active');
-                        if (view.id === `${viewName}-view`) {
-                            view.classList.add('active');
-                        }
-                    });
-                    
-                    // Charger les données de la vue
-                    switch(viewName) {
-                        case 'home':
-                            loadRecentExams();
-                            break;
-                        case 'notifications':
-                            loadNotifications();
-                            break;
-                        case 'exams':
-                            loadAllExams();
-                            break;
-                        case 'search':
-                            break;
-                        case 'profile':
-                            loadProfileData();
-                            break;
-                        case 'admin':
-                            loadAdminPanel();
-                            break;
-                    }
+                    switchView(viewName);
                 });
             });
             
+            // Gestionnaires pour la navigation mobile
+            mobileNavIcons.forEach(icon => {
+                icon.addEventListener('click', () => {
+                    const viewName = icon.getAttribute('data-view');
+                    if (!viewName) return;
+                    
+                    // Activer l'icône sélectionnée
+                    mobileNavIcons.forEach(i => i.classList.remove('active'));
+                    icon.classList.add('active');
+                    
+                    // Activer aussi l'icône desktop correspondante
+                    navIcons.forEach(i => {
+                        if (i.getAttribute('data-view') === viewName) {
+                            i.classList.add('active');
+                        } else {
+                            i.classList.remove('active');
+                        }
+                    });
+                    
+                    // Afficher la vue correspondante
+                    switchView(viewName);
+                    
+                    // Fermer le menu mobile
+                    mobileMenu.classList.remove('active');
+                });
+            });
+            
+            // Fonction pour changer de vue
+            function switchView(viewName) {
+                views.forEach(view => {
+                    view.classList.remove('active');
+                    if (view.id === `${viewName}-view`) {
+                        view.classList.add('active');
+                    }
+                });
+                
+                // Charger les données de la vue
+                switch(viewName) {
+                    case 'home':
+                        loadRecentExams();
+                        break;
+                    case 'notifications':
+                        loadNotifications();
+                        break;
+                    case 'exams':
+                        loadAllExams();
+                        break;
+                    case 'search':
+                        break;
+                    case 'profile':
+                        loadProfileData();
+                        break;
+                    case 'admin':
+                        loadAdminPanel();
+                        break;
+                }
+            }
+            
             // Clic sur le logo ramène à l'accueil
             document.querySelector('.logo').addEventListener('click', () => {
-                 document.querySelector('.nav-icon[data-view="home"]').click();
+                switchView('home');
             });
 
             // Gestionnaire pour le bouton d'ajout d'épreuve
@@ -2473,9 +2656,11 @@
                         
                         if (isAdmin) {
                             adminIcon.style.display = 'flex';
+                            mobileAdminIcon.style.display = 'flex';
                             startPendingExamsListener();
                         } else {
                             adminIcon.style.display = 'none';
+                            mobileAdminIcon.style.display = 'none';
                         }
                     }
                 })
@@ -2582,14 +2767,20 @@
                 
                 showNotification('Annonce likée', 'success');
                 
-                // Notification à l'admin si l'utilisateur n'est pas admin
+                // CORRECTION 5: Notification à l'admin si l'utilisateur n'est pas admin
                 if (!isAdmin) {
-                    db.collection('announcements').doc(announcementId).get()
-                        .then(doc => {
-                            if (doc.exists) {
-                                const announcement = doc.data();
-                                db.collection('notifications').add({
-                                    userId: announcement.authorId,
+                    // Récupérer l'ID de l'admin (mickaelpcs14@gmail.com)
+                    db.collection('users')
+                        .where('email', '==', 'mickaelpcs14@gmail.com')
+                        .get()
+                        .then(querySnapshot => {
+                            if (!querySnapshot.empty) {
+                                const adminDoc = querySnapshot.docs[0];
+                                const adminId = adminDoc.id;
+                                
+                                // Créer la notification pour l'admin
+                                return db.collection('notifications').add({
+                                    userId: adminId,
                                     type: 'announcement_like',
                                     message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
                                     announcementId: announcementId,
@@ -2814,7 +3005,7 @@
             
             const favoriteBtn = card.querySelector('.favorite-btn');
             favoriteBtn.addEventListener('click', () => {
-                toggleFavorite(examId, favoriteBtn);
+                handleAddToFavorites(examId, exam.auteurId, favoriteBtn);
             });
             
             if (isAdmin) {
@@ -2830,6 +3021,83 @@
             });
             
             return card;
+        }
+
+        // CORRECTION 2: Fonction complète pour gérer l'ajout aux favoris
+        async function handleAddToFavorites(epreuveId, auteurId, button) {
+            if (!userData) return;
+            
+            const isCurrentlyFavorite = userData.favorites && userData.favorites.includes(epreuveId);
+            
+            let newFavorites = userData.favorites ? [...userData.favorites] : [];
+            
+            if (isCurrentlyFavorite) {
+                // Retirer des favoris
+                newFavorites = newFavorites.filter(id => id !== epreuveId);
+                button.classList.remove('active');
+                button.innerHTML = '<i class="far fa-heart"></i> Favori';
+                showNotification('Épreuve retirée des favoris', 'success');
+            } else {
+                // Ajouter aux favoris
+                newFavorites.push(epreuveId);
+                button.classList.add('active');
+                button.innerHTML = '<i class="fas fa-heart"></i> Favori';
+                showNotification('Épreuve ajoutée aux favoris', 'success');
+                
+                try {
+                    // 1. Sauvegarde sur le Profil
+                    await db.collection('users').doc(currentUser.uid).update({
+                        favorites: newFavorites
+                    });
+                    
+                    userData.favorites = newFavorites;
+                    
+                    // 2. Notification de l'Auteur (si ce n'est pas l'utilisateur actuel)
+                    if (auteurId && auteurId !== currentUser.uid) {
+                        // Récupérer les détails de l'épreuve pour le message
+                        const examDoc = await db.collection('epreuves').doc(epreuveId).get();
+                        if (examDoc.exists) {
+                            const exam = examDoc.data();
+                            
+                            // Créer la notification pour l'auteur
+                            await db.collection('notifications').add({
+                                userId: auteurId,
+                                type: 'favorite',
+                                message: `${userData.prenom} ${userData.nom} a ajouté votre épreuve "${exam.nom_epreuve}" à ses favoris`,
+                                examId: epreuveId,
+                                read: false,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                    
+                    // 3. Mise à jour de la Page Profil si active
+                    if (document.getElementById('profile-view').classList.contains('active')) {
+                        loadFavorites();
+                    }
+                    
+                } catch (error) {
+                    console.error('Erreur lors de l\'ajout aux favoris:', error);
+                    showNotification('Erreur lors de l\'ajout aux favoris', 'error');
+                }
+            }
+            
+            // Mettre à jour les favoris même en cas d'erreur de notification
+            if (isCurrentlyFavorite) {
+                db.collection('users').doc(currentUser.uid).update({
+                    favorites: newFavorites
+                })
+                .then(() => {
+                    userData.favorites = newFavorites;
+                    if (document.getElementById('profile-view').classList.contains('active')) {
+                        loadFavorites();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la mise à jour des favoris:', error);
+                    showNotification('Erreur lors de la mise à jour des favoris', 'error');
+                });
+            }
         }
 
         function viewExam(examId, type) {
@@ -2958,61 +3226,6 @@
                 });
         }
 
-        function toggleFavorite(examId, button) {
-            if (!userData) return;
-            
-            const isCurrentlyFavorite = userData.favorites && userData.favorites.includes(examId);
-            
-            let newFavorites = userData.favorites ? [...userData.favorites] : [];
-            
-            if (isCurrentlyFavorite) {
-                newFavorites = newFavorites.filter(id => id !== examId);
-                button.classList.remove('active');
-                button.innerHTML = '<i class="far fa-heart"></i> Favori';
-                showNotification('Épreuve retirée des favoris', 'success');
-            } else {
-                newFavorites.push(examId);
-                button.classList.add('active');
-                button.innerHTML = '<i class="fas fa-heart"></i> Favori';
-                showNotification('Épreuve ajoutée aux favoris', 'success');
-                
-                // Notification à l'auteur
-                db.collection('epreuves').doc(examId).get()
-                    .then(doc => {
-                        if (doc.exists) {
-                            const exam = doc.data();
-                            if (exam.auteurId && exam.auteurId !== currentUser.uid) {
-                                db.collection('notifications').add({
-                                    userId: exam.auteurId,
-                                    type: 'favorite',
-                                    message: `${userData.prenom} ${userData.nom} a ajouté votre épreuve "${exam.nom_epreuve}" à ses favoris`,
-                                    examId: examId,
-                                    read: false,
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erreur lors de la création de la notification de favori:', error);
-                    });
-            }
-            
-            db.collection('users').doc(currentUser.uid).update({
-                favorites: newFavorites
-            })
-            .then(() => {
-                userData.favorites = newFavorites;
-                if (document.getElementById('profile-view').classList.contains('active')) {
-                    loadFavorites();
-                }
-            })
-            .catch(error => {
-                console.error('Erreur lors de la mise à jour des favoris:', error);
-                showNotification('Erreur lors de la mise à jour des favoris', 'error');
-            });
-        }
-
         function deleteExam(examId) {
             if (!isAdmin) {
                 showNotification('Action non autorisée', 'error');
@@ -3039,7 +3252,7 @@
 
         function viewUserProfile(authorId) {
             sessionStorage.setItem('viewingUserId', authorId);
-            document.querySelector('.nav-icon[data-view="profile"]').click();
+            switchView('profile');
             loadUserProfile(authorId);
         }
 
@@ -3417,7 +3630,7 @@
                                 db.collection('notifications').doc(doc.id).update({
                                     read: true
                                 });
-                                document.querySelector('.nav-icon[data-view="exams"]').click();
+                                switchView('exams');
                             });
                         } else {
                             notificationElement.addEventListener('click', () => {
@@ -3536,9 +3749,12 @@
                         document.getElementById('edit-prenom').value = userData.prenom || '';
                         document.getElementById('edit-classe').value = userData.classe || '';
                         
-                        // Mettre à jour l'Accueil
-                        document.getElementById('welcome-message').textContent = 
-                            `Bonjour, ${userData.prenom || 'Utilisateur'} !`;
+                        // CORRECTION 4: Mettre à jour le message d'accueil
+                        if (welcomeMessage && welcomeSubtitle) {
+                            welcomeMessage.textContent = `Bienvenue sur HosBac, ${userData.prenom || 'Utilisateur'} !`;
+                            welcomeSubtitle.textContent = 'Prêt à trouver la bonne épreuve ?';
+                        }
+                        
                         document.getElementById('home-points-balance').textContent = userData.points || 0;
                         document.getElementById('home-exams-uploaded').textContent = userData.examsUploaded || 0;
                         document.getElementById('home-exams-downloaded').textContent = userData.examsDownloaded || 0;
@@ -3578,6 +3794,7 @@
             });
         }
 
+        // CORRECTION 2: Fonction améliorée pour charger les favoris
         function loadFavorites() {
             const favoritesContainer = document.getElementById('favorites-list');
             favoritesContainer.innerHTML = '<p>Chargement des favoris...</p>';
@@ -3665,7 +3882,7 @@
                                 <small>Publié par: ${exam.auteurNom}</small>
                             `;
                             resultItem.addEventListener('click', () => {
-                                document.querySelector('.nav-icon[data-view="exams"]').click();
+                                switchView('exams');
                             });
                             searchResults.appendChild(resultItem);
                             hasResults = true;
@@ -3709,7 +3926,7 @@
         function loadAdminPanel() {
             if (!isAdmin) {
                 showNotification('Accès non autorisé', 'error');
-                document.querySelector('.nav-icon[data-view="home"]').click();
+                switchView('home');
                 return;
             }
             
@@ -3787,16 +4004,18 @@
                 });
         }
         
+        // CORRECTION 1: Fonction améliorée pour les graphiques admin
         async function renderAdminCharts() {
             try {
-                // Données Graphique Utilisateurs
+                // CORRECTION 1: Graphique Utilisateurs - Récupération des données corrigée
                 const usersSnapshot = await db.collection('users').get();
                 const userCountsByDate = {};
                 const today = new Date();
-                const N_DAYS = 7;
                 
-                for (let i = 0; i < N_DAYS; i++) {
-                    const d = new Date(today.getTime() - (i * 24 * 60 * 60 * 1000));
+                // Initialiser les 7 derniers jours
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(today.getDate() - i);
                     const dateString = d.toISOString().split('T')[0];
                     userCountsByDate[dateString] = 0;
                 }
@@ -3804,69 +4023,114 @@
                 usersSnapshot.forEach(doc => {
                     const user = doc.data();
                     if (user.createdAt && user.createdAt.toDate) {
-                        const dateString = user.createdAt.toDate().toISOString().split('T')[0];
-                        if (userCountsByDate[dateString] !== undefined) {
-                            userCountsByDate[dateString]++;
+                        const userDate = user.createdAt.toDate();
+                        const dateString = userDate.toISOString().split('T')[0];
+                        
+                        // Vérifier si la date est dans les 7 derniers jours
+                        const userDateObj = new Date(dateString);
+                        const weekAgo = new Date();
+                        weekAgo.setDate(today.getDate() - 7);
+                        
+                        if (userDateObj >= weekAgo && userDateObj <= today) {
+                            if (userCountsByDate[dateString] !== undefined) {
+                                userCountsByDate[dateString]++;
+                            }
                         }
                     }
                 });
 
-                const userLabels = Object.keys(userCountsByDate).reverse();
-                const userDataPoints = Object.values(userCountsByDate).reverse();
+                const userLabels = Object.keys(userCountsByDate);
+                const userDataPoints = Object.values(userCountsByDate);
                 
                 // Rendu Graphique Utilisateurs (Line)
-                const usersCtx = document.getElementById('users-chart').getContext('2d');
-                new Chart(usersCtx, {
-                    type: 'line',
-                    data: {
-                        labels: userLabels,
-                        datasets: [{
-                            label: 'Nouveaux utilisateurs',
-                            data: userDataPoints,
-                            borderColor: 'var(--primary-blue)',
-                            backgroundColor: 'rgba(30, 58, 138, 0.1)',
-                            fill: true,
-                            tension: 0.1
-                        }]
-                    }
-                });
+                const usersCtx = document.getElementById('users-chart');
+                if (usersCtx) {
+                    new Chart(usersCtx, {
+                        type: 'line',
+                        data: {
+                            labels: userLabels,
+                            datasets: [{
+                                label: 'Nouveaux utilisateurs',
+                                data: userDataPoints,
+                                borderColor: 'var(--primary-blue)',
+                                backgroundColor: 'rgba(30, 58, 138, 0.1)',
+                                fill: true,
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
 
-                // Données Graphique Épreuves
+                // CORRECTION 1: Graphique Épreuves - Requête corrigée
                 const examsSnapshot = await db.collection('epreuves')
-                                            .where('downloadCount', '>', 0)
+                                            .where('status', '==', 'approved')
                                             .orderBy('downloadCount', 'desc')
                                             .limit(5)
                                             .get();
                                             
                 const examLabels = [];
                 const examDataPoints = [];
+                
                 examsSnapshot.forEach(doc => {
                     const exam = doc.data();
-                    examLabels.push(exam.nom_epreuve.substring(0, 20) + '...');
+                    const shortName = exam.nom_epreuve.length > 20 ? 
+                        exam.nom_epreuve.substring(0, 20) + '...' : exam.nom_epreuve;
+                    examLabels.push(shortName);
                     examDataPoints.push(exam.downloadCount || 0);
                 });
 
                 // Rendu Graphique Épreuves (Bar)
-                const examsCtx = document.getElementById('exams-chart').getContext('2d');
-                new Chart(examsCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: examLabels,
-                        datasets: [{
-                            label: 'Téléchargements',
-                            data: examDataPoints,
-                            backgroundColor: 'var(--secondary-blue)',
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                    }
-                });
+                const examsCtx = document.getElementById('exams-chart');
+                if (examsCtx) {
+                    new Chart(examsCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: examLabels,
+                            datasets: [{
+                                label: 'Téléchargements',
+                                data: examDataPoints,
+                                backgroundColor: 'var(--secondary-blue)',
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
 
             } catch (error) {
                 console.error("Erreur lors de la génération des graphiques:", error);
-                document.getElementById('users-chart').parentElement.innerHTML = "<p>Erreur chargement graphique.</p>";
-                document.getElementById('exams-chart').parentElement.innerHTML = "<p>Erreur chargement graphique.</p>";
+                // CORRECTION 1: Message d'erreur plus informatif
+                const usersChartContainer = document.getElementById('users-chart');
+                const examsChartContainer = document.getElementById('exams-chart');
+                
+                if (usersChartContainer) {
+                    usersChartContainer.parentElement.innerHTML = `
+                        <p>Erreur chargement graphique utilisateurs.</p>
+                        <p><small>Si le problème persiste, vérifiez les index Firestore.</small></p>
+                    `;
+                }
+                
+                if (examsChartContainer) {
+                    examsChartContainer.parentElement.innerHTML = `
+                        <p>Erreur chargement graphique épreuves.</p>
+                        <p><small>Si le problème persiste, vérifiez les index Firestore.</small></p>
+                    `;
+                }
             }
         }
 
