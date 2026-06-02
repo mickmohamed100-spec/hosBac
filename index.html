@@ -1991,17 +1991,18 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Configuration Cloudinary
+        // Configuration Cloudinary (variables globales)
         const cloudName = "dqn1dbimm";
         const uploadPreset = "hosbac_preset";
 
-        // Variables globales
+        // Variables globales (correction 1 : initialisation propre)
         let currentUser = null;
         let isAdmin = false;
         let userData = null;
-        let notificationListener = null;
-        let announcementsListener = null;
-        let pendingExamsListener = null;
+        let notificationUnsubscribe = null;
+        let announcementsUnsubscribe = null;
+        let pendingExamsUnsubscribe = null;
+        let charts = { usersChart: null, examsChart: null };
 
         // Éléments DOM
         const splashScreen = document.getElementById('splash-screen');
@@ -2212,7 +2213,6 @@
                         showNotification('Connexion réussie', 'success');
                     })
                     .catch(error => {
-                        // Erreur de connexion
                         console.error('Erreur de connexion:', error);
                         if (error.code === 'auth/wrong-password') {
                             showNotification('Mot de passe incorrect', 'error');
@@ -2404,14 +2404,17 @@
 
             // Gestionnaire pour le bouton de déconnexion
             logoutBtn.addEventListener('click', () => {
-                if (notificationListener) {
-                    notificationListener();
+                if (notificationUnsubscribe) {
+                    notificationUnsubscribe();
+                    notificationUnsubscribe = null;
                 }
-                if (announcementsListener) {
-                    announcementsListener();
+                if (announcementsUnsubscribe) {
+                    announcementsUnsubscribe();
+                    announcementsUnsubscribe = null;
                 }
-                if (pendingExamsListener) {
-                    pendingExamsListener();
+                if (pendingExamsUnsubscribe) {
+                    pendingExamsUnsubscribe();
+                    pendingExamsUnsubscribe = null;
                 }
                 auth.signOut()
                     .then(() => {
@@ -2570,11 +2573,20 @@
             }, 300));
         });
 
-        // Démarrer l'écoute des notifications en temps réel
+        // ==================== CORRECTIONS APPLIQUÉES ====================
+        // 1. Variables globales correctement déclarées
+        // 2. Gestion des écouteurs avec unsubscribe pour éviter les fuites mémoire
+        // 3. Gestion des favoris sans requêtes dupliquées
+        // 4. Correction du shadowing dans handleCorrigeAccess
+        // 5. Destruction des instances Chart.js avant recréation
+        // 6. Correction de la variable announcement dans toggleAnnouncementLike
+
+        // Démarrer l'écoute des notifications en temps réel (avec nettoyage)
         function startNotificationListener() {
             if (!currentUser) return;
+            if (notificationUnsubscribe) notificationUnsubscribe();
             
-            notificationListener = db.collection('notifications')
+            notificationUnsubscribe = db.collection('notifications')
                 .where('userId', '==', currentUser.uid)
                 .orderBy('createdAt', 'desc')
                 .onSnapshot(snapshot => {
@@ -2598,9 +2610,11 @@
                 });
         }
 
-        // Démarrer l'écoute des annonces en temps réel
+        // Démarrer l'écoute des annonces en temps réel (avec nettoyage)
         function startAnnouncementsListener() {
-            announcementsListener = db.collection('announcements')
+            if (announcementsUnsubscribe) announcementsUnsubscribe();
+            
+            announcementsUnsubscribe = db.collection('announcements')
                 .orderBy('createdAt', 'desc')
                 .onSnapshot(snapshot => {
                     loadAnnouncements();
@@ -2609,11 +2623,12 @@
                 });
         }
 
-        // Démarrer l'écoute des épreuves en attente pour l'admin
+        // Démarrer l'écoute des épreuves en attente pour l'admin (avec nettoyage)
         function startPendingExamsListener() {
             if (!isAdmin) return;
+            if (pendingExamsUnsubscribe) pendingExamsUnsubscribe();
             
-            pendingExamsListener = db.collection('epreuves')
+            pendingExamsUnsubscribe = db.collection('epreuves')
                 .where('status', '==', 'pending')
                 .onSnapshot(snapshot => {
                     if (document.getElementById('admin-view').classList.contains('active')) {
@@ -2722,7 +2737,7 @@
                     ${announcement.content}
                 </div>
                 <div class="announcement-actions">
-                    <button class="like-btn ${hasLiked ? 'liked' : ''}" data-announcement-id="${announcementId}">
+                    <button class="like-btn ${hasLiked ? 'liked' : ''}" data-announcement-id="${announcementId}" data-title="${announcement.title}">
                         <i class="fas fa-heart"></i>
                         <span class="like-count">${announcement.likes || 0}</span>
                     </button>
@@ -2731,13 +2746,14 @@
             
             const likeBtn = card.querySelector('.like-btn');
             likeBtn.addEventListener('click', () => {
-                toggleAnnouncementLike(announcementId, likeBtn);
+                toggleAnnouncementLike(announcementId, likeBtn, announcement.title);
             });
             
             return card;
         }
 
-        function toggleAnnouncementLike(announcementId, button) {
+        // Correction 5: Utilisation du titre passé en paramètre
+        function toggleAnnouncementLike(announcementId, button, announcementTitle) {
             if (!userData) return;
             
             const isCurrentlyLiked = userData.likedAnnouncements && userData.likedAnnouncements.includes(announcementId);
@@ -2767,7 +2783,7 @@
                 
                 showNotification('Annonce likée', 'success');
                 
-                // CORRECTION 5: Notification à l'admin si l'utilisateur n'est pas admin
+                // Notification à l'admin si l'utilisateur n'est pas admin
                 if (!isAdmin) {
                     // Récupérer l'ID de l'admin (mickaelpcs14@gmail.com)
                     db.collection('users')
@@ -2782,7 +2798,7 @@
                                 return db.collection('notifications').add({
                                     userId: adminId,
                                     type: 'announcement_like',
-                                    message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcement.title}"`,
+                                    message: `${userData.prenom} ${userData.nom} a aimé votre annonce "${announcementTitle}"`,
                                     announcementId: announcementId,
                                     read: false,
                                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -3023,12 +3039,11 @@
             return card;
         }
 
-        // CORRECTION 2: Fonction complète pour gérer l'ajout aux favoris
+        // Correction 2: Gestion des favoris sans requêtes dupliquées (une seule mise à jour)
         async function handleAddToFavorites(epreuveId, auteurId, button) {
             if (!userData) return;
             
             const isCurrentlyFavorite = userData.favorites && userData.favorites.includes(epreuveId);
-            
             let newFavorites = userData.favorites ? [...userData.favorites] : [];
             
             if (isCurrentlyFavorite) {
@@ -3043,60 +3058,46 @@
                 button.classList.add('active');
                 button.innerHTML = '<i class="fas fa-heart"></i> Favori';
                 showNotification('Épreuve ajoutée aux favoris', 'success');
-                
-                try {
-                    // 1. Sauvegarde sur le Profil
-                    await db.collection('users').doc(currentUser.uid).update({
-                        favorites: newFavorites
-                    });
-                    
-                    userData.favorites = newFavorites;
-                    
-                    // 2. Notification de l'Auteur (si ce n'est pas l'utilisateur actuel)
-                    if (auteurId && auteurId !== currentUser.uid) {
-                        // Récupérer les détails de l'épreuve pour le message
-                        const examDoc = await db.collection('epreuves').doc(epreuveId).get();
-                        if (examDoc.exists) {
-                            const exam = examDoc.data();
-                            
-                            // Créer la notification pour l'auteur
-                            await db.collection('notifications').add({
-                                userId: auteurId,
-                                type: 'favorite',
-                                message: `${userData.prenom} ${userData.nom} a ajouté votre épreuve "${exam.nom_epreuve}" à ses favoris`,
-                                examId: epreuveId,
-                                read: false,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        }
-                    }
-                    
-                    // 3. Mise à jour de la Page Profil si active
-                    if (document.getElementById('profile-view').classList.contains('active')) {
-                        loadFavorites();
-                    }
-                    
-                } catch (error) {
-                    console.error('Erreur lors de l\'ajout aux favoris:', error);
-                    showNotification('Erreur lors de l\'ajout aux favoris', 'error');
-                }
             }
             
-            // Mettre à jour les favoris même en cas d'erreur de notification
-            if (isCurrentlyFavorite) {
-                db.collection('users').doc(currentUser.uid).update({
+            // Mise à jour unique de Firestore
+            try {
+                await db.collection('users').doc(currentUser.uid).update({
                     favorites: newFavorites
-                })
-                .then(() => {
-                    userData.favorites = newFavorites;
-                    if (document.getElementById('profile-view').classList.contains('active')) {
-                        loadFavorites();
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la mise à jour des favoris:', error);
-                    showNotification('Erreur lors de la mise à jour des favoris', 'error');
                 });
+                userData.favorites = newFavorites;
+                
+                // Mise à jour de l'affichage des favoris si nécessaire
+                if (document.getElementById('profile-view').classList.contains('active')) {
+                    loadFavorites();
+                }
+                
+                // Notification de l'auteur (uniquement si ajout et auteur différent)
+                if (!isCurrentlyFavorite && auteurId && auteurId !== currentUser.uid) {
+                    const examDoc = await db.collection('epreuves').doc(epreuveId).get();
+                    if (examDoc.exists) {
+                        const exam = examDoc.data();
+                        await db.collection('notifications').add({
+                            userId: auteurId,
+                            type: 'favorite',
+                            message: `${userData.prenom} ${userData.nom} a ajouté votre épreuve "${exam.nom_epreuve}" à ses favoris`,
+                            examId: epreuveId,
+                            read: false,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour des favoris:', error);
+                showNotification('Erreur lors de la mise à jour des favoris', 'error');
+                // Revenir à l'état précédent en cas d'erreur
+                if (isCurrentlyFavorite) {
+                    button.classList.add('active');
+                    button.innerHTML = '<i class="fas fa-heart"></i> Favori';
+                } else {
+                    button.classList.remove('active');
+                    button.innerHTML = '<i class="far fa-heart"></i> Favori';
+                }
             }
         }
 
@@ -3162,12 +3163,13 @@
                 });
         }
 
+        // Correction 3: Éviter le shadowing de userData
         function handleCorrigeAccess(examId, exam, action) {
             db.collection('users').doc(currentUser.uid).get()
                 .then(userDoc => {
-                    const userData = userDoc.data();
+                    const localUserData = userDoc.data();  // Renommé pour éviter shadowing
                     
-                    if (userData.points < 2) {
+                    if (localUserData.points < 2) {
                         showNotification('Points insuffisants. Vous avez besoin de 2 points pour accéder au corrigé', 'error');
                         return;
                     }
@@ -3186,7 +3188,7 @@
                                 return db.collection('notifications').add({
                                     userId: exam.auteurId,
                                     type: 'points_received',
-                                    message: `Vous avez reçu +2 points de ${userData.prenom} ${userData.nom} pour le ${action} de votre corrigé`,
+                                    message: `Vous avez reçu +2 points de ${localUserData.prenom} ${localUserData.nom} pour le ${action} de votre corrigé`,
                                     examId: examId,
                                     read: false,
                                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -3427,7 +3429,7 @@
             
             db.collection('users').doc(currentUser.uid).get()
                 .then(userDoc => {
-                    const userData = userDoc.data();
+                    const currentUserData = userDoc.data();
                     
                     return db.collection('epreuves').add({
                         matiere: matiere,
@@ -3437,7 +3439,7 @@
                         fichier_sujet: fichier_sujet,
                         fichier_corrige: fichier_corrige || null,
                         auteurId: currentUser.uid,
-                        auteurNom: `${userData.prenom} ${userData.nom}`,
+                        auteurNom: `${currentUserData.prenom} ${currentUserData.nom}`,
                         status: status,
                         downloadCount: 0,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -3749,7 +3751,7 @@
                         document.getElementById('edit-prenom').value = userData.prenom || '';
                         document.getElementById('edit-classe').value = userData.classe || '';
                         
-                        // CORRECTION 4: Mettre à jour le message d'accueil
+                        // Mettre à jour le message d'accueil
                         if (welcomeMessage && welcomeSubtitle) {
                             welcomeMessage.textContent = `Bienvenue sur HosBac, ${userData.prenom || 'Utilisateur'} !`;
                             welcomeSubtitle.textContent = 'Prêt à trouver la bonne épreuve ?';
@@ -3794,7 +3796,6 @@
             });
         }
 
-        // CORRECTION 2: Fonction améliorée pour charger les favoris
         function loadFavorites() {
             const favoritesContainer = document.getElementById('favorites-list');
             favoritesContainer.innerHTML = '<p>Chargement des favoris...</p>';
@@ -4004,10 +4005,20 @@
                 });
         }
         
-        // CORRECTION 1: Fonction améliorée pour les graphiques admin
+        // Correction 6: Destruction des instances Chart.js avant recréation
         async function renderAdminCharts() {
             try {
-                // CORRECTION 1: Graphique Utilisateurs - Récupération des données corrigée
+                // Détruire les instances existantes
+                if (charts.usersChart) {
+                    charts.usersChart.destroy();
+                    charts.usersChart = null;
+                }
+                if (charts.examsChart) {
+                    charts.examsChart.destroy();
+                    charts.examsChart = null;
+                }
+                
+                // Graphique Utilisateurs
                 const usersSnapshot = await db.collection('users').get();
                 const userCountsByDate = {};
                 const today = new Date();
@@ -4045,7 +4056,7 @@
                 // Rendu Graphique Utilisateurs (Line)
                 const usersCtx = document.getElementById('users-chart');
                 if (usersCtx) {
-                    new Chart(usersCtx, {
+                    charts.usersChart = new Chart(usersCtx, {
                         type: 'line',
                         data: {
                             labels: userLabels,
@@ -4069,7 +4080,7 @@
                     });
                 }
 
-                // CORRECTION 1: Graphique Épreuves - Requête corrigée
+                // Graphique Épreuves
                 const examsSnapshot = await db.collection('epreuves')
                                             .where('status', '==', 'approved')
                                             .orderBy('downloadCount', 'desc')
@@ -4090,7 +4101,7 @@
                 // Rendu Graphique Épreuves (Bar)
                 const examsCtx = document.getElementById('exams-chart');
                 if (examsCtx) {
-                    new Chart(examsCtx, {
+                    charts.examsChart = new Chart(examsCtx, {
                         type: 'bar',
                         data: {
                             labels: examLabels,
@@ -4114,7 +4125,6 @@
 
             } catch (error) {
                 console.error("Erreur lors de la génération des graphiques:", error);
-                // CORRECTION 1: Message d'erreur plus informatif
                 const usersChartContainer = document.getElementById('users-chart');
                 const examsChartContainer = document.getElementById('exams-chart');
                 
