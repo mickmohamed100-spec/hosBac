@@ -1224,7 +1224,6 @@ padding: 0.4rem 0.4rem;
 min-width: 60px;
 }
 }
-/* Toast notification */
 .toast-container {
 position: fixed;
 top: 20px;
@@ -1248,7 +1247,6 @@ background: var(--primary-blue);
 .toast.success { background: var(--success); }
 .toast.error { background: var(--error); }
 .toast.warning { background: var(--warning); }
-
 @keyframes slideInRight {
 from { transform: translateX(100%); opacity: 0; }
 to { transform: translateX(0); opacity: 1; }
@@ -1675,6 +1673,11 @@ Déjà un compte ? <span id="switch-to-login">Se connecter</span>
 <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5dfadf2a3f.mp3" type="audio/mp3">
 </audio>
 <script>
+// ============================================================
+// CORRECTIF CRITIQUE : SÉCURISATION DU CYCLE D'INITIALISATION
+// ============================================================
+
+// 1. CONFIGURATION FIREBASE
 const firebaseConfig = {
 apiKey: "AIzaSyCZQDAO0xK3nZqSwh41u91IbIc4ufkrd1o",
 authDomain: "hosbac-6ae23.firebaseapp.com",
@@ -1683,11 +1686,87 @@ storageBucket: "hosbac-6ae23.firebasestorage.app",
 messagingSenderId: "770406769367",
 appId: "1:770406769367:web:8e2a3f27ce0044fd120692"
 };
-firebase.initializeApp(firebaseConfig);
+
+let appInitialized = false;
+let splashTimeoutId = null;
+
+// 2. FONCTION DE DÉBLOCAGE DE L'ÉCRAN DE CHARGEMENT
+function forceHideSplashScreen(message) {
+    const splash = document.getElementById('splash-screen');
+    if (!splash) {
+        console.error('[CRITICAL] Élément #splash-screen introuvable dans le DOM !');
+        return;
+    }
+    if (splash.style.display === 'none') {
+        console.log('[DEBUG] Splash déjà masqué.');
+        return;
+    }
+    splash.style.display = 'none';
+    console.log('[DEBUG] Splash forcé masqué.');
+    if (message) {
+        showToast(message, 'warning');
+    }
+    if (splashTimeoutId) {
+        clearTimeout(splashTimeoutId);
+        splashTimeoutId = null;
+    }
+}
+
+// 3. AFFICHAGE DES TOASTS
+function showToast(message, type) {
+    const container = document.querySelector('.toast-container') || (() => {
+        const c = document.createElement('div');
+        c.className = 'toast-container';
+        document.body.appendChild(c);
+        return c;
+    })();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 4000);
+}
+
+// ============================================================
+// 2. MÉCANISME DE DÉBLOCAGE DE SECOURS (TIMEOUT 7 SECONDES)
+// ============================================================
+function startSplashFallbackTimer() {
+    if (splashTimeoutId) clearTimeout(splashTimeoutId);
+    splashTimeoutId = setTimeout(() => {
+        console.warn('[FALLBACK] ⏰ 7 secondes écoulées, le splash est forcé masqué.');
+        forceHideSplashScreen('Le chargement est plus long que prévu. Mode hors ligne ou données partielles.');
+        // Afficher l'application en mode dégradé si elle n'est pas déjà visible
+        const app = document.getElementById('app');
+        if (app) {
+            app.style.display = 'block';
+        }
+        // Forcer le chargement des données en mode dégradé
+        try {
+            loadRecentExamsFallback();
+            loadAnnouncementsFallback();
+        } catch (e) {
+            console.error('[FALLBACK] Erreur lors du chargement des données de secours:', e);
+        }
+        splashTimeoutId = null;
+    }, 7000);
+}
+
+// ============================================================
+// 4. INITIALISATION FIREBASE AVEC GESTION D'ERREURS
+// ============================================================
+try {
+    firebase.initializeApp(firebaseConfig);
+    console.log('[FIREBASE] ✅ Initialisation Firebase réussie');
+} catch (error) {
+    console.error('[FIREBASE] ❌ Erreur d\'initialisation Firebase:', error);
+    forceHideSplashScreen('Erreur de configuration Firebase. Mode hors ligne.');
+}
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 const cloudName = "dqn1dbimm";
 const uploadPreset = "hosbac_preset";
+
 let currentUser = null;
 let isAdmin = false;
 let userData = null;
@@ -1696,6 +1775,14 @@ let pendingExamsListener = null;
 let usersChartInstance = null;
 let examsChartInstance = null;
 
+// ============================================================
+// 3. JOURNALISATION DES ERREURS (CONSOLE EXPLICITE)
+// ============================================================
+console.log('[INIT] 🚀 Démarrage de l\'application HosBac');
+
+// ============================================================
+// RÉFÉRENCES DOM
+// ============================================================
 const splashScreen = document.getElementById('splash-screen');
 const warningScreen = document.getElementById('warning-screen');
 const complexDesignScreen = document.getElementById('complex-design-screen');
@@ -1740,39 +1827,110 @@ const welcomeSubtitle = document.getElementById('welcome-subtitle');
 const urlParams = new URLSearchParams(window.location.search);
 const sharedExamId = urlParams.get('exam');
 
-// Auth switch links
-document.getElementById('switch-to-signup').addEventListener('click', () => {
-    authTabs.forEach(t => t.classList.remove('active'));
-    document.querySelector('.auth-tab[data-tab="signup"]').classList.add('active');
-    loginForm.classList.remove('active');
-    signupForm.classList.add('active');
-});
-document.getElementById('switch-to-login').addEventListener('click', () => {
-    authTabs.forEach(t => t.classList.remove('active'));
-    document.querySelector('.auth-tab[data-tab="login"]').classList.add('active');
-    signupForm.classList.remove('active');
-    loginForm.classList.add('active');
-});
-
-// Toast notification system
-function showToast(message, type = 'info') {
-    const container = document.querySelector('.toast-container') || (() => {
-        const c = document.createElement('div');
-        c.className = 'toast-container';
-        document.body.appendChild(c);
-        return c;
-    })();
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    container.appendChild(toast);
-    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
+// ============================================================
+// FONCTIONS DE CHARGEMENT DE SECOURS (FALLBACK)
+// ============================================================
+function loadRecentExamsFallback() {
+    const container = document.getElementById('recent-exams');
+    if (!container) return;
+    container.innerHTML = '<p>⚠️ Chargement des épreuves en mode dégradé. Veuillez rafraîchir.</p>';
 }
 
+function loadAnnouncementsFallback() {
+    const container = document.getElementById('announcements-list');
+    if (!container) return;
+    container.innerHTML = '<p>⚠️ Chargement des annonces en mode dégradé. Veuillez rafraîchir.</p>';
+}
+
+// ============================================================
+// AUTH SWITCH LINKS
+// ============================================================
+document.getElementById('switch-to-signup')?.addEventListener('click', () => {
+    authTabs.forEach(t => t.classList.remove('active'));
+    document.querySelector('.auth-tab[data-tab="signup"]')?.classList.add('active');
+    loginForm?.classList.remove('active');
+    signupForm?.classList.add('active');
+});
+document.getElementById('switch-to-login')?.addEventListener('click', () => {
+    authTabs.forEach(t => t.classList.remove('active'));
+    document.querySelector('.auth-tab[data-tab="login"]')?.classList.add('active');
+    signupForm?.classList.remove('active');
+    loginForm?.classList.add('active');
+});
+
+// ============================================================
+// CHAMP SÉRIE CONDITIONNEL
+// ============================================================
+const examClasseSelect = document.getElementById('exam-classe');
+const examSerieContainer = document.getElementById('exam-serie-container');
+const examSerieSelect = document.getElementById('exam-serie');
+
+function toggleSerieField() {
+    const classe = examClasseSelect?.value || '';
+    const showSerie = ['2nd', '1ère', 'Terminale'].includes(classe);
+    if (examSerieContainer) {
+        examSerieContainer.style.display = showSerie ? 'block' : 'none';
+    }
+    if (examSerieSelect) {
+        examSerieSelect.required = showSerie;
+        if (!showSerie) examSerieSelect.value = '';
+    }
+}
+examClasseSelect?.addEventListener('change', toggleSerieField);
+toggleSerieField();
+
+// ============================================================
+// PROGRESS TRACKERS
+// ============================================================
+function createProgressTracker(containerId, barId, textId) {
+    const container = document.getElementById(containerId);
+    const bar = document.getElementById(barId);
+    const text = document.getElementById(textId);
+    return {
+        show: function() { if (container) { container.style.display = 'block'; if (bar) bar.style.width = '0%'; if (text) text.textContent = '0%'; } },
+        update: function(percent) { if (bar) { const p = Math.min(100, Math.max(0, percent)); bar.style.width = p + '%'; if (text) text.textContent = Math.round(p) + '%'; } },
+        hide: function() { if (container) container.style.display = 'none'; if (bar) bar.style.width = '0%'; if (text) text.textContent = '0%'; }
+    };
+}
+const sujetProgress = createProgressTracker('sujet-progress-container', 'sujet-progress-bar', 'sujet-progress-text');
+const corrigeProgress = createProgressTracker('corrige-progress-container', 'corrige-progress-bar', 'corrige-progress-text');
+const corrigeOnlyProgress = createProgressTracker('corrige-only-progress-container', 'corrige-only-progress-bar', 'corrige-only-progress-text');
+
+// ============================================================
+// VALIDATION MOTS DE PASSE
+// ============================================================
+const signupPassword = document.getElementById('signup-password');
+const signupConfirmPassword = document.getElementById('signup-confirm-password');
+const passwordMatchError = document.querySelector('.password-match-error');
+
+function validatePasswordMatch() {
+    const password = signupPassword?.value || '';
+    const confirm = signupConfirmPassword?.value || '';
+    if (confirm.length > 0 && password !== confirm) {
+        if (signupConfirmPassword) signupConfirmPassword.style.borderColor = 'var(--error)';
+        if (passwordMatchError) passwordMatchError.style.display = 'block';
+        return false;
+    } else {
+        if (signupConfirmPassword) signupConfirmPassword.style.borderColor = '';
+        if (passwordMatchError) passwordMatchError.style.display = 'none';
+        return true;
+    }
+}
+signupConfirmPassword?.addEventListener('input', validatePasswordMatch);
+signupPassword?.addEventListener('input', function() { if (signupConfirmPassword?.value.length > 0) validatePasswordMatch(); });
+
+function stopAllListeners() {
+    if (announcementsListener) { announcementsListener(); announcementsListener = null; }
+    if (pendingExamsListener) { pendingExamsListener(); pendingExamsListener = null; }
+}
+
+// ============================================================
+// FONCTION DE VÉRIFICATION AUTH
+// ============================================================
 function checkAuthRequired(action) {
     if (!currentUser) {
         showToast('Veuillez vous connecter pour effectuer cette action', 'warning');
-        authScreen.style.display = 'flex';
+        if (authScreen) authScreen.style.display = 'flex';
         return false;
     }
     return true;
@@ -1782,148 +1940,131 @@ function isUserAdmin() {
     return currentUser && isAdmin;
 }
 
-// Champ Série conditionnel
-const examClasseSelect = document.getElementById('exam-classe');
-const examSerieContainer = document.getElementById('exam-serie-container');
-const examSerieSelect = document.getElementById('exam-serie');
-
-function toggleSerieField() {
-    const classe = examClasseSelect.value;
-    const showSerie = ['2nd', '1ère', 'Terminale'].includes(classe);
-    examSerieContainer.style.display = showSerie ? 'block' : 'none';
-    examSerieSelect.required = showSerie;
-    if (!showSerie) examSerieSelect.value = '';
-}
-examClasseSelect.addEventListener('change', toggleSerieField);
-toggleSerieField();
-
-// Upload progress trackers
-function createProgressTracker(containerId, barId, textId) {
-    const container = document.getElementById(containerId);
-    const bar = document.getElementById(barId);
-    const text = document.getElementById(textId);
-    return {
-        show: function() { container.style.display = 'block'; bar.style.width = '0%'; text.textContent = '0%'; },
-        update: function(percent) { const p = Math.min(100, Math.max(0, percent)); bar.style.width = p + '%'; text.textContent = Math.round(p) + '%'; },
-        hide: function() { container.style.display = 'none'; bar.style.width = '0%'; text.textContent = '0%'; }
-    };
-}
-const sujetProgress = createProgressTracker('sujet-progress-container', 'sujet-progress-bar', 'sujet-progress-text');
-const corrigeProgress = createProgressTracker('corrige-progress-container', 'corrige-progress-bar', 'corrige-progress-text');
-const corrigeOnlyProgress = createProgressTracker('corrige-only-progress-container', 'corrige-only-progress-bar', 'corrige-only-progress-text');
-
-// Validation mots de passe
-const signupPassword = document.getElementById('signup-password');
-const signupConfirmPassword = document.getElementById('signup-confirm-password');
-const passwordMatchError = document.querySelector('.password-match-error');
-
-function validatePasswordMatch() {
-    const password = signupPassword.value;
-    const confirm = signupConfirmPassword.value;
-    if (confirm.length > 0 && password !== confirm) {
-        signupConfirmPassword.style.borderColor = 'var(--error)';
-        passwordMatchError.style.display = 'block';
-        return false;
-    } else {
-        signupConfirmPassword.style.borderColor = '';
-        passwordMatchError.style.display = 'none';
-        return true;
-    }
-}
-signupConfirmPassword.addEventListener('input', validatePasswordMatch);
-signupPassword.addEventListener('input', function() { if (signupConfirmPassword.value.length > 0) validatePasswordMatch(); });
-
-function stopAllListeners() {
-    if (announcementsListener) { announcementsListener(); announcementsListener = null; }
-    if (pendingExamsListener) { pendingExamsListener(); pendingExamsListener = null; }
-}
-
+// ============================================================
+// AUTH STATE CHANGED - CORRIGÉ AVEC TRY/CATCH
+// ============================================================
 auth.onAuthStateChanged(user => {
-    if (user) {
-        currentUser = user;
-        checkUserRole();
-        app.style.display = 'block';
-        authScreen.style.display = 'none';
-        loadUserData();
-        startAnnouncementsListener();
-        startPendingExamsListener();
-        document.getElementById('guest-login-btn').style.display = 'none';
-        document.getElementById('mobile-guest-login-btn').style.display = 'none';
-        if (sharedExamId) { document.querySelector('.nav-icon[data-view="exams"]').click(); }
-    } else {
-        currentUser = null;
-        userData = null;
-        isAdmin = false;
-        stopAllListeners();
-        app.style.display = 'block';
-        authScreen.style.display = 'none';
-        document.getElementById('guest-login-btn').style.display = 'flex';
-        document.getElementById('mobile-guest-login-btn').style.display = 'flex';
-        adminIcon.style.display = 'none';
-        mobileAdminIcon.style.display = 'none';
-        loadRecentExams();
-        loadAnnouncements();
-        updateExamCardsVisibility();
+    console.log('[AUTH] 🔐 Changement d\'état d\'authentification:', user ? `Utilisateur ${user.email}` : 'Déconnecté');
+    try {
+        if (user) {
+            currentUser = user;
+            checkUserRole();
+            if (app) app.style.display = 'block';
+            if (authScreen) authScreen.style.display = 'none';
+            loadUserData();
+            startAnnouncementsListener();
+            startPendingExamsListener();
+            const guestBtn = document.getElementById('guest-login-btn');
+            const mobileGuestBtn = document.getElementById('mobile-guest-login-btn');
+            if (guestBtn) guestBtn.style.display = 'none';
+            if (mobileGuestBtn) mobileGuestBtn.style.display = 'none';
+            if (sharedExamId) {
+                document.querySelector('.nav-icon[data-view="exams"]')?.click();
+            }
+            forceHideSplashScreen();
+        } else {
+            currentUser = null;
+            userData = null;
+            isAdmin = false;
+            stopAllListeners();
+            if (app) app.style.display = 'block';
+            if (authScreen) authScreen.style.display = 'none';
+            const guestBtn = document.getElementById('guest-login-btn');
+            const mobileGuestBtn = document.getElementById('mobile-guest-login-btn');
+            if (guestBtn) guestBtn.style.display = 'flex';
+            if (mobileGuestBtn) mobileGuestBtn.style.display = 'flex';
+            if (adminIcon) adminIcon.style.display = 'none';
+            if (mobileAdminIcon) mobileAdminIcon.style.display = 'none';
+            loadRecentExams();
+            loadAnnouncements();
+            updateExamCardsVisibility();
+            forceHideSplashScreen();
+        }
+    } catch (error) {
+        console.error('[AUTH] ❌ Erreur dans onAuthStateChanged:', error);
+        forceHideSplashScreen('Erreur d\'authentification. Mode invité.');
+        if (app) app.style.display = 'block';
+        if (authScreen) authScreen.style.display = 'none';
     }
 });
 
+// ============================================================
+// DOM CONTENT LOADED - AVEC TIMEOUT FALLBACK
+// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('[DOM] 📄 DOM chargé, initialisation des événements...');
+    
+    // Démarrage du fallback timer (7s)
+    startSplashFallbackTimer();
+
+    // Cache le splash après 4s normalement
     setTimeout(() => {
-        splashScreen.style.opacity = '0';
-        setTimeout(() => {
-            splashScreen.style.display = 'none';
-            if (sharedExamId) { complexDesignScreen.style.display = 'flex'; }
-            else { warningScreen.style.display = 'flex'; }
-        }, 500);
+        if (splashScreen) {
+            splashScreen.style.opacity = '0';
+            setTimeout(() => {
+                if (splashScreen && !sharedExamId) {
+                    if (warningScreen) warningScreen.style.display = 'flex';
+                }
+            }, 500);
+        }
     }, 4000);
 
-    continueToWarningBtn.addEventListener('click', () => {
-        complexDesignScreen.style.display = 'none';
-        warningScreen.style.display = 'flex';
+    // Événement continue-to-warning
+    continueToWarningBtn?.addEventListener('click', () => {
+        if (complexDesignScreen) complexDesignScreen.style.display = 'none';
+        if (warningScreen) warningScreen.style.display = 'flex';
     });
 
-    document.querySelector('.accept-btn').addEventListener('click', () => {
-        warningScreen.style.display = 'none';
+    // Acceptation des avertissements
+    document.querySelector('.accept-btn')?.addEventListener('click', () => {
+        if (warningScreen) warningScreen.style.display = 'none';
     });
 
-    mobileMenuBtn.addEventListener('click', () => { mobileMenu.classList.toggle('active'); });
+    // Menu mobile
+    mobileMenuBtn?.addEventListener('click', () => {
+        if (mobileMenu) mobileMenu.classList.toggle('active');
+    });
     document.addEventListener('click', (e) => {
-        if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) { mobileMenu.classList.remove('active'); }
+        if (mobileMenu && !mobileMenu.contains(e.target) && mobileMenuBtn && !mobileMenuBtn.contains(e.target)) {
+            if (mobileMenu) mobileMenu.classList.remove('active');
+        }
     });
 
+    // Tabs d'authentification
     authTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.getAttribute('data-tab');
             authTabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            loginForm.classList.toggle('active', tabName === 'login');
-            signupForm.classList.toggle('active', tabName === 'signup');
+            if (loginForm) loginForm.classList.toggle('active', tabName === 'login');
+            if (signupForm) signupForm.classList.toggle('active', tabName === 'signup');
         });
     });
 
-    loginForm.addEventListener('submit', e => {
+    // Formulaires d'authentification
+    loginForm?.addEventListener('submit', e => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
+        const email = document.getElementById('login-email')?.value || '';
+        const password = document.getElementById('login-password')?.value || '';
         auth.signInWithEmailAndPassword(email, password)
         .then(() => showToast('Connexion réussie', 'success'))
         .catch(error => {
-            console.error('Erreur de connexion:', error);
+            console.error('[AUTH] ❌ Erreur de connexion:', error);
             showToast(error.code === 'auth/wrong-password' ? 'Mot de passe incorrect' : 'Erreur de connexion', 'error');
         });
     });
 
-    signupForm.addEventListener('submit', e => {
+    signupForm?.addEventListener('submit', e => {
         e.preventDefault();
         if (!validatePasswordMatch()) {
             showToast('Les mots de passe ne correspondent pas', 'error');
             return;
         }
-        const nom = document.getElementById('signup-nom').value;
-        const prenom = document.getElementById('signup-prenom').value;
-        const ecole = document.getElementById('signup-ecole').value;
-        const email = document.getElementById('signup-email').value;
-        const password = signupPassword.value;
+        const nom = document.getElementById('signup-nom')?.value || '';
+        const prenom = document.getElementById('signup-prenom')?.value || '';
+        const ecole = document.getElementById('signup-ecole')?.value || '';
+        const email = document.getElementById('signup-email')?.value || '';
+        const password = signupPassword?.value || '';
         auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
             currentUser = userCredential.user;
@@ -1936,28 +2077,28 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(() => showToast('Inscription réussie', 'success'))
         .catch(error => {
-            console.error('Erreur d\'inscription:', error);
+            console.error('[AUTH] ❌ Erreur d\'inscription:', error);
             showToast('Erreur d\'inscription', 'error');
         });
     });
 
-    document.querySelector('.forgot-password').addEventListener('click', () => {
-        const email = document.getElementById('login-email').value;
+    document.querySelector('.forgot-password')?.addEventListener('click', () => {
+        const email = document.getElementById('login-email')?.value || '';
         if (!email) { showToast('Veuillez entrer votre email', 'warning'); return; }
         auth.sendPasswordResetEmail(email)
         .then(() => showToast('Lien de réinitialisation envoyé', 'success'))
-        .catch(error => { console.error('Erreur d\'envoi:', error); showToast('Erreur d\'envoi du lien', 'error'); });
+        .catch(error => { console.error('[AUTH] ❌ Erreur d\'envoi:', error); showToast('Erreur d\'envoi du lien', 'error'); });
     });
 
-    announcementForm.addEventListener('submit', e => { e.preventDefault(); submitAnnouncement(); });
+    // Annonces
+    announcementForm?.addEventListener('submit', e => { e.preventDefault(); submitAnnouncement(); });
 
+    // Navigation
     navIcons.forEach(icon => {
         icon.addEventListener('click', () => {
             const viewName = icon.getAttribute('data-view');
             if (!viewName) return;
-            if (viewName === 'profile') {
-                if (!checkAuthRequired('profil')) return;
-            }
+            if (viewName === 'profile' && !checkAuthRequired('profil')) return;
             if (viewName === 'admin' && (!currentUser || !isAdmin)) {
                 showToast('Accès non autorisé', 'error');
                 return;
@@ -1972,9 +2113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         icon.addEventListener('click', () => {
             const viewName = icon.getAttribute('data-view');
             if (!viewName) return;
-            if (viewName === 'profile') {
-                if (!checkAuthRequired('profil')) return;
-            }
+            if (viewName === 'profile' && !checkAuthRequired('profil')) return;
             if (viewName === 'admin' && (!currentUser || !isAdmin)) {
                 showToast('Accès non autorisé', 'error');
                 return;
@@ -1983,77 +2122,65 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.classList.add('active');
             navIcons.forEach(i => i.classList.toggle('active', i.getAttribute('data-view') === viewName));
             switchView(viewName);
-            mobileMenu.classList.remove('active');
+            if (mobileMenu) mobileMenu.classList.remove('active');
         });
     });
 
-    document.getElementById('guest-login-btn').addEventListener('click', () => { authScreen.style.display = 'flex'; });
-    document.getElementById('mobile-guest-login-btn').addEventListener('click', () => {
-        authScreen.style.display = 'flex';
-        mobileMenu.classList.remove('active');
+    // Boutons d'invitation à se connecter
+    document.getElementById('guest-login-btn')?.addEventListener('click', () => {
+        if (authScreen) authScreen.style.display = 'flex';
+    });
+    document.getElementById('mobile-guest-login-btn')?.addEventListener('click', () => {
+        if (authScreen) authScreen.style.display = 'flex';
+        if (mobileMenu) mobileMenu.classList.remove('active');
     });
 
-    function switchView(viewName) {
-        if (viewName === 'admin') {
-            if (!currentUser || !isAdmin) {
-                showToast('Accès non autorisé', 'error');
-                viewName = 'home';
-                navIcons.forEach(i => { i.classList.remove('active'); if (i.getAttribute('data-view') === 'home') i.classList.add('active'); });
-                mobileNavIcons.forEach(i => { i.classList.remove('active'); if (i.getAttribute('data-view') === 'home') i.classList.add('active'); });
-            }
-        }
-        views.forEach(view => {
-            view.classList.remove('active');
-            if (view.id === `${viewName}-view`) view.classList.add('active');
-        });
-        switch(viewName) {
-            case 'home': loadRecentExams(); break;
-            case 'exams': loadAllExams(); break;
-            case 'search': break;
-            case 'profile': if (checkAuthRequired('profil')) loadProfileData(); break;
-            case 'admin': loadAdminPanel(); break;
-        }
-        // Close search suggestions when switching views
-        if (searchSuggestions) searchSuggestions.style.display = 'none';
-    }
+    // Logo
+    document.querySelector('.logo')?.addEventListener('click', () => { switchView('home'); });
 
-    document.querySelector('.logo').addEventListener('click', () => { switchView('home'); });
-
-    addExamBtn.addEventListener('click', () => {
+    // Ajout d'épreuves
+    addExamBtn?.addEventListener('click', () => {
         if (!checkAuthRequired('ajouter une épreuve')) return;
-        addExamPopup.style.display = 'flex';
+        if (addExamPopup) addExamPopup.style.display = 'flex';
     });
 
-    addCorrigeOnlyBtn.addEventListener('click', () => {
+    addCorrigeOnlyBtn?.addEventListener('click', () => {
         if (!checkAuthRequired('ajouter un corrigé')) return;
         loadExistingExamsForCorrige();
-        addCorrigeOnlyPopup.style.display = 'flex';
+        if (addCorrigeOnlyPopup) addCorrigeOnlyPopup.style.display = 'flex';
     });
 
-    addExamForm.addEventListener('submit', e => { e.preventDefault(); submitExam(); });
-    addCorrigeOnlyForm.addEventListener('submit', e => { e.preventDefault(); submitCorrigeOnly(); });
+    addExamForm?.addEventListener('submit', e => { e.preventDefault(); submitExam(); });
+    addCorrigeOnlyForm?.addEventListener('submit', e => { e.preventDefault(); submitCorrigeOnly(); });
 
-    logoutBtn.addEventListener('click', () => {
+    // Déconnexion
+    logoutBtn?.addEventListener('click', () => {
         stopAllListeners();
         auth.signOut()
         .then(() => showToast('Déconnexion réussie', 'success'))
-        .catch(error => console.error('Erreur de déconnexion:', error));
+        .catch(error => console.error('[AUTH] ❌ Erreur de déconnexion:', error));
     });
 
-    profileForm.addEventListener('submit', e => { e.preventDefault(); updateProfile(); });
+    // Profil
+    profileForm?.addEventListener('submit', e => { e.preventDefault(); updateProfile(); });
 
-    termsLink.addEventListener('click', () => { termsPopup.style.display = 'flex'; });
-    privacyLink.addEventListener('click', () => { privacyPopup.style.display = 'flex'; });
+    // Conditions et confidentialité
+    termsLink?.addEventListener('click', () => { if (termsPopup) termsPopup.style.display = 'flex'; });
+    privacyLink?.addEventListener('click', () => { if (privacyPopup) privacyPopup.style.display = 'flex'; });
 
+    // Fermeture des popups
     popupCloseButtons.forEach(button => {
-        button.addEventListener('click', () => { button.closest('.popup-overlay').style.display = 'none'; });
+        button.addEventListener('click', () => {
+            const popup = button.closest('.popup-overlay');
+            if (popup) popup.style.display = 'none';
+        });
     });
 
     document.querySelectorAll('.popup-overlay').forEach(popup => {
         popup.addEventListener('click', e => { if (e.target === popup) popup.style.display = 'none'; });
     });
 
-    // Cloudinary Upload Widgets avec progression
+    // Cloudinary Upload Widgets
     let sujetUploadWidget, corrigeUploadWidget, corrigeOnlyUploadWidget;
     try {
         sujetUploadWidget = cloudinary.createUploadWidget({
@@ -2065,15 +2192,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('exam-sujet-url').value = result.info.secure_url;
                 document.getElementById('sujet-upload').innerHTML = `<p>Fichier sujet téléchargé: ${result.info.original_filename}</p>`;
                 sujetProgress.hide();
-                submitBtn.disabled = false;
+                if (submitBtn) submitBtn.disabled = false;
                 showToast('Fichier sujet uploadé avec succès', 'success');
             } else if (error) {
-                sujetProgress.hide(); submitBtn.disabled = false;
+                sujetProgress.hide(); if (submitBtn) submitBtn.disabled = false;
                 showToast('Erreur lors du téléchargement du fichier sujet', 'error');
             } else if (result && result.event === 'progress') {
                 sujetProgress.update((result.bytesUploaded / result.totalBytes) * 100);
             } else if (result && result.event === 'queues-start') {
-                sujetProgress.show(); submitBtn.disabled = true;
+                sujetProgress.show(); if (submitBtn) submitBtn.disabled = true;
             }
         });
         corrigeUploadWidget = cloudinary.createUploadWidget({
@@ -2085,15 +2212,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('exam-corrige-url').value = result.info.secure_url;
                 document.getElementById('corrige-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
                 corrigeProgress.hide();
-                submitBtn.disabled = false;
+                if (submitBtn) submitBtn.disabled = false;
                 showToast('Fichier corrigé uploadé avec succès', 'success');
             } else if (error) {
-                corrigeProgress.hide(); submitBtn.disabled = false;
+                corrigeProgress.hide(); if (submitBtn) submitBtn.disabled = false;
                 showToast('Erreur lors du téléchargement du fichier corrigé', 'error');
             } else if (result && result.event === 'progress') {
                 corrigeProgress.update((result.bytesUploaded / result.totalBytes) * 100);
             } else if (result && result.event === 'queues-start') {
-                corrigeProgress.show(); submitBtn.disabled = true;
+                corrigeProgress.show(); if (submitBtn) submitBtn.disabled = true;
             }
         });
         corrigeOnlyUploadWidget = cloudinary.createUploadWidget({
@@ -2105,83 +2232,108 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('corrige-only-url').value = result.info.secure_url;
                 document.getElementById('corrige-only-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
                 corrigeOnlyProgress.hide();
-                submitBtn.disabled = false;
+                if (submitBtn) submitBtn.disabled = false;
                 showToast('Fichier corrigé uploadé avec succès', 'success');
             } else if (error) {
-                corrigeOnlyProgress.hide(); submitBtn.disabled = false;
+                corrigeOnlyProgress.hide(); if (submitBtn) submitBtn.disabled = false;
                 showToast('Erreur lors du téléchargement du fichier corrigé', 'error');
             } else if (result && result.event === 'progress') {
                 corrigeOnlyProgress.update((result.bytesUploaded / result.totalBytes) * 100);
             } else if (result && result.event === 'queues-start') {
-                corrigeOnlyProgress.show(); submitBtn.disabled = true;
+                corrigeOnlyProgress.show(); if (submitBtn) submitBtn.disabled = true;
             }
         });
     } catch (error) {
+        console.error('[CLOUDINARY] ❌ Erreur d\'initialisation:', error);
         showToast('Erreur d\'initialisation du système de fichier', 'error');
     }
 
-    document.getElementById('sujet-upload').addEventListener('click', () => { if (sujetUploadWidget) sujetUploadWidget.open(); });
-    document.getElementById('corrige-upload').addEventListener('click', () => { if (corrigeUploadWidget) corrigeUploadWidget.open(); });
-    document.getElementById('corrige-only-upload').addEventListener('click', () => { if (corrigeOnlyUploadWidget) corrigeOnlyUploadWidget.open(); });
+    document.getElementById('sujet-upload')?.addEventListener('click', () => { if (sujetUploadWidget) sujetUploadWidget.open(); });
+    document.getElementById('corrige-upload')?.addEventListener('click', () => { if (corrigeUploadWidget) corrigeUploadWidget.open(); });
+    document.getElementById('corrige-only-upload')?.addEventListener('click', () => { if (corrigeOnlyUploadWidget) corrigeOnlyUploadWidget.open(); });
 
-    filterClass.addEventListener('change', applyFilters);
-    filterSubject.addEventListener('change', applyFilters);
-    filterSeries.addEventListener('change', applyFilters);
-    searchExams.addEventListener('input', debounce(applyFilters, 300));
+    // Filtres
+    filterClass?.addEventListener('change', applyFilters);
+    filterSubject?.addEventListener('change', applyFilters);
+    filterSeries?.addEventListener('change', applyFilters);
+    searchExams?.addEventListener('input', debounce(applyFilters, 300));
 
-    // Recherche dynamique avec suggestions
+    // Recherche dynamique
     let searchTimeout;
-    globalSearch.addEventListener('input', function() {
+    globalSearch?.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         const query = this.value.trim();
         if (query.length < 2) {
-            searchSuggestions.style.display = 'none';
-            searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
+            if (searchSuggestions) searchSuggestions.style.display = 'none';
+            if (searchResults) searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
             return;
         }
         searchTimeout = setTimeout(() => performDynamicSearch(query), 300);
     });
 
-    // Close suggestions on click outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#search-view') && !e.target.closest('#global-search')) {
             if (searchSuggestions) searchSuggestions.style.display = 'none';
         }
     });
+
+    console.log('[DOM] ✅ Événements initialisés avec succès');
 });
 
+// ============================================================
+// FONCTIONS MÉTIER
+// ============================================================
+
 function startAnnouncementsListener() {
-    if (announcementsListener) announcementsListener();
-    announcementsListener = db.collection('announcements')
-    .orderBy('createdAt', 'desc')
-    .onSnapshot(() => loadAnnouncements(), error => console.error('Erreur écoute annonces:', error));
+    try {
+        if (announcementsListener) announcementsListener();
+        announcementsListener = db.collection('announcements')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(() => loadAnnouncements(), error => {
+            console.error('[FIRESTORE] ❌ Erreur écoute annonces:', error);
+        });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur démarrage listener annonces:', error);
+    }
 }
 
 function startPendingExamsListener() {
     if (!currentUser || !isAdmin) return;
-    if (pendingExamsListener) pendingExamsListener();
-    pendingExamsListener = db.collection('epreuves')
-    .where('status', '==', 'pending')
-    .onSnapshot(snapshot => {
-        if (document.getElementById('admin-view').classList.contains('active')) loadPendingExams();
-        updatePendingExamsCount();
-    }, error => console.error('Erreur écoute épreuves en attente:', error));
+    try {
+        if (pendingExamsListener) pendingExamsListener();
+        pendingExamsListener = db.collection('epreuves')
+        .where('status', '==', 'pending')
+        .onSnapshot(snapshot => {
+            if (document.getElementById('admin-view')?.classList.contains('active')) loadPendingExams();
+            updatePendingExamsCount();
+        }, error => {
+            console.error('[FIRESTORE] ❌ Erreur écoute épreuves en attente:', error);
+        });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur démarrage listener épreuves en attente:', error);
+    }
 }
 
 function checkUserRole() {
     if (!currentUser) return;
-    db.collection('users').doc(currentUser.uid).get()
-    .then(doc => {
-        if (doc.exists) {
-            userData = doc.data();
-            isAdmin = userData.role === 'admin';
-            adminIcon.style.display = isAdmin ? 'flex' : 'none';
-            mobileAdminIcon.style.display = isAdmin ? 'flex' : 'none';
-            if (isAdmin) startPendingExamsListener();
-            updateExamCardsVisibility();
-        }
-    })
-    .catch(error => console.error('Erreur lors de la vérification du rôle:', error));
+    try {
+        db.collection('users').doc(currentUser.uid).get()
+        .then(doc => {
+            if (doc.exists) {
+                userData = doc.data();
+                isAdmin = userData.role === 'admin';
+                if (adminIcon) adminIcon.style.display = isAdmin ? 'flex' : 'none';
+                if (mobileAdminIcon) mobileAdminIcon.style.display = isAdmin ? 'flex' : 'none';
+                if (isAdmin) startPendingExamsListener();
+                updateExamCardsVisibility();
+            }
+        })
+        .catch(error => {
+            console.error('[FIRESTORE] ❌ Erreur vérification rôle utilisateur:', error);
+        });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur checkUserRole:', error);
+    }
 }
 
 function updateExamCardsVisibility() {
@@ -2195,43 +2347,56 @@ function updateExamCardsVisibility() {
 
 function loadUserData() {
     if (!currentUser) return;
-    loadRecentExams();
-    loadProfileData();
-    loadAnnouncements();
-    if (isAdmin) updatePendingExamsCount();
+    try {
+        loadRecentExams();
+        loadProfileData();
+        loadAnnouncements();
+        if (isAdmin) updatePendingExamsCount();
+    } catch (error) {
+        console.error('[LOAD] ❌ Erreur loadUserData:', error);
+    }
 }
 
 function loadAnnouncements() {
     const container = document.getElementById('announcements-list');
+    if (!container) return;
     container.innerHTML = '<p>Chargement des annonces...</p>';
-    db.collection('announcements').orderBy('createdAt', 'desc').get()
-    .then(querySnapshot => {
-        container.innerHTML = '';
-        if (querySnapshot.empty) { container.innerHTML = '<p>Aucune annonce pour le moment.</p>'; return; }
-        querySnapshot.forEach(doc => {
-            const announcement = doc.data();
-            const card = document.createElement('div');
-            card.className = 'announcement-card';
-            const hasLiked = userData && userData.likedAnnouncements && userData.likedAnnouncements.includes(doc.id);
-            card.innerHTML = `
-            <div class="announcement-header">
-                <div class="announcement-title">${announcement.title}</div>
-                <div class="announcement-date">${new Date(announcement.createdAt?.toDate()).toLocaleDateString('fr-FR')}</div>
-            </div>
-            <div class="announcement-content">${announcement.content}</div>
-            <div class="announcement-actions">
-                <button class="like-btn ${hasLiked ? 'liked' : ''}" data-announcement-id="${doc.id}">
-                    <i class="fas fa-heart"></i>
-                    <span class="like-count">${announcement.likes || 0}</span>
-                </button>
-            </div>
-            `;
-            const likeBtn = card.querySelector('.like-btn');
-            likeBtn.addEventListener('click', () => toggleAnnouncementLike(doc.id, likeBtn));
-            container.appendChild(card);
+    try {
+        db.collection('announcements').orderBy('createdAt', 'desc').get()
+        .then(querySnapshot => {
+            container.innerHTML = '';
+            if (querySnapshot.empty) { container.innerHTML = '<p>Aucune annonce pour le moment.</p>'; return; }
+            querySnapshot.forEach(doc => {
+                const announcement = doc.data();
+                const card = document.createElement('div');
+                card.className = 'announcement-card';
+                const hasLiked = userData && userData.likedAnnouncements && userData.likedAnnouncements.includes(doc.id);
+                card.innerHTML = `
+                <div class="announcement-header">
+                    <div class="announcement-title">${announcement.title || 'Sans titre'}</div>
+                    <div class="announcement-date">${new Date(announcement.createdAt?.toDate()).toLocaleDateString('fr-FR')}</div>
+                </div>
+                <div class="announcement-content">${announcement.content || ''}</div>
+                <div class="announcement-actions">
+                    <button class="like-btn ${hasLiked ? 'liked' : ''}" data-announcement-id="${doc.id}">
+                        <i class="fas fa-heart"></i>
+                        <span class="like-count">${announcement.likes || 0}</span>
+                    </button>
+                </div>
+                `;
+                const likeBtn = card.querySelector('.like-btn');
+                likeBtn?.addEventListener('click', () => toggleAnnouncementLike(doc.id, likeBtn));
+                container.appendChild(card);
+            });
+        })
+        .catch(error => {
+            console.error('[FIRESTORE] ❌ Erreur chargement annonces:', error);
+            container.innerHTML = '<p>Erreur lors du chargement des annonces.</p>';
         });
-    })
-    .catch(error => { console.error('Erreur chargement annonces:', error); container.innerHTML = '<p>Erreur lors du chargement des annonces.</p>'; });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadAnnouncements:', error);
+        container.innerHTML = '<p>Erreur lors du chargement des annonces.</p>';
+    }
 }
 
 function toggleAnnouncementLike(announcementId, button) {
@@ -2239,22 +2404,26 @@ function toggleAnnouncementLike(announcementId, button) {
     if (!userData) return;
     const isCurrentlyLiked = userData.likedAnnouncements && userData.likedAnnouncements.includes(announcementId);
     let newLiked = userData.likedAnnouncements ? [...userData.likedAnnouncements] : [];
-    if (isCurrentlyLiked) {
-        newLiked = newLiked.filter(id => id !== announcementId);
-        button.classList.remove('liked');
-        db.collection('announcements').doc(announcementId).update({ likes: firebase.firestore.FieldValue.increment(-1) });
-    } else {
-        newLiked.push(announcementId);
-        button.classList.add('liked');
-        db.collection('announcements').doc(announcementId).update({ likes: firebase.firestore.FieldValue.increment(1) });
+    try {
+        if (isCurrentlyLiked) {
+            newLiked = newLiked.filter(id => id !== announcementId);
+            button.classList.remove('liked');
+            db.collection('announcements').doc(announcementId).update({ likes: firebase.firestore.FieldValue.increment(-1) });
+        } else {
+            newLiked.push(announcementId);
+            button.classList.add('liked');
+            db.collection('announcements').doc(announcementId).update({ likes: firebase.firestore.FieldValue.increment(1) });
+        }
+        db.collection('users').doc(currentUser.uid).update({ likedAnnouncements: newLiked })
+        .then(() => {
+            userData.likedAnnouncements = newLiked;
+            const count = button.querySelector('.like-count');
+            if (count) count.textContent = parseInt(count.textContent) + (isCurrentlyLiked ? -1 : 1);
+        })
+        .catch(error => console.error('[FIRESTORE] ❌ Erreur mise à jour likes:', error));
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur toggleAnnouncementLike:', error);
     }
-    db.collection('users').doc(currentUser.uid).update({ likedAnnouncements: newLiked })
-    .then(() => {
-        userData.likedAnnouncements = newLiked;
-        const count = button.querySelector('.like-count');
-        count.textContent = parseInt(count.textContent) + (isCurrentlyLiked ? -1 : 1);
-    })
-    .catch(error => console.error('Erreur mise à jour likes:', error));
 }
 
 function submitAnnouncement() {
@@ -2262,81 +2431,113 @@ function submitAnnouncement() {
         showToast('Action non autorisée', 'error');
         return;
     }
-    const title = document.getElementById('announcement-title').value;
-    const content = document.getElementById('announcement-content').value;
-    db.collection('announcements').add({
-        title, content,
-        authorId: currentUser.uid,
-        authorName: `${userData.prenom} ${userData.nom}`,
-        likes: 0,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => { announcementForm.reset(); showToast('Annonce publiée avec succès', 'success'); })
-    .catch(error => { console.error('Erreur publication annonce:', error); showToast('Erreur lors de la publication', 'error'); });
+    const title = document.getElementById('announcement-title')?.value || '';
+    const content = document.getElementById('announcement-content')?.value || '';
+    try {
+        db.collection('announcements').add({
+            title, content,
+            authorId: currentUser.uid,
+            authorName: `${userData?.prenom || ''} ${userData?.nom || ''}`,
+            likes: 0,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => { if (announcementForm) announcementForm.reset(); showToast('Annonce publiée avec succès', 'success'); })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur publication annonce:', error); showToast('Erreur lors de la publication', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur submitAnnouncement:', error);
+        showToast('Erreur lors de la publication', 'error');
+    }
 }
 
 function loadRecentExams() {
     const container = document.getElementById('recent-exams');
+    if (!container) return;
     container.innerHTML = '<p>Chargement des épreuves récentes...</p>';
-    db.collection('epreuves').where('status', '==', 'approved')
-    .orderBy('createdAt', 'desc').limit(10).get()
-    .then(querySnapshot => {
-        container.innerHTML = '';
-        if (querySnapshot.empty) { container.innerHTML = '<p>Aucune épreuve récente.</p>'; return; }
-        querySnapshot.forEach(doc => {
-            const exam = doc.data();
-            container.appendChild(createExamCard(exam, doc.id));
+    try {
+        db.collection('epreuves').where('status', '==', 'approved')
+        .orderBy('createdAt', 'desc').limit(10).get()
+        .then(querySnapshot => {
+            container.innerHTML = '';
+            if (querySnapshot.empty) { container.innerHTML = '<p>Aucune épreuve récente.</p>'; return; }
+            querySnapshot.forEach(doc => {
+                const exam = doc.data();
+                container.appendChild(createExamCard(exam, doc.id));
+            });
+            updateExamCardsVisibility();
+        })
+        .catch(error => {
+            console.error('[FIRESTORE] ❌ Erreur chargement épreuves récentes:', error);
+            container.innerHTML = '<p>Erreur lors du chargement des épreuves.</p>';
         });
-        updateExamCardsVisibility();
-    })
-    .catch(error => { console.error('Erreur chargement épreuves récentes:', error); container.innerHTML = '<p>Erreur lors du chargement.</p>'; });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadRecentExams:', error);
+        container.innerHTML = '<p>Erreur lors du chargement des épreuves.</p>';
+    }
 }
 
 function loadAllExams() {
     const container = document.getElementById('exams-list');
+    if (!container) return;
     container.innerHTML = '<p>Chargement des épreuves...</p>';
-    db.collection('epreuves').where('status', '==', 'approved').get()
-    .then(querySnapshot => {
-        container.innerHTML = '';
-        if (querySnapshot.empty) { container.innerHTML = '<p>Aucune épreuve trouvée.</p>'; return; }
-        querySnapshot.forEach(doc => {
-            const exam = doc.data();
-            container.appendChild(createExamCard(exam, doc.id));
+    try {
+        db.collection('epreuves').where('status', '==', 'approved').get()
+        .then(querySnapshot => {
+            container.innerHTML = '';
+            if (querySnapshot.empty) { container.innerHTML = '<p>Aucune épreuve trouvée.</p>'; return; }
+            querySnapshot.forEach(doc => {
+                const exam = doc.data();
+                container.appendChild(createExamCard(exam, doc.id));
+            });
+            updateExamCardsVisibility();
+        })
+        .catch(error => {
+            console.error('[FIRESTORE] ❌ Erreur chargement épreuves:', error);
+            container.innerHTML = '<p>Erreur lors du chargement des épreuves.</p>';
         });
-        updateExamCardsVisibility();
-    })
-    .catch(error => { console.error('Erreur chargement épreuves:', error); container.innerHTML = '<p>Erreur lors du chargement.</p>'; });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadAllExams:', error);
+        container.innerHTML = '<p>Erreur lors du chargement des épreuves.</p>';
+    }
 }
 
 function applyFilters() {
-    const classFilter = filterClass.value;
-    const subjectFilter = filterSubject.value;
-    const seriesFilter = filterSeries.value;
-    const searchText = searchExams.value.toLowerCase();
+    const classFilter = filterClass?.value || '';
+    const subjectFilter = filterSubject?.value || '';
+    const seriesFilter = filterSeries?.value || '';
+    const searchText = searchExams?.value?.toLowerCase() || '';
     const container = document.getElementById('exams-list');
+    if (!container) return;
     container.innerHTML = '<p>Filtrage des épreuves...</p>';
     let query = db.collection('epreuves').where('status', '==', 'approved');
     if (classFilter) query = query.where('classe', '==', classFilter);
     if (subjectFilter) query = query.where('matiere', '==', subjectFilter);
     if (seriesFilter) query = query.where('serie', '==', seriesFilter);
-    query.get()
-    .then(querySnapshot => {
-        container.innerHTML = '';
-        if (querySnapshot.empty) { container.innerHTML = '<p>Aucune épreuve trouvée.</p>'; return; }
-        let filtered = [];
-        querySnapshot.forEach(doc => {
-            const exam = doc.data(); exam.id = doc.id;
-            if (searchText) {
-                if (exam.nom_epreuve.toLowerCase().includes(searchText) ||
-                    exam.matiere.toLowerCase().includes(searchText) ||
-                    exam.classe.toLowerCase().includes(searchText)) filtered.push(exam);
-            } else { filtered.push(exam); }
+    try {
+        query.get()
+        .then(querySnapshot => {
+            container.innerHTML = '';
+            if (querySnapshot.empty) { container.innerHTML = '<p>Aucune épreuve trouvée.</p>'; return; }
+            let filtered = [];
+            querySnapshot.forEach(doc => {
+                const exam = doc.data(); exam.id = doc.id;
+                if (searchText) {
+                    if (exam.nom_epreuve?.toLowerCase().includes(searchText) ||
+                        exam.matiere?.toLowerCase().includes(searchText) ||
+                        exam.classe?.toLowerCase().includes(searchText)) filtered.push(exam);
+                } else { filtered.push(exam); }
+            });
+            if (filtered.length === 0) { container.innerHTML = '<p>Aucune épreuve trouvée.</p>'; return; }
+            filtered.forEach(exam => { container.appendChild(createExamCard(exam, exam.id)); });
+            updateExamCardsVisibility();
+        })
+        .catch(error => {
+            console.error('[FIRESTORE] ❌ Erreur filtrage:', error);
+            container.innerHTML = '<p>Erreur lors du filtrage.</p>';
         });
-        if (filtered.length === 0) { container.innerHTML = '<p>Aucune épreuve trouvée.</p>'; return; }
-        filtered.forEach(exam => { container.appendChild(createExamCard(exam, exam.id)); });
-        updateExamCardsVisibility();
-    })
-    .catch(error => { console.error('Erreur filtrage:', error); container.innerHTML = '<p>Erreur lors du filtrage.</p>'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur applyFilters:', error);
+        container.innerHTML = '<p>Erreur lors du filtrage.</p>';
+    }
 }
 
 function createExamCard(exam, examId) {
@@ -2344,10 +2545,10 @@ function createExamCard(exam, examId) {
     card.className = 'exam-card';
     const isFavorite = userData && userData.favorites && userData.favorites.includes(examId);
     card.innerHTML = `
-    <h3 class="exam-name">${exam.nom_epreuve}</h3>
+    <h3 class="exam-name">${exam.nom_epreuve || 'Sans nom'}</h3>
     <div class="exam-details">
-        <p>Matière: ${exam.matiere} | Classe: ${exam.classe}${exam.serie ? ' | Série: '+exam.serie : ''}</p>
-        <p>Publié par: <span class="author-link" data-author-id="${exam.auteurId}">${exam.auteurNom || 'Utilisateur'}</span></p>
+        <p>Matière: ${exam.matiere || ''} | Classe: ${exam.classe || ''}${exam.serie ? ' | Série: '+exam.serie : ''}</p>
+        <p>Publié par: <span class="author-link" data-author-id="${exam.auteurId || ''}">${exam.auteurNom || 'Utilisateur'}</span></p>
     </div>
     <div class="exam-actions">
         <button class="exam-btn view-btn" data-exam-id="${examId}" data-type="sujet">Voir l'épreuve</button>
@@ -2359,172 +2560,187 @@ function createExamCard(exam, examId) {
         ${isAdmin ? `<button class="exam-btn delete-btn" data-exam-id="${examId}">Supprimer</button>` : ''}
     </div>
     `;
-    card.querySelector('.view-btn').addEventListener('click', () => viewExam(examId, 'sujet'));
+    card.querySelector('.view-btn')?.addEventListener('click', () => viewExam(examId, 'sujet'));
     card.querySelectorAll('.download-btn').forEach(btn => {
         btn.addEventListener('click', () => downloadExam(btn.dataset.examId, btn.dataset.type));
     });
     const favBtn = card.querySelector('.favorite-btn');
-    // Correction du bug du bouton favoris
-    favBtn.addEventListener('click', function(e) {
+    favBtn?.addEventListener('click', function(e) {
         e.stopPropagation();
         if (!checkAuthRequired('ajouter aux favoris')) return;
         handleAddToFavorites(examId, exam.auteurId, this);
     });
     if (isAdmin) {
-        card.querySelector('.delete-btn').addEventListener('click', () => deleteExam(examId));
+        card.querySelector('.delete-btn')?.addEventListener('click', () => deleteExam(examId));
     }
-    card.querySelector('.author-link').addEventListener('click', () => {
+    card.querySelector('.author-link')?.addEventListener('click', () => {
         if (!checkAuthRequired('voir le profil')) return;
         viewUserProfile(exam.auteurId);
     });
     return card;
 }
 
-function updateExamCardsVisibility() {
-    document.querySelectorAll('.exam-card').forEach(card => {
-        const deleteBtn = card.querySelector('.delete-btn');
-        if (deleteBtn) {
-            deleteBtn.style.display = (currentUser && isAdmin) ? 'flex' : 'none';
-        }
-    });
-}
-
 function handleAddToFavorites(epreuveId, auteurId, button) {
     if (!currentUser || !userData) return;
     const isFav = userData.favorites && userData.favorites.includes(epreuveId);
     let newFavs = userData.favorites ? [...userData.favorites] : [];
-    if (isFav) {
-        newFavs = newFavs.filter(id => id !== epreuveId);
-        button.classList.remove('active');
-        button.innerHTML = '<i class="far fa-heart"></i> Favori';
-        showToast('Retiré des favoris', 'info');
-    } else {
-        newFavs.push(epreuveId);
-        button.classList.add('active');
-        button.innerHTML = '<i class="fas fa-heart"></i> Favori';
-        showToast('Ajouté aux favoris ❤️', 'success');
-        if (auteurId && auteurId !== currentUser.uid) {
-            db.collection('epreuves').doc(epreuveId).get()
-            .then(doc => {
-                if (doc.exists) {
-                    const exam = doc.data();
-                    db.collection('notifications').add({
-                        userId: auteurId, type: 'favorite',
-                        message: `${userData.prenom} ${userData.nom} a ajouté "${exam.nom_epreuve}" à ses favoris`,
-                        examId: epreuveId, read: false,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-            })
-            .catch(error => console.error('Erreur notification favori:', error));
+    try {
+        if (isFav) {
+            newFavs = newFavs.filter(id => id !== epreuveId);
+            button.classList.remove('active');
+            button.innerHTML = '<i class="far fa-heart"></i> Favori';
+            showToast('Retiré des favoris', 'info');
+        } else {
+            newFavs.push(epreuveId);
+            button.classList.add('active');
+            button.innerHTML = '<i class="fas fa-heart"></i> Favori';
+            showToast('Ajouté aux favoris ❤️', 'success');
+            if (auteurId && auteurId !== currentUser.uid) {
+                db.collection('epreuves').doc(epreuveId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const exam = doc.data();
+                        db.collection('notifications').add({
+                            userId: auteurId, type: 'favorite',
+                            message: `${userData.prenom || ''} ${userData.nom || ''} a ajouté "${exam.nom_epreuve || ''}" à ses favoris`,
+                            examId: epreuveId, read: false,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                })
+                .catch(error => console.error('[FIRESTORE] ❌ Erreur notification favori:', error));
+            }
         }
+        db.collection('users').doc(currentUser.uid).update({ favorites: newFavs })
+        .then(() => {
+            userData.favorites = newFavs;
+            if (document.getElementById('profile-view')?.classList.contains('active')) loadFavorites();
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur favoris:', error); showToast('Erreur lors de la mise à jour des favoris', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur handleAddToFavorites:', error);
+        showToast('Erreur lors de la mise à jour des favoris', 'error');
     }
-    db.collection('users').doc(currentUser.uid).update({ favorites: newFavs })
-    .then(() => {
-        userData.favorites = newFavs;
-        if (document.getElementById('profile-view').classList.contains('active')) loadFavorites();
-    })
-    .catch(error => { console.error('Erreur favoris:', error); showToast('Erreur lors de la mise à jour des favoris', 'error'); });
 }
 
 function viewExam(examId, type) {
-    db.collection('epreuves').doc(examId).get()
-    .then(doc => {
-        if (doc.exists) {
-            const exam = doc.data();
-            if (type === 'sujet') {
-                if (exam.fichier_sujet && exam.fichier_sujet.includes('cloudinary.com')) {
-                    window.open(exam.fichier_sujet, '_blank');
-                } else { showToast('Fichier non disponible', 'error'); }
-            } else if (type === 'corrige') {
-                handleCorrigeAccess(examId, exam, 'view');
+    try {
+        db.collection('epreuves').doc(examId).get()
+        .then(doc => {
+            if (doc.exists) {
+                const exam = doc.data();
+                if (type === 'sujet') {
+                    if (exam.fichier_sujet && exam.fichier_sujet.includes('cloudinary.com')) {
+                        window.open(exam.fichier_sujet, '_blank');
+                    } else { showToast('Fichier non disponible', 'error'); }
+                } else if (type === 'corrige') {
+                    handleCorrigeAccess(examId, exam, 'view');
+                }
             }
-        }
-    })
-    .catch(error => { console.error('Erreur consultation:', error); showToast('Erreur lors de la consultation', 'error'); });
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur consultation:', error); showToast('Erreur lors de la consultation', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur viewExam:', error);
+        showToast('Erreur lors de la consultation', 'error');
+    }
 }
 
 function downloadExam(examId, type) {
-    db.collection('epreuves').doc(examId).get()
-    .then(doc => {
-        if (doc.exists) {
-            const exam = doc.data();
-            if (type === 'sujet') {
-                const fileUrl = exam.fichier_sujet;
-                if (fileUrl && fileUrl.includes('cloudinary.com')) {
-                    const link = document.createElement('a');
-                    link.href = fileUrl;
-                    link.download = `${exam.nom_epreuve}_sujet.pdf`;
-                    link.target = '_blank';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    db.collection('epreuves').doc(examId).update({ downloadCount: firebase.firestore.FieldValue.increment(1) });
-                } else { showToast('Fichier non disponible', 'error'); }
-            } else if (type === 'corrige') {
-                handleCorrigeAccess(examId, exam, 'download');
+    try {
+        db.collection('epreuves').doc(examId).get()
+        .then(doc => {
+            if (doc.exists) {
+                const exam = doc.data();
+                if (type === 'sujet') {
+                    const fileUrl = exam.fichier_sujet;
+                    if (fileUrl && fileUrl.includes('cloudinary.com')) {
+                        const link = document.createElement('a');
+                        link.href = fileUrl;
+                        link.download = `${exam.nom_epreuve || 'epreuve'}_sujet.pdf`;
+                        link.target = '_blank';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        db.collection('epreuves').doc(examId).update({ downloadCount: firebase.firestore.FieldValue.increment(1) });
+                    } else { showToast('Fichier non disponible', 'error'); }
+                } else if (type === 'corrige') {
+                    handleCorrigeAccess(examId, exam, 'download');
+                }
             }
-        }
-    })
-    .catch(error => { console.error('Erreur téléchargement:', error); showToast('Erreur lors du téléchargement', 'error'); });
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur téléchargement:', error); showToast('Erreur lors du téléchargement', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur downloadExam:', error);
+        showToast('Erreur lors du téléchargement', 'error');
+    }
 }
 
 function handleCorrigeAccess(examId, exam, action) {
     if (!checkAuthRequired('accéder au corrigé')) return;
-    db.collection('users').doc(currentUser.uid).get()
-    .then(userDoc => {
-        const user = userDoc.data();
-        if (user.points < 2) {
-            showToast('Points insuffisants. 2 points requis.', 'error');
-            return;
-        }
-        return db.collection('users').doc(currentUser.uid).update({
-            points: firebase.firestore.FieldValue.increment(-2),
-            examsDownloaded: firebase.firestore.FieldValue.increment(1)
-        }).then(() => {
-            if (exam.auteurId && exam.auteurId !== currentUser.uid) {
-                return db.collection('users').doc(exam.auteurId).update({
-                    points: firebase.firestore.FieldValue.increment(2)
-                }).then(() => {
-                    db.collection('notifications').add({
-                        userId: exam.auteurId, type: 'points_received',
-                        message: `+2 points de ${user.prenom} ${user.nom} pour le corrigé`,
-                        examId: examId, read: false,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                });
+    try {
+        db.collection('users').doc(currentUser.uid).get()
+        .then(userDoc => {
+            const user = userDoc.data();
+            if (user.points < 2) {
+                showToast('Points insuffisants. 2 points requis.', 'error');
+                return;
             }
-        }).then(() => {
-            db.collection('epreuves').doc(examId).update({ downloadCount: firebase.firestore.FieldValue.increment(1) });
-            const fileUrl = exam.fichier_corrige;
-            if (fileUrl && fileUrl.includes('cloudinary.com')) {
-                if (action === 'view') { window.open(fileUrl, '_blank'); }
-                else {
-                    const link = document.createElement('a');
-                    link.href = fileUrl;
-                    link.download = `${exam.nom_epreuve}_corrige.pdf`;
-                    link.target = '_blank';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+            return db.collection('users').doc(currentUser.uid).update({
+                points: firebase.firestore.FieldValue.increment(-2),
+                examsDownloaded: firebase.firestore.FieldValue.increment(1)
+            }).then(() => {
+                if (exam.auteurId && exam.auteurId !== currentUser.uid) {
+                    return db.collection('users').doc(exam.auteurId).update({
+                        points: firebase.firestore.FieldValue.increment(2)
+                    }).then(() => {
+                        db.collection('notifications').add({
+                            userId: exam.auteurId, type: 'points_received',
+                            message: `+2 points de ${user.prenom || ''} ${user.nom || ''} pour le corrigé`,
+                            examId: examId, read: false,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    });
                 }
-                showToast('Corrigé accessible (2 points déduits)', 'success');
-            } else { showToast('Fichier corrigé non disponible', 'error'); }
-        });
-    })
-    .catch(error => { console.error('Erreur accès corrigé:', error); showToast('Erreur lors de l\'accès au corrigé', 'error'); });
+            }).then(() => {
+                db.collection('epreuves').doc(examId).update({ downloadCount: firebase.firestore.FieldValue.increment(1) });
+                const fileUrl = exam.fichier_corrige;
+                if (fileUrl && fileUrl.includes('cloudinary.com')) {
+                    if (action === 'view') { window.open(fileUrl, '_blank'); }
+                    else {
+                        const link = document.createElement('a');
+                        link.href = fileUrl;
+                        link.download = `${exam.nom_epreuve || 'epreuve'}_corrige.pdf`;
+                        link.target = '_blank';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                    showToast('Corrigé accessible (2 points déduits)', 'success');
+                } else { showToast('Fichier corrigé non disponible', 'error'); }
+            });
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur accès corrigé:', error); showToast('Erreur lors de l\'accès au corrigé', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur handleCorrigeAccess:', error);
+        showToast('Erreur lors de l\'accès au corrigé', 'error');
+    }
 }
 
 function deleteExam(examId) {
     if (!isAdmin) { showToast('Action non autorisée', 'error'); return; }
     if (confirm('Supprimer cette épreuve ?')) {
-        db.collection('epreuves').doc(examId).delete()
-        .then(() => {
-            showToast('Épreuve supprimée', 'success');
-            if (document.getElementById('exams-view').classList.contains('active')) loadAllExams();
-            if (document.getElementById('home-view').classList.contains('active')) loadRecentExams();
-        })
-        .catch(error => { console.error('Erreur suppression:', error); showToast('Erreur lors de la suppression', 'error'); });
+        try {
+            db.collection('epreuves').doc(examId).delete()
+            .then(() => {
+                showToast('Épreuve supprimée', 'success');
+                if (document.getElementById('exams-view')?.classList.contains('active')) loadAllExams();
+                if (document.getElementById('home-view')?.classList.contains('active')) loadRecentExams();
+            })
+            .catch(error => { console.error('[FIRESTORE] ❌ Erreur suppression:', error); showToast('Erreur lors de la suppression', 'error'); });
+        } catch (error) {
+            console.error('[FIRESTORE] ❌ Erreur deleteExam:', error);
+            showToast('Erreur lors de la suppression', 'error');
+        }
     }
 }
 
@@ -2536,25 +2752,41 @@ function viewUserProfile(authorId) {
 }
 
 function loadUserProfile(userId) {
-    if (userId === currentUser.uid) { loadProfileData(); return; }
-    db.collection('users').doc(userId).get()
-    .then(doc => {
-        if (doc.exists) {
-            const user = doc.data();
-            document.getElementById('profile-avatar').textContent = user.prenom ? user.prenom.charAt(0).toUpperCase() : 'U';
-            document.getElementById('profile-name').textContent = `${user.prenom} ${user.nom}`;
-            document.getElementById('profile-email').textContent = user.email;
-            document.getElementById('profile-class').textContent = `Classe: ${user.classe || 'Non définie'}`;
-            document.getElementById('points-balance').textContent = user.points || 0;
-            document.getElementById('exams-uploaded').textContent = user.examsUploaded || 0;
-            document.getElementById('exams-downloaded').textContent = user.examsDownloaded || 0;
-            document.getElementById('profile-form').style.display = 'none';
-            document.getElementById('favorites-list').style.display = 'none';
-            document.querySelector('#profile-view .card:nth-of-type(2) .card-title').style.display = 'none';
-            document.getElementById('logout-btn').style.display = 'none';
-        }
-    })
-    .catch(error => { console.error('Erreur chargement profil:', error); showToast('Erreur lors du chargement du profil', 'error'); });
+    if (userId === currentUser?.uid) { loadProfileData(); return; }
+    try {
+        db.collection('users').doc(userId).get()
+        .then(doc => {
+            if (doc.exists) {
+                const user = doc.data();
+                const avatar = document.getElementById('profile-avatar');
+                const name = document.getElementById('profile-name');
+                const email = document.getElementById('profile-email');
+                const classe = document.getElementById('profile-class');
+                const points = document.getElementById('points-balance');
+                const uploaded = document.getElementById('exams-uploaded');
+                const downloaded = document.getElementById('exams-downloaded');
+                if (avatar) avatar.textContent = user.prenom ? user.prenom.charAt(0).toUpperCase() : 'U';
+                if (name) name.textContent = `${user.prenom || ''} ${user.nom || ''}`;
+                if (email) email.textContent = user.email || '';
+                if (classe) classe.textContent = `Classe: ${user.classe || 'Non définie'}`;
+                if (points) points.textContent = user.points || 0;
+                if (uploaded) uploaded.textContent = user.examsUploaded || 0;
+                if (downloaded) downloaded.textContent = user.examsDownloaded || 0;
+                const profileFormEl = document.getElementById('profile-form');
+                const favList = document.getElementById('favorites-list');
+                const cardTitle = document.querySelector('#profile-view .card:nth-of-type(2) .card-title');
+                if (profileFormEl) profileFormEl.style.display = 'none';
+                if (favList) favList.style.display = 'none';
+                if (cardTitle) cardTitle.style.display = 'none';
+                const logoutBtnEl = document.getElementById('logout-btn');
+                if (logoutBtnEl) logoutBtnEl.style.display = 'none';
+            }
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur chargement profil:', error); showToast('Erreur lors du chargement du profil', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadUserProfile:', error);
+        showToast('Erreur lors du chargement du profil', 'error');
+    }
 }
 
 function loadProfileData() {
@@ -2565,82 +2797,113 @@ function loadProfileData() {
         sessionStorage.removeItem('viewingUserId');
         return;
     }
-    db.collection('users').doc(currentUser.uid).get()
-    .then(doc => {
-        if (doc.exists) {
-            userData = doc.data();
-            document.getElementById('profile-avatar').textContent = userData.prenom ? userData.prenom.charAt(0).toUpperCase() : 'U';
-            document.getElementById('profile-name').textContent = `${userData.prenom} ${userData.nom}`;
-            document.getElementById('profile-email').textContent = userData.email;
-            document.getElementById('profile-class').textContent = `Classe: ${userData.classe || 'Non définie'}`;
-            document.getElementById('points-balance').textContent = userData.points || 0;
-            document.getElementById('exams-uploaded').textContent = userData.examsUploaded || 0;
-            document.getElementById('exams-downloaded').textContent = userData.examsDownloaded || 0;
-            document.getElementById('edit-nom').value = userData.nom || '';
-            document.getElementById('edit-prenom').value = userData.prenom || '';
-            document.getElementById('edit-classe').value = userData.classe || '';
-            if (welcomeMessage) {
-                welcomeMessage.textContent = `Bienvenue sur HosBac, ${userData.prenom || 'Utilisateur'} !`;
-                welcomeSubtitle.textContent = 'Prêt à trouver la bonne épreuve ?';
+    try {
+        db.collection('users').doc(currentUser.uid).get()
+        .then(doc => {
+            if (doc.exists) {
+                userData = doc.data();
+                const avatar = document.getElementById('profile-avatar');
+                const name = document.getElementById('profile-name');
+                const email = document.getElementById('profile-email');
+                const classe = document.getElementById('profile-class');
+                const points = document.getElementById('points-balance');
+                const uploaded = document.getElementById('exams-uploaded');
+                const downloaded = document.getElementById('exams-downloaded');
+                const editNom = document.getElementById('edit-nom');
+                const editPrenom = document.getElementById('edit-prenom');
+                const editClasse = document.getElementById('edit-classe');
+                if (avatar) avatar.textContent = userData.prenom ? userData.prenom.charAt(0).toUpperCase() : 'U';
+                if (name) name.textContent = `${userData.prenom || ''} ${userData.nom || ''}`;
+                if (email) email.textContent = userData.email || '';
+                if (classe) classe.textContent = `Classe: ${userData.classe || 'Non définie'}`;
+                if (points) points.textContent = userData.points || 0;
+                if (uploaded) uploaded.textContent = userData.examsUploaded || 0;
+                if (downloaded) downloaded.textContent = userData.examsDownloaded || 0;
+                if (editNom) editNom.value = userData.nom || '';
+                if (editPrenom) editPrenom.value = userData.prenom || '';
+                if (editClasse) editClasse.value = userData.classe || '';
+                if (welcomeMessage) {
+                    welcomeMessage.textContent = `Bienvenue sur HosBac, ${userData.prenom || 'Utilisateur'} !`;
+                    welcomeSubtitle.textContent = 'Prêt à trouver la bonne épreuve ?';
+                }
+                const homePoints = document.getElementById('home-points-balance');
+                const homeUploaded = document.getElementById('home-exams-uploaded');
+                const homeDownloaded = document.getElementById('home-exams-downloaded');
+                if (homePoints) homePoints.textContent = userData.points || 0;
+                if (homeUploaded) homeUploaded.textContent = userData.examsUploaded || 0;
+                if (homeDownloaded) homeDownloaded.textContent = userData.examsDownloaded || 0;
+                const profileFormEl = document.getElementById('profile-form');
+                const favList = document.getElementById('favorites-list');
+                const cardTitle = document.querySelector('#profile-view .card:nth-of-type(2) .card-title');
+                const logoutBtnEl = document.getElementById('logout-btn');
+                if (profileFormEl) profileFormEl.style.display = 'block';
+                if (favList) favList.style.display = 'grid';
+                if (cardTitle) cardTitle.style.display = 'block';
+                if (logoutBtnEl) logoutBtnEl.style.display = 'block';
+                loadFavorites();
             }
-            document.getElementById('home-points-balance').textContent = userData.points || 0;
-            document.getElementById('home-exams-uploaded').textContent = userData.examsUploaded || 0;
-            document.getElementById('home-exams-downloaded').textContent = userData.examsDownloaded || 0;
-            document.getElementById('profile-form').style.display = 'block';
-            document.getElementById('favorites-list').style.display = 'grid';
-            document.querySelector('#profile-view .card:nth-of-type(2) .card-title').style.display = 'block';
-            document.getElementById('logout-btn').style.display = 'block';
-            loadFavorites();
-        }
-    })
-    .catch(error => console.error('Erreur chargement profil:', error));
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur chargement profil:', error); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadProfileData:', error);
+    }
 }
 
 function updateProfile() {
     if (!currentUser) return;
-    const nom = document.getElementById('edit-nom').value;
-    const prenom = document.getElementById('edit-prenom').value;
-    const classe = document.getElementById('edit-classe').value;
-    db.collection('users').doc(currentUser.uid).update({ nom, prenom, classe })
-    .then(() => { showToast('Profil mis à jour', 'success'); loadProfileData(); })
-    .catch(error => { console.error('Erreur mise à jour profil:', error); showToast('Erreur lors de la mise à jour', 'error'); });
+    const nom = document.getElementById('edit-nom')?.value || '';
+    const prenom = document.getElementById('edit-prenom')?.value || '';
+    const classe = document.getElementById('edit-classe')?.value || '';
+    try {
+        db.collection('users').doc(currentUser.uid).update({ nom, prenom, classe })
+        .then(() => { showToast('Profil mis à jour', 'success'); loadProfileData(); })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur mise à jour profil:', error); showToast('Erreur lors de la mise à jour', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur updateProfile:', error);
+        showToast('Erreur lors de la mise à jour', 'error');
+    }
 }
 
 function loadFavorites() {
     if (!currentUser) return;
     const container = document.getElementById('favorites-list');
+    if (!container) return;
     container.innerHTML = '<p>Chargement des favoris...</p>';
     if (!userData || !userData.favorites || userData.favorites.length === 0) {
         container.innerHTML = '<p>Aucun favori.</p>';
         return;
     }
-    const promises = userData.favorites.map(id => db.collection('epreuves').doc(id).get());
-    Promise.all(promises)
-    .then(docs => {
-        container.innerHTML = '';
-        let hasFavs = false;
-        docs.forEach(doc => {
-            if (doc.exists) {
-                const exam = doc.data();
-                container.appendChild(createExamCard(exam, doc.id));
-                hasFavs = true;
-            }
-        });
-        if (!hasFavs) container.innerHTML = '<p>Aucun favori.</p>';
-        updateExamCardsVisibility();
-    })
-    .catch(error => { console.error('Erreur chargement favoris:', error); container.innerHTML = '<p>Erreur lors du chargement.</p>'; });
+    try {
+        const promises = userData.favorites.map(id => db.collection('epreuves').doc(id).get());
+        Promise.all(promises)
+        .then(docs => {
+            container.innerHTML = '';
+            let hasFavs = false;
+            docs.forEach(doc => {
+                if (doc.exists) {
+                    const exam = doc.data();
+                    container.appendChild(createExamCard(exam, doc.id));
+                    hasFavs = true;
+                }
+            });
+            if (!hasFavs) container.innerHTML = '<p>Aucun favori.</p>';
+            updateExamCardsVisibility();
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur chargement favoris:', error); container.innerHTML = '<p>Erreur lors du chargement.</p>'; });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadFavorites:', error);
+        container.innerHTML = '<p>Erreur lors du chargement.</p>';
+    }
 }
 
-// Recherche dynamique avec suggestions
 function performDynamicSearch(query) {
     if (!query || query.length < 2) {
         if (searchSuggestions) searchSuggestions.style.display = 'none';
-        searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
+        if (searchResults) searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
         return;
     }
     
-    searchResults.innerHTML = '<p>Recherche en cours...</p>';
+    if (searchResults) searchResults.innerHTML = '<p>Recherche en cours...</p>';
     
     const examsPromise = db.collection('epreuves').where('status', '==', 'approved')
     .where('nom_epreuve', '>=', query).where('nom_epreuve', '<=', query + '\uf8ff').limit(8).get()
@@ -2652,7 +2915,6 @@ function performDynamicSearch(query) {
     
     Promise.all([examsPromise, usersPromise])
     .then(([examsSnapshot, usersSnapshot]) => {
-        // Afficher les suggestions dans la liste déroulante
         if (searchSuggestions) {
             searchSuggestions.innerHTML = '';
             let hasSuggestions = false;
@@ -2663,12 +2925,11 @@ function performDynamicSearch(query) {
                     const item = document.createElement('div');
                     item.className = 'search-result-item';
                     item.style.padding = '0.6rem 1rem';
-                    item.innerHTML = `<i class="fas fa-file-alt" style="color:var(--accent-blue);margin-right:8px;"></i> <strong>${exam.nom_epreuve}</strong> - ${exam.matiere} (${exam.classe})`;
+                    item.innerHTML = `<i class="fas fa-file-alt" style="color:var(--accent-blue);margin-right:8px;"></i> <strong>${exam.nom_epreuve || ''}</strong> - ${exam.matiere || ''} (${exam.classe || ''})`;
                     item.addEventListener('click', () => {
-                        // Ouvrir l'épreuve directement
                         viewExam(doc.id, 'sujet');
-                        searchSuggestions.style.display = 'none';
-                        globalSearch.value = '';
+                        if (searchSuggestions) searchSuggestions.style.display = 'none';
+                        if (globalSearch) globalSearch.value = '';
                     });
                     searchSuggestions.appendChild(item);
                     hasSuggestions = true;
@@ -2682,12 +2943,12 @@ function performDynamicSearch(query) {
                         const item = document.createElement('div');
                         item.className = 'search-result-item';
                         item.style.padding = '0.6rem 1rem';
-                        item.innerHTML = `<i class="fas fa-user" style="color:var(--secondary-blue);margin-right:8px;"></i> ${user.prenom} ${user.nom} - ${user.email}`;
+                        item.innerHTML = `<i class="fas fa-user" style="color:var(--secondary-blue);margin-right:8px;"></i> ${user.prenom || ''} ${user.nom || ''} - ${user.email || ''}`;
                         item.addEventListener('click', () => {
                             if (checkAuthRequired('voir le profil')) {
                                 viewUserProfile(doc.id);
-                                searchSuggestions.style.display = 'none';
-                                globalSearch.value = '';
+                                if (searchSuggestions) searchSuggestions.style.display = 'none';
+                                if (globalSearch) globalSearch.value = '';
                             }
                         });
                         searchSuggestions.appendChild(item);
@@ -2700,95 +2961,106 @@ function performDynamicSearch(query) {
                 searchSuggestions.style.display = 'block';
             } else {
                 searchSuggestions.style.display = 'none';
-                searchResults.innerHTML = '<p>Aucun résultat trouvé.</p>';
+                if (searchResults) searchResults.innerHTML = '<p>Aucun résultat trouvé.</p>';
             }
         }
         
-        // Afficher aussi dans les résultats complets
-        searchResults.innerHTML = '';
-        let hasResults = false;
-        if (examsSnapshot && !examsSnapshot.empty) {
-            const title = document.createElement('h3'); title.textContent = 'Épreuves'; searchResults.appendChild(title);
-            examsSnapshot.forEach(doc => {
-                const exam = doc.data();
-                const item = document.createElement('div');
-                item.className = 'search-result-item';
-                item.innerHTML = `<p><strong>${exam.nom_epreuve}</strong> - ${exam.matiere} - ${exam.classe}</p><small>${exam.auteurNom}</small>`;
-                item.addEventListener('click', () => viewExam(doc.id, 'sujet'));
-                searchResults.appendChild(item);
-                hasResults = true;
-            });
-        }
-        if (usersSnapshot && !usersSnapshot.empty) {
-            const title = document.createElement('h3'); title.textContent = 'Utilisateurs'; title.style.marginTop = '1.2rem'; searchResults.appendChild(title);
-            usersSnapshot.forEach(doc => {
-                const user = doc.data();
-                if (doc.id !== currentUser?.uid) {
+        if (searchResults) {
+            searchResults.innerHTML = '';
+            let hasResults = false;
+            if (examsSnapshot && !examsSnapshot.empty) {
+                const title = document.createElement('h3'); title.textContent = 'Épreuves'; searchResults.appendChild(title);
+                examsSnapshot.forEach(doc => {
+                    const exam = doc.data();
                     const item = document.createElement('div');
                     item.className = 'search-result-item';
-                    item.innerHTML = `<p><strong>${user.prenom} ${user.nom}</strong> - ${user.email}</p><small>${user.ecole || ''}</small>`;
-                    item.addEventListener('click', () => { if (checkAuthRequired('voir le profil')) viewUserProfile(doc.id); });
+                    item.innerHTML = `<p><strong>${exam.nom_epreuve || ''}</strong> - ${exam.matiere || ''} - ${exam.classe || ''}</p><small>${exam.auteurNom || ''}</small>`;
+                    item.addEventListener('click', () => viewExam(doc.id, 'sujet'));
                     searchResults.appendChild(item);
                     hasResults = true;
-                }
-            });
+                });
+            }
+            if (usersSnapshot && !usersSnapshot.empty) {
+                const title = document.createElement('h3'); title.textContent = 'Utilisateurs'; title.style.marginTop = '1.2rem'; searchResults.appendChild(title);
+                usersSnapshot.forEach(doc => {
+                    const user = doc.data();
+                    if (doc.id !== currentUser?.uid) {
+                        const item = document.createElement('div');
+                        item.className = 'search-result-item';
+                        item.innerHTML = `<p><strong>${user.prenom || ''} ${user.nom || ''}</strong> - ${user.email || ''}</p><small>${user.ecole || ''}</small>`;
+                        item.addEventListener('click', () => { if (checkAuthRequired('voir le profil')) viewUserProfile(doc.id); });
+                        searchResults.appendChild(item);
+                        hasResults = true;
+                    }
+                });
+            }
+            if (!hasResults) searchResults.innerHTML = '<p>Aucun résultat trouvé.</p>';
         }
-        if (!hasResults) searchResults.innerHTML = '<p>Aucun résultat trouvé.</p>';
     })
-    .catch(error => { console.error('Erreur recherche:', error); searchResults.innerHTML = '<p>Erreur lors de la recherche.</p>'; });
-}
-
-// Garder la fonction globale pour compatibilité
-function performGlobalSearch(query) {
-    performDynamicSearch(query);
+    .catch(error => { console.error('[FIRESTORE] ❌ Erreur recherche:', error); if (searchResults) searchResults.innerHTML = '<p>Erreur lors de la recherche.</p>'; });
 }
 
 function loadAdminPanel() {
     if (!currentUser || !isAdmin) { showToast('Accès non autorisé', 'error'); switchView('home'); return; }
-    db.collection('users').get().then(q => { document.getElementById('total-users').textContent = q.size; });
-    db.collection('epreuves').get().then(q => { document.getElementById('total-exams').textContent = q.size; });
-    updatePendingExamsCount();
-    loadPendingExams();
-    renderAdminCharts();
+    try {
+        db.collection('users').get().then(q => { const el = document.getElementById('total-users'); if (el) el.textContent = q.size; });
+        db.collection('epreuves').get().then(q => { const el = document.getElementById('total-exams'); if (el) el.textContent = q.size; });
+        updatePendingExamsCount();
+        loadPendingExams();
+        renderAdminCharts();
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadAdminPanel:', error);
+        showToast('Erreur lors du chargement du panneau admin', 'error');
+    }
 }
 
 function loadPendingExams() {
     if (!currentUser || !isAdmin) return;
     const container = document.getElementById('pending-exams-list');
+    if (!container) return;
     container.innerHTML = '<p>Chargement des épreuves en attente...</p>';
-    db.collection('epreuves').where('status', '==', 'pending').get()
-    .then(querySnapshot => {
-        container.innerHTML = '';
-        if (querySnapshot.empty) { container.innerHTML = '<p>Aucune épreuve en attente.</p>'; return; }
-        querySnapshot.forEach(doc => {
-            const exam = doc.data();
-            const el = document.createElement('div');
-            el.className = 'card';
-            el.innerHTML = `
-            <h3 class="card-title">${exam.nom_epreuve}</h3>
-            <p>${exam.matiere} | ${exam.classe}${exam.serie ? ' | Série '+exam.serie : ''}</p>
-            <p>Publié par: ${exam.auteurNom}</p>
-            <div class="exam-actions-admin">
-                <button class="approve-btn" data-id="${doc.id}">Approuver</button>
-                <button class="reject-btn" data-id="${doc.id}">Rejeter</button>
-            </div>
-            `;
-            el.querySelector('.approve-btn').addEventListener('click', () => {
-                const points = exam.fichier_corrige ? 4 : 2;
-                approveExam(doc.id, exam.auteurId, points);
+    try {
+        db.collection('epreuves').where('status', '==', 'pending').get()
+        .then(querySnapshot => {
+            container.innerHTML = '';
+            if (querySnapshot.empty) { container.innerHTML = '<p>Aucune épreuve en attente.</p>'; return; }
+            querySnapshot.forEach(doc => {
+                const exam = doc.data();
+                const el = document.createElement('div');
+                el.className = 'card';
+                el.innerHTML = `
+                <h3 class="card-title">${exam.nom_epreuve || 'Sans nom'}</h3>
+                <p>${exam.matiere || ''} | ${exam.classe || ''}${exam.serie ? ' | Série '+exam.serie : ''}</p>
+                <p>Publié par: ${exam.auteurNom || ''}</p>
+                <div class="exam-actions-admin">
+                    <button class="approve-btn" data-id="${doc.id}">Approuver</button>
+                    <button class="reject-btn" data-id="${doc.id}">Rejeter</button>
+                </div>
+                `;
+                el.querySelector('.approve-btn')?.addEventListener('click', () => {
+                    const points = exam.fichier_corrige ? 4 : 2;
+                    approveExam(doc.id, exam.auteurId, points);
+                });
+                el.querySelector('.reject-btn')?.addEventListener('click', () => { rejectExam(doc.id, exam.auteurId); });
+                container.appendChild(el);
             });
-            el.querySelector('.reject-btn').addEventListener('click', () => { rejectExam(doc.id, exam.auteurId); });
-            container.appendChild(el);
-        });
-    })
-    .catch(error => { console.error('Erreur chargement épreuves en attente:', error); container.innerHTML = '<p>Erreur lors du chargement.</p>'; });
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur chargement épreuves en attente:', error); container.innerHTML = '<p>Erreur lors du chargement.</p>'; });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadPendingExams:', error);
+        container.innerHTML = '<p>Erreur lors du chargement.</p>';
+    }
 }
 
 function updatePendingExamsCount() {
     if (!currentUser || !isAdmin) return;
-    db.collection('epreuves').where('status', '==', 'pending').get()
-    .then(q => { document.getElementById('pending-exams-count').textContent = q.size; })
-    .catch(error => console.error('Erreur comptage épreuves en attente:', error));
+    try {
+        db.collection('epreuves').where('status', '==', 'pending').get()
+        .then(q => { const el = document.getElementById('pending-exams-count'); if (el) el.textContent = q.size; })
+        .catch(error => console.error('[FIRESTORE] ❌ Erreur comptage épreuves en attente:', error));
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur updatePendingExamsCount:', error);
+    }
 }
 
 async function renderAdminCharts() {
@@ -2822,7 +3094,7 @@ async function renderAdminCharts() {
         const labels = [], data = [];
         examsSnapshot.forEach(doc => {
             const exam = doc.data();
-            labels.push(exam.nom_epreuve.length > 20 ? exam.nom_epreuve.substring(0,20)+'...' : exam.nom_epreuve);
+            labels.push(exam.nom_epreuve?.length > 20 ? exam.nom_epreuve.substring(0,20)+'...' : exam.nom_epreuve || 'Sans nom');
             data.push(exam.downloadCount || 0);
         });
         const ctx2 = document.getElementById('exams-chart');
@@ -2835,24 +3107,29 @@ async function renderAdminCharts() {
             });
         }
     } catch (error) {
-        console.error("Erreur graphiques:", error);
+        console.error('[CHARTS] ❌ Erreur graphiques:', error);
     }
 }
 
 function approveExam(examId, authorId, points) {
     if (!isAdmin) return;
-    db.collection('epreuves').doc(examId).update({ status: 'approved' })
-    .then(() => assignPointsAfterApproval(authorId, points))
-    .then(() => {
-        db.collection('notifications').add({
-            userId: authorId, type: 'approval',
-            message: `Épreuve approuvée ! +${points} points.`,
-            examId: examId, read: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    })
-    .then(() => { showToast('Épreuve approuvée', 'success'); loadAdminPanel(); })
-    .catch(error => { console.error('Erreur approbation:', error); showToast('Erreur lors de l\'approbation', 'error'); });
+    try {
+        db.collection('epreuves').doc(examId).update({ status: 'approved' })
+        .then(() => assignPointsAfterApproval(authorId, points))
+        .then(() => {
+            db.collection('notifications').add({
+                userId: authorId, type: 'approval',
+                message: `Épreuve approuvée ! +${points} points.`,
+                examId: examId, read: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => { showToast('Épreuve approuvée', 'success'); loadAdminPanel(); })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur approbation:', error); showToast('Erreur lors de l\'approbation', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur approveExam:', error);
+        showToast('Erreur lors de l\'approbation', 'error');
+    }
 }
 
 function assignPointsAfterApproval(authorId, points) {
@@ -2864,27 +3141,32 @@ function assignPointsAfterApproval(authorId, points) {
 
 function rejectExam(examId, authorId) {
     if (!isAdmin) return;
-    db.collection('epreuves').doc(examId).delete()
-    .then(() => {
-        db.collection('notifications').add({
-            userId: authorId, type: 'submission',
-            message: 'Votre épreuve a été rejetée.',
-            read: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    })
-    .then(() => { showToast('Épreuve rejetée', 'success'); loadAdminPanel(); })
-    .catch(error => { console.error('Erreur rejet:', error); showToast('Erreur lors du rejet', 'error'); });
+    try {
+        db.collection('epreuves').doc(examId).delete()
+        .then(() => {
+            db.collection('notifications').add({
+                userId: authorId, type: 'submission',
+                message: 'Votre épreuve a été rejetée.',
+                read: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => { showToast('Épreuve rejetée', 'success'); loadAdminPanel(); })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur rejet:', error); showToast('Erreur lors du rejet', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur rejectExam:', error);
+        showToast('Erreur lors du rejet', 'error');
+    }
 }
 
 function submitExam() {
     if (!currentUser) return;
-    const matiere = document.getElementById('exam-matiere').value;
-    const classe = document.getElementById('exam-classe').value;
-    const serie = document.getElementById('exam-serie').value;
-    const nom_epreuve = document.getElementById('exam-nom').value;
-    const fichier_sujet = document.getElementById('exam-sujet-url').value;
-    const fichier_corrige = document.getElementById('exam-corrige-url').value;
+    const matiere = document.getElementById('exam-matiere')?.value || '';
+    const classe = document.getElementById('exam-classe')?.value || '';
+    const serie = document.getElementById('exam-serie')?.value || '';
+    const nom_epreuve = document.getElementById('exam-nom')?.value || '';
+    const fichier_sujet = document.getElementById('exam-sujet-url')?.value || '';
+    const fichier_corrige = document.getElementById('exam-corrige-url')?.value || '';
     if (!fichier_sujet) { showToast('Veuillez télécharger un fichier sujet', 'warning'); return; }
     if (!fichier_sujet.includes('cloudinary.com') || !fichier_sujet.includes('.pdf')) {
         showToast('Fichier sujet invalide', 'error'); return;
@@ -2892,98 +3174,122 @@ function submitExam() {
     let serieToSave = serie;
     if (!['2nd', '1ère', 'Terminale'].includes(classe)) serieToSave = '';
     const status = isAdmin ? 'approved' : 'pending';
-    db.collection('users').doc(currentUser.uid).get()
-    .then(userDoc => {
-        const user = userDoc.data();
-        return db.collection('epreuves').add({
-            matiere, classe, serie: serieToSave, nom_epreuve,
-            fichier_sujet, fichier_corrige: fichier_corrige || null,
-            auteurId: currentUser.uid,
-            auteurNom: `${user.prenom} ${user.nom}`,
-            status, downloadCount: 0,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    })
-    .then(() => {
-        addExamPopup.style.display = 'none';
-        addExamForm.reset();
-        document.getElementById('sujet-upload').innerHTML = '<p>Cliquez pour télécharger le fichier sujet</p>';
-        document.getElementById('corrige-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
-        sujetProgress.hide(); corrigeProgress.hide();
-        document.getElementById('add-exam-submit-btn').disabled = false;
-        toggleSerieField();
-        if (isAdmin) {
-            showToast('Épreuve publiée', 'success');
-            assignPointsAfterApproval(currentUser.uid, fichier_corrige ? 4 : 2);
-        } else {
-            showToast('Épreuve soumise, en attente d\'approbation', 'success');
-            notifyAdminsAboutPendingExam();
-        }
-    })
-    .catch(error => { console.error('Erreur soumission:', error); showToast('Erreur lors de la soumission', 'error'); });
+    try {
+        db.collection('users').doc(currentUser.uid).get()
+        .then(userDoc => {
+            const user = userDoc.data();
+            return db.collection('epreuves').add({
+                matiere, classe, serie: serieToSave, nom_epreuve,
+                fichier_sujet, fichier_corrige: fichier_corrige || null,
+                auteurId: currentUser.uid,
+                auteurNom: `${user.prenom || ''} ${user.nom || ''}`,
+                status, downloadCount: 0,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => {
+            if (addExamPopup) addExamPopup.style.display = 'none';
+            if (addExamForm) addExamForm.reset();
+            const sujetUpload = document.getElementById('sujet-upload');
+            const corrigeUpload = document.getElementById('corrige-upload');
+            if (sujetUpload) sujetUpload.innerHTML = '<p>Cliquez pour télécharger le fichier sujet</p>';
+            if (corrigeUpload) corrigeUpload.innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
+            sujetProgress.hide(); corrigeProgress.hide();
+            const submitBtn = document.getElementById('add-exam-submit-btn');
+            if (submitBtn) submitBtn.disabled = false;
+            toggleSerieField();
+            if (isAdmin) {
+                showToast('Épreuve publiée', 'success');
+                assignPointsAfterApproval(currentUser.uid, fichier_corrige ? 4 : 2);
+            } else {
+                showToast('Épreuve soumise, en attente d\'approbation', 'success');
+                notifyAdminsAboutPendingExam();
+            }
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur soumission:', error); showToast('Erreur lors de la soumission', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur submitExam:', error);
+        showToast('Erreur lors de la soumission', 'error');
+    }
 }
 
 function submitCorrigeOnly() {
     if (!currentUser) return;
-    const examId = document.getElementById('corrige-exam-select').value;
-    const fichier_corrige = document.getElementById('corrige-only-url').value;
+    const examId = document.getElementById('corrige-exam-select')?.value || '';
+    const fichier_corrige = document.getElementById('corrige-only-url')?.value || '';
     if (!examId) { showToast('Sélectionnez une épreuve', 'warning'); return; }
     if (!fichier_corrige) { showToast('Téléchargez un corrigé', 'warning'); return; }
-    db.collection('epreuves').doc(examId).get()
-    .then(doc => {
-        if (doc.exists) {
-            const exam = doc.data();
-            if (exam.auteurId !== currentUser.uid) {
-                showToast('Vous ne pouvez ajouter un corrigé que pour vos épreuves', 'error');
-                return;
+    try {
+        db.collection('epreuves').doc(examId).get()
+        .then(doc => {
+            if (doc.exists) {
+                const exam = doc.data();
+                if (exam.auteurId !== currentUser.uid) {
+                    showToast('Vous ne pouvez ajouter un corrigé que pour vos épreuves', 'error');
+                    return;
+                }
+                return db.collection('epreuves').doc(examId).update({ fichier_corrige });
             }
-            return db.collection('epreuves').doc(examId).update({ fichier_corrige });
-        }
-    })
-    .then(() => {
-        addCorrigeOnlyPopup.style.display = 'none';
-        addCorrigeOnlyForm.reset();
-        document.getElementById('corrige-only-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
-        corrigeOnlyProgress.hide();
-        document.getElementById('add-corrige-only-submit-btn').disabled = false;
-        showToast('Corrigé ajouté', 'success');
-        if (isAdmin) assignPointsAfterApproval(currentUser.uid, 2);
-    })
-    .catch(error => { console.error('Erreur ajout corrigé:', error); showToast('Erreur lors de l\'ajout', 'error'); });
+        })
+        .then(() => {
+            if (addCorrigeOnlyPopup) addCorrigeOnlyPopup.style.display = 'none';
+            if (addCorrigeOnlyForm) addCorrigeOnlyForm.reset();
+            const corrigeUpload = document.getElementById('corrige-only-upload');
+            if (corrigeUpload) corrigeUpload.innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
+            corrigeOnlyProgress.hide();
+            const submitBtn = document.getElementById('add-corrige-only-submit-btn');
+            if (submitBtn) submitBtn.disabled = false;
+            showToast('Corrigé ajouté', 'success');
+            if (isAdmin) assignPointsAfterApproval(currentUser.uid, 2);
+        })
+        .catch(error => { console.error('[FIRESTORE] ❌ Erreur ajout corrigé:', error); showToast('Erreur lors de l\'ajout', 'error'); });
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur submitCorrigeOnly:', error);
+        showToast('Erreur lors de l\'ajout', 'error');
+    }
 }
 
 function loadExistingExamsForCorrige() {
     if (!currentUser) return;
     const select = document.getElementById('corrige-exam-select');
+    if (!select) return;
     select.innerHTML = '<option value="">Sélectionnez une épreuve existante</option>';
-    db.collection('epreuves').where('auteurId', '==', currentUser.uid)
-    .where('fichier_corrige', '==', null).where('status', '==', 'approved').get()
-    .then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-            const exam = doc.data();
-            const opt = document.createElement('option');
-            opt.value = doc.id;
-            opt.textContent = `${exam.nom_epreuve} - ${exam.matiere} - ${exam.classe}`;
-            select.appendChild(opt);
-        });
-    })
-    .catch(error => console.error('Erreur chargement épreuves:', error));
+    try {
+        db.collection('epreuves').where('auteurId', '==', currentUser.uid)
+        .where('fichier_corrige', '==', null).where('status', '==', 'approved').get()
+        .then(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                const exam = doc.data();
+                const opt = document.createElement('option');
+                opt.value = doc.id;
+                opt.textContent = `${exam.nom_epreuve || ''} - ${exam.matiere || ''} - ${exam.classe || ''}`;
+                select.appendChild(opt);
+            });
+        })
+        .catch(error => console.error('[FIRESTORE] ❌ Erreur chargement épreuves:', error));
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur loadExistingExamsForCorrige:', error);
+    }
 }
 
 function notifyAdminsAboutPendingExam() {
     if (!currentUser) return;
-    db.collection('users').where('role', '==', 'admin').get()
-    .then(q => {
-        q.forEach(doc => {
-            db.collection('notifications').add({
-                userId: doc.id, type: 'pending_exam',
-                message: 'Une nouvelle épreuve est en attente d\'approbation',
-                read: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    try {
+        db.collection('users').where('role', '==', 'admin').get()
+        .then(q => {
+            q.forEach(doc => {
+                db.collection('notifications').add({
+                    userId: doc.id, type: 'pending_exam',
+                    message: 'Une nouvelle épreuve est en attente d\'approbation',
+                    read: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
             });
-        });
-    })
-    .catch(error => console.error('Erreur notification admins:', error));
+        })
+        .catch(error => console.error('[FIRESTORE] ❌ Erreur notification admins:', error));
+    } catch (error) {
+        console.error('[FIRESTORE] ❌ Erreur notifyAdminsAboutPendingExam:', error);
+    }
 }
 
 function debounce(func, wait) {
@@ -2994,7 +3300,6 @@ function debounce(func, wait) {
     };
 }
 
-// Fonction switchView globale pour les appels depuis d'autres fonctions
 function switchView(viewName) {
     if (viewName === 'admin') {
         if (!currentUser || !isAdmin) {
@@ -3017,6 +3322,8 @@ function switchView(viewName) {
     }
     if (searchSuggestions) searchSuggestions.style.display = 'none';
 }
+
+console.log('[INIT] ✅ Application HosBac chargée avec succès');
 </script>
 </body>
 </html>
