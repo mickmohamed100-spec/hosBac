@@ -9,56 +9,15 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- ============================================================
-     SCRIPT DE THÈME – EXÉCUTION IMMÉDIATE POUR ÉVITER LE FLASH
-     ============================================================ -->
-<script>
-    (function() {
-        try {
-            var saved = localStorage.getItem('hosbac-theme');
-            if (saved === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-            }
-        } catch (e) {
-            // ignoré
-        }
-    })();
-</script>
-
 <style>
 /* ============================================================
-   VARIABLES ET THÈMES – REFONTE COMPLÈTE
+   VARIABLES – UNIQUEMENT THÈME SOMBRE (par défaut)
    ============================================================ */
 :root {
-    /* Mode clair par défaut */
     --primary-blue: #1a2a4a;
     --secondary-blue: #2c3e6b;
     --accent-blue: #3b82f6;
-    --light-blue: #e8edf5;
-    --bg-color: #f0f2f5;
-    --text-color: #1e293b;
-    --text-light: #64748b;
-    --card-bg: #ffffff;
-    --border-color: #e2e8f0;
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --nav-bg: #ffffff;
-    --nav-text: #64748b;
-    --nav-active: #1a2a4a;
-    --nav-active-bg: #e8edf5;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --transition: all 0.3s ease;
-    --border-radius: 10px;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* Mode sombre */
-[data-theme="dark"] {
+    --light-blue: #1a2a4a;
     --bg-color: #000000;
     --text-color: #ffffff;
     --text-light: #a0a0a0;
@@ -69,7 +28,12 @@
     --nav-text: #a0a0a0;
     --nav-active: #ffffff;
     --nav-active-bg: #2a2a2a;
-    --light-blue: #1a2a4a;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --transition: all 0.3s ease;
+    --border-radius: 10px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
@@ -85,7 +49,6 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     padding-bottom: 70px;
-    transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* ============================================================
@@ -190,7 +153,6 @@ body {
     animation: slideUp 0.5s ease;
     position: relative;
 }
-/* Bouton de fermeture de la modale */
 .auth-close-btn {
     position: absolute;
     top: 15px;
@@ -242,7 +204,7 @@ body {
     font-size: 0.85rem;
     color: var(--text-color);
 }
-.form-group input, .form-group select {
+.form-group input, .form-group select, .form-group textarea {
     width: 100%;
     padding: 0.6rem 0.8rem;
     border: 1.5px solid var(--border-color);
@@ -252,7 +214,7 @@ body {
     font-size: 0.95rem;
     color: var(--text-color);
 }
-.form-group input:focus, .form-group select:focus {
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     outline: none;
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -368,7 +330,6 @@ header {
     top: 0;
     z-index: 100;
     box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    transition: background 0.3s ease, border-color 0.3s ease;
 }
 .header-content {
     display: grid;
@@ -421,7 +382,7 @@ header {
 }
 
 /* ============================================================
-   BOTTOM NAVIGATION (SECTION 1)
+   BOTTOM NAVIGATION
    ============================================================ */
 .bottom-nav {
     position: fixed;
@@ -435,7 +396,7 @@ header {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease, border-color 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateY(0);
     box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
     will-change: transform;
@@ -480,7 +441,7 @@ header {
 }
 
 /* ============================================================
-   MENU BURGER PLEIN ÉCRAN (SECTION 2)
+   MENU BURGER PLEIN ÉCRAN
    ============================================================ */
 .fullscreen-menu {
     position: fixed;
@@ -495,7 +456,6 @@ header {
     padding: 20px 24px 40px;
     overflow-y: auto;
     animation: fadeIn 0.3s ease;
-    transition: background 0.3s ease;
 }
 .fullscreen-menu.open {
     display: flex;
@@ -575,74 +535,6 @@ header {
 }
 
 /* ============================================================
-   TOGGLE THEME (SECTION 2)
-   ============================================================ */
-.theme-toggle-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-radius: var(--border-radius);
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    margin-top: 8px;
-}
-.theme-toggle-wrapper .theme-label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 1.05rem;
-    font-weight: 500;
-    color: var(--text-color);
-}
-.theme-toggle-wrapper .theme-label i {
-    font-size: 1.4rem;
-    width: 32px;
-    text-align: center;
-    color: var(--primary-blue);
-}
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 52px;
-    height: 28px;
-    flex-shrink: 0;
-}
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #ccc;
-    transition: 0.3s;
-    border-radius: 34px;
-}
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 4px;
-    bottom: 4px;
-    background: white;
-    transition: 0.3s;
-    border-radius: 50%;
-}
-.switch input:checked + .slider {
-    background: var(--primary-blue);
-}
-.switch input:checked + .slider:before {
-    transform: translateX(24px);
-}
-
-/* ============================================================
    MAIN CONTENT
    ============================================================ */
 main {
@@ -682,7 +574,6 @@ main {
     padding: 1.2rem 1.5rem;
     margin-bottom: 1.2rem;
     box-shadow: var(--shadow);
-    transition: background 0.3s ease, box-shadow 0.3s ease;
     border: 1px solid var(--border-color);
 }
 .card-title {
@@ -701,7 +592,6 @@ main {
     border-radius: var(--border-radius);
     padding: 1.2rem 1.5rem;
     box-shadow: var(--shadow);
-    transition: background 0.3s ease, box-shadow 0.3s ease;
     border: 1px solid var(--border-color);
 }
 .exam-card:hover { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06); transform: translateY(-2px); }
@@ -754,7 +644,6 @@ footer {
     border-top: 1px solid var(--border-color);
     padding: 1.5rem 1rem;
     margin-top: 2rem;
-    transition: background 0.3s ease, border-color 0.3s ease;
 }
 .footer-content {
     max-width: 1200px;
@@ -949,7 +838,7 @@ footer {
 }
 
 /* ============================================================
-   CONTACTS ADMIN (SECTION 3)
+   CONTACTS ADMIN
    ============================================================ */
 .contacts-admin-form .form-group { margin-bottom: 1rem; }
 .contacts-admin-form input {
@@ -1019,7 +908,6 @@ footer {
     .exam-actions { flex-direction: row; flex-wrap: wrap; }
     .exam-btn { flex: 1 1 calc(50% - 8px); min-width: 70px; }
     .profile-stats, .home-stats, .admin-stats { grid-template-columns: 1fr; }
-    .admin-charts { grid-template-columns: 1fr; }
     .auth-container { padding: 1.5rem; width: 95%; }
     .fullscreen-menu { padding: 16px; }
     .fullscreen-menu-item { padding: 12px 14px; font-size: 0.95rem; }
@@ -1087,10 +975,9 @@ footer {
     </div>
 </div>
 
-<!-- AUTH SCREEN – avec bouton de fermeture (croix) -->
+<!-- AUTH SCREEN -->
 <div id="auth-screen">
     <div class="auth-container">
-        <!-- Bouton de fermeture (croix) -->
         <button class="auth-close-btn" id="auth-close-btn"><i class="fas fa-times"></i></button>
         <div class="auth-tabs">
             <div class="auth-tab active" data-tab="login">Connexion</div>
@@ -1120,7 +1007,7 @@ footer {
     </div>
 </div>
 
-<!-- MENU BURGER PLEIN ÉCRAN (SECTION 2) -->
+<!-- MENU BURGER PLEIN ÉCRAN (sans thème toggle) -->
 <div class="fullscreen-menu" id="fullscreen-menu">
     <div class="fullscreen-menu-header">
         <div class="menu-title">HosBac</div>
@@ -1134,17 +1021,7 @@ footer {
         <div class="fullscreen-menu-item" id="menu-admin-item" data-view="admin" style="display:none;"><i class="fas fa-crown"></i> Admin</div>
         <div class="fullscreen-menu-item" id="menu-guest-item" style="display:none;"><i class="fas fa-sign-in-alt"></i> Se connecter</div>
         <div class="fullscreen-menu-divider"></div>
-        <!-- Thème Toggle -->
-        <div class="theme-toggle-wrapper">
-            <div class="theme-label">
-                <i class="fas fa-moon"></i>
-                <span>Mode sombre</span>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="theme-toggle">
-                <span class="slider"></span>
-            </label>
-        </div>
+        <!-- Le toggle de thème a été supprimé -->
     </div>
 </div>
 
@@ -1267,17 +1144,11 @@ footer {
                 <div class="stat-card"><div class="stat-value" id="total-exams">0</div><div class="stat-label">Épreuves</div></div>
                 <div class="stat-card"><div class="stat-value" id="pending-exams-count">0</div><div class="stat-label">En attente</div></div>
             </div>
-            <div class="card">
-                <h2 class="card-title">Statistiques du Site</h2>
-                <div class="admin-charts" style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1.5rem;">
-                    <div class="chart-container" style="background:var(--card-bg);padding:1rem;border-radius:var(--border-radius);border:1px solid var(--border-color);"><h3 style="text-align:center;margin-bottom:0.8rem;color:var(--text-color);font-size:0.9rem;font-weight:500;">Nouveaux utilisateurs (7 derniers jours)</h3><canvas id="users-chart"></canvas></div>
-                    <div class="chart-container" style="background:var(--card-bg);padding:1rem;border-radius:var(--border-radius);border:1px solid var(--border-color);"><h3 style="text-align:center;margin-bottom:0.8rem;color:var(--text-color);font-size:0.9rem;font-weight:500;">Top 5 Épreuves (Téléchargements)</h3><canvas id="exams-chart"></canvas></div>
-                </div>
-            </div>
+            <!-- SECTION STATISTIQUES SUPPRIMÉE -->
 
-            <!-- SECTION 3 : CONTACTS ADMIN -->
+            <!-- SECTION 3 : CONTACTS ADMIN + GA4 -->
             <div class="card">
-                <h2 class="card-title">📱 Paramètres de Contact</h2>
+                <h2 class="card-title">📱 Paramètres de Contact & Analytics</h2>
                 <form id="contacts-admin-form" class="contacts-admin-form">
                     <div class="form-group">
                         <label for="contact-whatsapp" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">Lien WhatsApp</label>
@@ -1290,6 +1161,11 @@ footer {
                     <div class="form-group">
                         <label for="contact-email" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">Adresse Email (Gmail)</label>
                         <input type="email" id="contact-email" placeholder="admin@email.com" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.95rem;color:var(--text-color);">
+                    </div>
+                    <!-- Nouveau champ pour l'ID GA4 -->
+                    <div class="form-group">
+                        <label for="ga-measurement-id" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">ID de mesure Google Analytics (ex: G-XXXXXXX)</label>
+                        <input type="text" id="ga-measurement-id" placeholder="G-XXXXXXXX" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.95rem;color:var(--text-color);">
                     </div>
                     <button type="submit" class="submit-btn" id="update-contacts-btn">Mettre à jour les contacts</button>
                 </form>
@@ -1311,6 +1187,25 @@ footer {
                 </form>
             </div>
 
+            <!-- NOUVEAU : Suivi comportemental (Logs) -->
+            <div class="card">
+                <h2 class="card-title">📊 Comportement Utilisateurs</h2>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div>
+                        <h3 style="font-size:1rem; margin-bottom:0.5rem;">🔍 Mots-clés les plus recherchés</h3>
+                        <div id="top-search-keywords" style="background:var(--bg-color); padding:0.8rem; border-radius:6px; max-height:200px; overflow-y:auto;">
+                            <p style="color:var(--text-light);">Chargement...</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="font-size:1rem; margin-bottom:0.5rem;">🔄 Dernières interactions</h3>
+                        <div id="recent-interactions" style="background:var(--bg-color); padding:0.8rem; border-radius:6px; max-height:200px; overflow-y:auto;">
+                            <p style="color:var(--text-light);">Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="pending-exams card">
                 <h3 class="card-title">Épreuves en attente d'approbation</h3>
                 <div id="pending-exams-list"></div>
@@ -1318,12 +1213,11 @@ footer {
         </div>
     </main>
 
-    <!-- FOOTER AVEC CONTACTS DYNAMIQUES (SECTION 3) et LIENS LÉGAUX -->
+    <!-- FOOTER AVEC CONTACTS DYNAMIQUES et LIENS LÉGAUX -->
     <footer id="main-footer">
         <div class="footer-content">
             <div class="footer-brand">HosBac</div>
             <div class="footer-contact" id="footer-contacts">
-                <!-- Les liens seront injectés dynamiquement depuis Firestore -->
                 <a href="#" class="contact-icon" id="footer-whatsapp" title="WhatsApp" style="display:none;"><i class="fab fa-whatsapp"></i></a>
                 <a href="#" class="contact-icon" id="footer-facebook" title="Facebook" style="display:none;"><i class="fab fa-facebook-f"></i></a>
                 <a href="#" class="contact-icon" id="footer-email" title="Email" style="display:none;"><i class="fas fa-envelope"></i></a>
@@ -1411,15 +1305,12 @@ footer {
     </div>
 </div>
 
-<!-- Popups pour les pages légales (contenu dynamique) -->
+<!-- Popups légales -->
 <div id="terms-popup" class="popup-overlay">
     <div class="popup-content">
         <button class="popup-close"><i class="fas fa-times"></i></button>
         <h2 class="popup-title">Conditions Générales d'Utilisation</h2>
-        <div id="terms-content" class="warning-text" style="margin-bottom:0;">
-            <!-- Le contenu sera injecté dynamiquement depuis Firestore -->
-            <p>Chargement...</p>
-        </div>
+        <div id="terms-content" class="warning-text" style="margin-bottom:0;"><p>Chargement...</p></div>
     </div>
 </div>
 
@@ -1427,14 +1318,11 @@ footer {
     <div class="popup-content">
         <button class="popup-close"><i class="fas fa-times"></i></button>
         <h2 class="popup-title">Politique de Confidentialité</h2>
-        <div id="privacy-content" class="warning-text" style="margin-bottom:0;">
-            <!-- Le contenu sera injecté dynamiquement depuis Firestore -->
-            <p>Chargement...</p>
-        </div>
+        <div id="privacy-content" class="warning-text" style="margin-bottom:0;"><p>Chargement...</p></div>
     </div>
 </div>
 
-<!-- BOTTOM NAVIGATION (SECTION 1) -->
+<!-- BOTTOM NAVIGATION -->
 <nav class="bottom-nav" id="bottom-nav">
     <button class="bottom-nav-item active" data-view="home"><i class="fas fa-home"></i><span>Accueil</span></button>
     <button class="bottom-nav-item" data-view="exams"><i class="fas fa-file-alt"></i><span>Examens</span></button>
@@ -1472,8 +1360,6 @@ let isAdmin = false;
 let userData = null;
 let announcementsListener = null;
 let pendingExamsListener = null;
-let usersChartInstance = null;
-let examsChartInstance = null;
 
 // ============================================================
 // RÉFÉRENCES DOM
@@ -1488,7 +1374,6 @@ const menuOpenBtn = document.getElementById('menu-open-btn');
 const menuCloseBtn = document.getElementById('menu-close-btn');
 const menuGuestItem = document.getElementById('menu-guest-item');
 const menuAdminItem = document.getElementById('menu-admin-item');
-const themeToggle = document.getElementById('theme-toggle');
 
 const bottomNav = document.getElementById('bottom-nav');
 const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
@@ -1507,7 +1392,6 @@ const profileForm = document.getElementById('profile-form');
 const termsLink = document.getElementById('terms-link');
 const privacyLink = document.getElementById('privacy-link');
 const popupCloseButtons = document.querySelectorAll('.popup-close');
-const adminIcon = document.getElementById('admin-icon');
 const filterClass = document.getElementById('filter-class');
 const filterSubject = document.getElementById('filter-subject');
 const filterSeries = document.getElementById('filter-series');
@@ -1523,11 +1407,12 @@ const welcomeSubtitle = document.getElementById('welcome-subtitle');
 const urlParams = new URLSearchParams(window.location.search);
 const sharedExamId = urlParams.get('exam');
 
-// Contacts Admin (Section 3)
+// Contacts & GA
 const contactsForm = document.getElementById('contacts-admin-form');
 const contactWhatsapp = document.getElementById('contact-whatsapp');
 const contactFacebook = document.getElementById('contact-facebook');
 const contactEmail = document.getElementById('contact-email');
+const gaMeasurementId = document.getElementById('ga-measurement-id');
 const footerWhatsapp = document.getElementById('footer-whatsapp');
 const footerFacebook = document.getElementById('footer-facebook');
 const footerEmail = document.getElementById('footer-email');
@@ -1541,28 +1426,9 @@ const privacyContent = document.getElementById('privacy-content');
 const termsPopup = document.getElementById('terms-popup');
 const privacyPopup = document.getElementById('privacy-popup');
 
-// ============================================================
-// GESTION DU THÈME (SECTION 2) – déjà exécuté en tête, mais on garde la fonction pour le toggle
-// ============================================================
-function applyTheme(theme) {
-    if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        if (themeToggle) themeToggle.checked = true;
-        localStorage.setItem('hosbac-theme', 'dark');
-    } else {
-        document.documentElement.removeAttribute('data-theme');
-        if (themeToggle) themeToggle.checked = false;
-        localStorage.setItem('hosbac-theme', 'light');
-    }
-}
-
-themeToggle?.addEventListener('change', function() {
-    if (this.checked) {
-        applyTheme('dark');
-    } else {
-        applyTheme('light');
-    }
-});
+// Logs admin
+const topKeywordsContainer = document.getElementById('top-search-keywords');
+const recentInteractionsContainer = document.getElementById('recent-interactions');
 
 // ============================================================
 // AUTH SWITCH LINKS
@@ -1676,8 +1542,6 @@ function isUserAdmin() { return currentUser && isAdmin; }
 // SECTION 1 : BOTTOM NAV - HIDE ON SCROLL
 // ============================================================
 let lastScrollTop = 0;
-let scrollTimeout = null;
-
 function handleScroll() {
     const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
     if (currentScroll > lastScrollTop && currentScroll > 60) {
@@ -1687,10 +1551,8 @@ function handleScroll() {
     }
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
 }
-
 window.addEventListener('scroll', handleScroll, { passive: true });
 window.addEventListener('touchmove', handleScroll, { passive: true });
-
 document.addEventListener('click', () => {
     if (bottomNav) bottomNav.classList.remove('hidden');
 });
@@ -1705,14 +1567,12 @@ function openFullscreenMenu() {
         updateMenuItems();
     }
 }
-
 function closeFullscreenMenu() {
     if (fullscreenMenu) {
         fullscreenMenu.classList.remove('open');
         document.body.style.overflow = '';
     }
 }
-
 menuOpenBtn?.addEventListener('click', openFullscreenMenu);
 menuCloseBtn?.addEventListener('click', closeFullscreenMenu);
 
@@ -1756,9 +1616,10 @@ function updateMenuItems() {
 }
 
 // ============================================================
-// SECTION 3 : CONTACTS ADMIN (FIRESTORE)
+// SECTION 3 : CONTACTS ADMIN + GA4 (FIRESTORE)
 // ============================================================
 const CONTACTS_DOC_PATH = 'settings/contacts';
+const ANALYTICS_DOC_PATH = 'settings/analytics';
 
 function loadContactsFromFirestore() {
     db.doc(CONTACTS_DOC_PATH).get()
@@ -1777,15 +1638,20 @@ function loadContactsFromFirestore() {
     .catch(err => console.error('[FIRESTORE] Erreur chargement contacts:', err));
 }
 
-function saveContactsToFirestore(whatsapp, facebook, email) {
-    return db.doc(CONTACTS_DOC_PATH).set({ whatsapp, facebook, email }, { merge: true });
+function saveContactsToFirestore(whatsapp, facebook, email, gaId) {
+    // Sauvegarde des contacts et de l'ID GA dans deux documents distincts
+    const promises = [];
+    promises.push(db.doc(CONTACTS_DOC_PATH).set({ whatsapp, facebook, email }, { merge: true }));
+    if (gaId !== undefined) {
+        promises.push(db.doc(ANALYTICS_DOC_PATH).set({ ga_measurement_id: gaId }, { merge: true }));
+    }
+    return Promise.all(promises);
 }
 
 function updateFooterContacts(data) {
     const w = data.whatsapp || '';
     const f = data.facebook || '';
     const e = data.email || '';
-    
     if (footerWhatsapp) {
         if (w && w.startsWith('http')) {
             footerWhatsapp.href = w;
@@ -1812,9 +1678,54 @@ function updateFooterContacts(data) {
     }
 }
 
+// Chargement de l'ID GA et injection du script
+function loadAndInjectGA() {
+    db.doc(ANALYTICS_DOC_PATH).get()
+    .then(doc => {
+        if (doc.exists) {
+            const gaId = doc.data().ga_measurement_id || '';
+            if (gaMeasurementId) gaMeasurementId.value = gaId;
+            if (gaId && gaId.trim().length > 0) {
+                injectGAScript(gaId.trim());
+            }
+        } else {
+            // Créer le document s'il n'existe pas
+            db.doc(ANALYTICS_DOC_PATH).set({ ga_measurement_id: '' })
+            .catch(err => console.error('[FIRESTORE] Erreur création analytics:', err));
+        }
+    })
+    .catch(err => console.error('[FIRESTORE] Erreur chargement GA:', err));
+}
+
+function injectGAScript(measurementId) {
+    // Supprime tout script GA existant pour éviter les doublons
+    const existingScript = document.querySelector('script[src*="googletagmanager.com/gtag/js?id="]');
+    if (existingScript) existingScript.remove();
+    const existingInline = document.getElementById('ga-inline-script');
+    if (existingInline) existingInline.remove();
+
+    // Créer le script gtag.js
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    document.head.appendChild(script);
+
+    // Créer le script d'initialisation
+    const inlineScript = document.createElement('script');
+    inlineScript.id = 'ga-inline-script';
+    inlineScript.innerHTML = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${measurementId}');
+    `;
+    document.head.appendChild(inlineScript);
+}
+
+// Soumission du formulaire contacts + GA
 contactsForm?.addEventListener('submit', function(e) {
     e.preventDefault();
-    if (!checkAuthRequired('mettre à jour les contacts')) return;
+    if (!checkAuthRequired('mettre à jour les paramètres')) return;
     if (!isAdmin) {
         showToast('Action non autorisée', 'error');
         return;
@@ -1822,14 +1733,25 @@ contactsForm?.addEventListener('submit', function(e) {
     const whatsapp = contactWhatsapp?.value || '';
     const facebook = contactFacebook?.value || '';
     const email = contactEmail?.value || '';
-    saveContactsToFirestore(whatsapp, facebook, email)
+    const gaId = gaMeasurementId?.value || '';
+    saveContactsToFirestore(whatsapp, facebook, email, gaId)
     .then(() => {
-        showToast('Contacts mis à jour avec succès', 'success');
+        showToast('Paramètres mis à jour avec succès', 'success');
         updateFooterContacts({ whatsapp, facebook, email });
+        // Si l'ID GA a changé, on le réinjecte
+        if (gaId && gaId.trim().length > 0) {
+            injectGAScript(gaId.trim());
+        } else {
+            // Supprimer les scripts GA si l'ID est vide
+            const script = document.querySelector('script[src*="googletagmanager.com/gtag/js?id="]');
+            if (script) script.remove();
+            const inline = document.getElementById('ga-inline-script');
+            if (inline) inline.remove();
+        }
     })
     .catch(err => {
-        console.error('[FIRESTORE] Erreur sauvegarde contacts:', err);
-        showToast('Erreur lors de la mise à jour des contacts', 'error');
+        console.error('[FIRESTORE] Erreur sauvegarde paramètres:', err);
+        showToast('Erreur lors de la mise à jour', 'error');
     });
 });
 
@@ -1846,7 +1768,6 @@ function loadLegalPages() {
             if (legalCgu) legalCgu.value = data.cgu || '';
             if (legalPrivacy) legalPrivacy.value = data.confidentialite || '';
         } else {
-            // Créer le document avec des textes par défaut si inexistant
             const defaults = {
                 cgu: "Conditions Générales d'Utilisation par défaut. En cours de rédaction...",
                 confidentialite: "Politique de Confidentialité par défaut. En cours de rédaction..."
@@ -1866,7 +1787,6 @@ function saveLegalPages(cgu, confidentialite) {
     return db.doc(LEGAL_DOC_PATH).set({ cgu, confidentialite }, { merge: true });
 }
 
-// Soumission du formulaire légal
 legalForm?.addEventListener('submit', function(e) {
     e.preventDefault();
     if (!checkAuthRequired('modifier les pages légales')) return;
@@ -1886,10 +1806,8 @@ legalForm?.addEventListener('submit', function(e) {
     });
 });
 
-// Fonction pour afficher une page légale dans une popup
 function showLegalPopup(type) {
-    const docRef = db.doc(LEGAL_DOC_PATH);
-    docRef.get()
+    db.doc(LEGAL_DOC_PATH).get()
     .then(doc => {
         let content = '';
         if (doc.exists) {
@@ -1904,7 +1822,6 @@ function showLegalPopup(type) {
                 if (privacyPopup) privacyPopup.style.display = 'flex';
             }
         } else {
-            // Si le document n'existe pas, afficher un message par défaut
             const defaultMsg = 'Textes en cours de rédaction...';
             if (type === 'cgu') {
                 if (termsContent) termsContent.innerHTML = defaultMsg;
@@ -1921,30 +1838,116 @@ function showLegalPopup(type) {
     });
 }
 
-// Écouteurs sur les liens du footer
 termsLink?.addEventListener('click', function(e) {
     e.preventDefault();
     showLegalPopup('cgu');
 });
-
 privacyLink?.addEventListener('click', function(e) {
     e.preventDefault();
     showLegalPopup('privacy');
 });
-
-// Fermeture des popups légales via la croix
 document.querySelectorAll('#terms-popup .popup-close, #privacy-popup .popup-close').forEach(btn => {
     btn.addEventListener('click', function() {
         const popup = this.closest('.popup-overlay');
         if (popup) popup.style.display = 'none';
     });
 });
-// Fermeture en cliquant à l'extérieur
 document.querySelectorAll('#terms-popup, #privacy-popup').forEach(popup => {
     popup.addEventListener('click', function(e) {
         if (e.target === this) this.style.display = 'none';
     });
 });
+
+// ============================================================
+// SUIVI COMPORTEMENTAL (LOGS) - FIRESTORE
+// ============================================================
+function logSearch(keyword) {
+    if (!keyword || keyword.trim().length < 3) return;
+    const userType = currentUser ? 'connecté' : 'anonyme';
+    db.collection('search_logs').add({
+        keyword: keyword.trim(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        userType: userType
+    }).catch(err => console.error('[FIRESTORE] Erreur logSearch:', err));
+}
+
+function logInteraction(action, epreuveId) {
+    if (!epreuveId) return;
+    const userType = currentUser ? 'connecté' : 'anonyme';
+    db.collection('interaction_logs').add({
+        action: action, // "voir" ou "telecharger"
+        epreuveId: epreuveId,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        userType: userType
+    }).catch(err => console.error('[FIRESTORE] Erreur logInteraction:', err));
+}
+
+// ============================================================
+// AFFICHAGE DES LOGS DANS L'ADMIN
+// ============================================================
+function loadAdminLogs() {
+    if (!currentUser || !isAdmin) return;
+
+    // Récupérer les 10 mots-clés les plus recherchés (groupés)
+    db.collection('search_logs')
+        .orderBy('timestamp', 'desc')
+        .limit(50)
+        .get()
+        .then(snapshot => {
+            const keywords = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.keyword) {
+                    const kw = data.keyword.toLowerCase();
+                    keywords[kw] = (keywords[kw] || 0) + 1;
+                }
+            });
+            // Trier par fréquence
+            const sorted = Object.entries(keywords).sort((a,b) => b[1] - a[1]).slice(0,10);
+            if (topKeywordsContainer) {
+                if (sorted.length === 0) {
+                    topKeywordsContainer.innerHTML = '<p style="color:var(--text-light);">Aucune recherche enregistrée.</p>';
+                } else {
+                    topKeywordsContainer.innerHTML = sorted.map(([kw, count]) =>
+                        `<div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid var(--border-color);">
+                            <span>${kw}</span>
+                            <span style="color:var(--text-light);">${count}</span>
+                        </div>`
+                    ).join('');
+                }
+            }
+        })
+        .catch(err => console.error('[FIRESTORE] Erreur chargement search_logs:', err));
+
+    // Récupérer les 10 dernières interactions
+    db.collection('interaction_logs')
+        .orderBy('timestamp', 'desc')
+        .limit(10)
+        .get()
+        .then(snapshot => {
+            if (recentInteractionsContainer) {
+                if (snapshot.empty) {
+                    recentInteractionsContainer.innerHTML = '<p style="color:var(--text-light);">Aucune interaction récente.</p>';
+                } else {
+                    let html = '';
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const actionLabel = data.action === 'voir' ? 'a consulté' : 'a téléchargé';
+                        const userLabel = data.userType === 'connecté' ? 'Connecté' : 'Anonyme';
+                        const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString('fr-FR') : '';
+                        html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-color);font-size:0.9rem;">
+                            <span style="color:var(--text-light);">${userLabel}</span>
+                            <span> ${actionLabel} </span>
+                            <span style="color:var(--accent-blue);">l'épreuve ${data.epreuveId ? data.epreuveId.substring(0,8) : ''}</span>
+                            <span style="color:var(--text-light);font-size:0.75rem;float:right;">${time}</span>
+                        </div>`;
+                    });
+                    recentInteractionsContainer.innerHTML = html;
+                }
+            }
+        })
+        .catch(err => console.error('[FIRESTORE] Erreur chargement interaction_logs:', err));
+}
 
 // ============================================================
 // AUTH STATE CHANGED
@@ -1966,6 +1969,8 @@ auth.onAuthStateChanged(user => {
             hideSplashScreen();
             loadContactsFromFirestore();
             loadLegalPages();
+            loadAndInjectGA();
+            if (isAdmin) loadAdminLogs();
         } else {
             currentUser = null;
             userData = null;
@@ -1981,6 +1986,7 @@ auth.onAuthStateChanged(user => {
             hideSplashScreen();
             loadContactsFromFirestore();
             loadLegalPages();
+            loadAndInjectGA(); // Charger GA même si non connecté (anonyme)
         }
         updateMenuItems();
     } catch (error) {
@@ -2004,8 +2010,6 @@ function hideSplashScreen() {
 // DOM CONTENT LOADED
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-    // Le thème est déjà appliqué par le script en tête, donc pas besoin de loadTheme()
-    
     // Délai d'affichage du splash
     setTimeout(() => {
         if (splashScreen) {
@@ -2019,7 +2023,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 4000);
 
-    // Acceptation des avertissements
     document.querySelector('.accept-btn')?.addEventListener('click', () => {
         if (warningScreen) warningScreen.style.display = 'none';
     });
@@ -2029,7 +2032,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (warningScreen) warningScreen.style.display = 'flex';
     });
 
-    // Tabs d'authentification
     authTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.getAttribute('data-tab');
@@ -2040,12 +2042,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Bouton de fermeture de la modale d'authentification
     document.getElementById('auth-close-btn')?.addEventListener('click', function() {
         if (authScreen) authScreen.style.display = 'none';
     });
 
-    // Login
     loginForm?.addEventListener('submit', e => {
         e.preventDefault();
         const email = document.getElementById('login-email')?.value || '';
@@ -2058,7 +2058,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Signup
     signupForm?.addEventListener('submit', e => {
         e.preventDefault();
         if (!validatePasswordMatch()) {
@@ -2095,10 +2094,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => { console.error('[AUTH] Erreur envoi:', error); showToast('Erreur d\'envoi du lien', 'error'); });
     });
 
-    // Annonces
     announcementForm?.addEventListener('submit', e => { e.preventDefault(); submitAnnouncement(); });
 
-    // Bottom Nav (Section 1)
     bottomNavItems.forEach(item => {
         item.addEventListener('click', function() {
             const viewName = this.getAttribute('data-view');
@@ -2112,7 +2109,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Ajout d'épreuves
     addExamBtn?.addEventListener('click', () => {
         if (!checkAuthRequired('ajouter une épreuve')) return;
         if (addExamPopup) addExamPopup.style.display = 'flex';
@@ -2219,23 +2215,25 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('corrige-upload')?.addEventListener('click', () => { if (corrigeUploadWidget) corrigeUploadWidget.open(); });
     document.getElementById('corrige-only-upload')?.addEventListener('click', () => { if (corrigeOnlyUploadWidget) corrigeOnlyUploadWidget.open(); });
 
-    // Filtres
     filterClass?.addEventListener('change', applyFilters);
     filterSubject?.addEventListener('change', applyFilters);
     filterSeries?.addEventListener('change', applyFilters);
     searchExams?.addEventListener('input', debounce(applyFilters, 300));
 
-    // Recherche dynamique
     let searchTimeout;
     globalSearch?.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         const query = this.value.trim();
-        if (query.length < 2) {
+        if (query.length < 3) {
             if (searchSuggestions) searchSuggestions.style.display = 'none';
-            if (searchResults) searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
+            if (searchResults) searchResults.innerHTML = '<p>Entrez au moins 3 caractères pour rechercher</p>';
             return;
         }
-        searchTimeout = setTimeout(() => performDynamicSearch(query), 300);
+        searchTimeout = setTimeout(() => {
+            performDynamicSearch(query);
+            // Log de recherche
+            logSearch(query);
+        }, 300);
     });
 
     document.addEventListener('click', (e) => {
@@ -2244,9 +2242,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Charger les contacts et les pages légales au démarrage
     loadContactsFromFirestore();
     loadLegalPages();
+    loadAndInjectGA();
 });
 
 // ============================================================
@@ -2513,9 +2511,15 @@ function createExamCard(exam, examId) {
         ${isAdmin ? `<button class="exam-btn delete-btn" data-exam-id="${examId}" style="flex:1 1 calc(50% - 8px);min-width:80px;padding:0.5rem 0.6rem;border:none;border-radius:6px;cursor:pointer;transition:var(--transition);text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:0.3rem;font-size:0.8rem;font-weight:500;background:var(--error);color:#fff;">Supprimer</button>` : ''}
     </div>
     `;
-    card.querySelector('.view-btn')?.addEventListener('click', () => viewExam(examId, 'sujet'));
+    card.querySelector('.view-btn')?.addEventListener('click', () => {
+        viewExam(examId, 'sujet');
+        logInteraction('voir', examId);
+    });
     card.querySelectorAll('.download-btn').forEach(btn => {
-        btn.addEventListener('click', () => downloadExam(btn.dataset.examId, btn.dataset.type));
+        btn.addEventListener('click', () => {
+            downloadExam(btn.dataset.examId, btn.dataset.type);
+            logInteraction('telecharger', btn.dataset.examId);
+        });
     });
     const favBtn = card.querySelector('.favorite-btn');
     favBtn?.addEventListener('click', function(e) {
@@ -2824,9 +2828,9 @@ function loadFavorites() {
 }
 
 function performDynamicSearch(query) {
-    if (!query || query.length < 2) {
+    if (!query || query.length < 3) {
         if (searchSuggestions) searchSuggestions.style.display = 'none';
-        if (searchResults) searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
+        if (searchResults) searchResults.innerHTML = '<p>Entrez au moins 3 caractères pour rechercher</p>';
         return;
     }
     if (searchResults) searchResults.innerHTML = '<p>Recherche en cours...</p>';
@@ -2944,7 +2948,8 @@ function loadAdminPanel() {
         db.collection('epreuves').get().then(q => { const el = document.getElementById('total-exams'); if (el) el.textContent = q.size; });
         updatePendingExamsCount();
         loadPendingExams();
-        renderAdminCharts();
+        // Charger les logs
+        loadAdminLogs();
     } catch (error) { console.error('[FIRESTORE] Erreur loadAdminPanel:', error); showToast('Erreur lors du chargement du panneau admin', 'error'); }
 }
 
@@ -2996,52 +3001,6 @@ function updatePendingExamsCount() {
         .then(q => { const el = document.getElementById('pending-exams-count'); if (el) el.textContent = q.size; })
         .catch(error => console.error('[FIRESTORE] Erreur comptage épreuves en attente:', error));
     } catch (error) { console.error('[FIRESTORE] Erreur updatePendingExamsCount:', error); }
-}
-
-async function renderAdminCharts() {
-    if (!currentUser || !isAdmin) return;
-    try {
-        const usersSnapshot = await db.collection('users').get();
-        const counts = {};
-        const today = new Date();
-        for (let i = 6; i >= 0; i--) {
-            const d = new Date(); d.setDate(today.getDate() - i);
-            counts[d.toISOString().split('T')[0]] = 0;
-        }
-        usersSnapshot.forEach(doc => {
-            const user = doc.data();
-            if (user.createdAt && user.createdAt.toDate) {
-                const dateStr = user.createdAt.toDate().toISOString().split('T')[0];
-                if (counts[dateStr] !== undefined) counts[dateStr]++;
-            }
-        });
-        const ctx1 = document.getElementById('users-chart');
-        if (ctx1) {
-            if (usersChartInstance) usersChartInstance.destroy();
-            usersChartInstance = new Chart(ctx1, {
-                type: 'line',
-                data: { labels: Object.keys(counts), datasets: [{ label: 'Nouveaux utilisateurs', data: Object.values(counts), borderColor: 'var(--primary-blue)', backgroundColor: 'rgba(26,42,74,0.1)', fill: true, tension: 0.1 }] },
-                options: { responsive: true, plugins: { legend: { display: false } } }
-            });
-        }
-        const examsSnapshot = await db.collection('epreuves').where('status', '==', 'approved')
-        .orderBy('downloadCount', 'desc').limit(5).get();
-        const labels = [], data = [];
-        examsSnapshot.forEach(doc => {
-            const exam = doc.data();
-            labels.push(exam.nom_epreuve?.length > 20 ? exam.nom_epreuve.substring(0,20)+'...' : exam.nom_epreuve || 'Sans nom');
-            data.push(exam.downloadCount || 0);
-        });
-        const ctx2 = document.getElementById('exams-chart');
-        if (ctx2) {
-            if (examsChartInstance) examsChartInstance.destroy();
-            examsChartInstance = new Chart(ctx2, {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Téléchargements', data, backgroundColor: 'var(--accent-blue)' }] },
-                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } }
-            });
-        }
-    } catch (error) { console.error('[CHARTS] Erreur graphiques:', error); }
 }
 
 function approveExam(examId, authorId, points) {
@@ -3217,7 +3176,6 @@ function debounce(func, wait) {
     };
 }
 
-// Initialiser la navigation active par défaut
 document.addEventListener('DOMContentLoaded', function() {
     const homeView = document.getElementById('home-view');
     if (homeView) {
