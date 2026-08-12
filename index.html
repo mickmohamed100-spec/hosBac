@@ -17,13 +17,13 @@
 --accent-blue: #3b82f6;
 --light-blue: #e8edf5;
 --white: #ffffff;
---light-gray: #f5f7fa;
+--light-gray: #f0f2f5;
 --text-dark: #1e293b;
 --text-light: #64748b;
 --success: #10b981;
 --warning: #f59e0b;
 --error: #ef4444;
---shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+--shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 --transition: all 0.3s ease;
 --border-radius: 10px;
 }
@@ -325,22 +325,6 @@ background: var(--light-gray);
 color: var(--primary-blue);
 background: var(--light-blue);
 }
-.notification-badge {
-position: absolute;
-top: -2px;
-right: -2px;
-background: var(--error);
-color: white;
-border-radius: 50%;
-width: 18px;
-height: 18px;
-font-size: 0.6rem;
-font-weight: bold;
-display: flex;
-align-items: center;
-justify-content: center;
-line-height: 1;
-}
 .mobile-menu-btn {
 display: none;
 background: none;
@@ -353,42 +337,54 @@ padding: 0.5rem;
 .mobile-menu {
 display: none;
 position: fixed;
-top: 60px;
+bottom: 0;
 left: 0;
 width: 100%;
 background: var(--white);
-border-bottom: 1px solid #e2e8f0;
+border-top: 1px solid #e2e8f0;
 z-index: 99;
-padding: 0.5rem 0;
-flex-direction: column;
-box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+padding: 10px 12px;
+box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
 }
 .mobile-menu.active {
-display: flex;
+display: block;
+}
+.mobile-menu-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 8px;
+max-width: 600px;
+margin: 0 auto;
 }
 .mobile-nav-icon {
 display: flex;
+flex-direction: column;
 align-items: center;
-gap: 1rem;
-padding: 0.8rem 1.5rem;
-border-radius: 0;
+justify-content: center;
+padding: 10px 8px;
+border-radius: var(--border-radius);
 cursor: pointer;
 transition: var(--transition);
 color: var(--text-light);
-border-left: 3px solid transparent;
-}
-.mobile-nav-icon.active {
-background: var(--light-blue);
-color: var(--primary-blue);
-border-left-color: var(--primary-blue);
-}
-.mobile-nav-icon:hover {
 background: var(--light-gray);
+text-decoration: none;
+font-size: 0.7rem;
+font-weight: 500;
+gap: 4px;
+min-height: 60px;
 }
 .mobile-nav-icon i {
-font-size: 1.1rem;
-width: 24px;
-text-align: center;
+font-size: 1.3rem;
+}
+.mobile-nav-icon.active {
+color: var(--primary-blue);
+background: var(--light-blue);
+}
+.mobile-nav-icon:hover {
+background: #e2e8f0;
+}
+.mobile-nav-icon#mobile-admin-icon {
+grid-column: span 1;
 }
 main {
 flex: 1;
@@ -396,6 +392,7 @@ padding: 1.5rem 1rem;
 max-width: 1200px;
 margin: 0 auto;
 width: 100%;
+padding-bottom: 100px;
 }
 .view {
 display: none;
@@ -509,64 +506,6 @@ margin-bottom: 0.8rem;
 color: var(--text-dark);
 font-weight: 600;
 }
-.notification-item {
-display: flex;
-align-items: center;
-gap: 1rem;
-padding: 0.8rem 0;
-border-bottom: 1px solid var(--light-gray);
-cursor: pointer;
-transition: var(--transition);
-position: relative;
-}
-.notification-item:hover {
-background: var(--light-gray);
-margin: 0 -0.5rem;
-padding-left: 0.5rem;
-padding-right: 0.5rem;
-border-radius: 6px;
-}
-.notification-icon {
-font-size: 1.2rem;
-color: var(--secondary-blue);
-width: 36px;
-text-align: center;
-}
-.notification-actions {
-position: absolute;
-right: 0;
-display: flex;
-gap: 0.5rem;
-}
-.notification-delete {
-background: transparent;
-color: var(--text-light);
-border: none;
-border-radius: 4px;
-padding: 0.2rem 0.5rem;
-cursor: pointer;
-font-size: 0.9rem;
-transition: var(--transition);
-}
-.notification-delete:hover {
-color: var(--error);
-background: #fee2e2;
-}
-.notification-delete-all {
-background: transparent;
-color: var(--error);
-border: 1px solid var(--error);
-border-radius: 6px;
-padding: 0.4rem 1rem;
-cursor: pointer;
-margin-bottom: 1rem;
-font-size: 0.85rem;
-transition: var(--transition);
-}
-.notification-delete-all:hover {
-background: var(--error);
-color: white;
-}
 .exam-filters {
 display: flex;
 gap: 0.8rem;
@@ -623,7 +562,7 @@ transform: translateY(-1px);
 }
 .exam-list {
 display: grid;
-grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 gap: 1.2rem;
 }
 .exam-card {
@@ -655,24 +594,27 @@ margin-bottom: 0.2rem;
 }
 .exam-actions {
 display: flex;
-gap: 0.5rem;
 flex-wrap: wrap;
+gap: 8px;
 }
 .exam-btn {
-flex: 1;
-padding: 0.4rem 0.8rem;
+flex: 1 1 calc(50% - 8px);
+min-width: 80px;
+padding: 0.5rem 0.6rem;
 border: none;
 border-radius: 6px;
 cursor: pointer;
 transition: var(--transition);
 text-align: center;
-min-width: 90px;
 display: inline-flex;
 align-items: center;
 justify-content: center;
-gap: 0.4rem;
+gap: 0.3rem;
 font-size: 0.8rem;
 font-weight: 500;
+}
+.exam-btn .fa-heart, .exam-btn .fa-star {
+font-size: 0.85rem;
 }
 .download-btn {
 background: var(--primary-blue);
@@ -688,20 +630,16 @@ color: var(--text-dark);
 .view-btn:hover {
 background: #d5dce8;
 }
-.transfer-btn {
-background: var(--light-gray);
-color: var(--text-light);
-}
-.transfer-btn:hover {
-background: #e2e8f0;
-}
 .favorite-btn {
 background: transparent;
 border: 1px solid #e2e8f0;
 color: var(--text-light);
+flex: 0 0 auto;
+min-width: 70px;
 }
 .favorite-btn .fa-heart {
 color: var(--text-light);
+transition: var(--transition);
 }
 .favorite-btn.active {
 background: #fee2e2;
@@ -710,6 +648,9 @@ color: var(--error);
 }
 .favorite-btn.active .fa-heart {
 color: var(--error);
+}
+.favorite-btn:hover {
+background: var(--light-gray);
 }
 .delete-btn {
 background: var(--error);
@@ -1180,6 +1121,12 @@ font-size: 0.9rem;
 display: block;
 grid-column: 1 / 2;
 }
+.mobile-menu.active {
+display: block;
+}
+main {
+padding-bottom: 120px;
+}
 .home-stats {
 grid-template-columns: 1fr;
 }
@@ -1196,10 +1143,12 @@ min-width: 100%;
 flex-direction: column;
 }
 .exam-actions {
-flex-direction: column;
+flex-direction: row;
+flex-wrap: wrap;
 }
 .exam-btn {
-min-width: 100%;
+flex: 1 1 calc(50% - 8px);
+min-width: 70px;
 }
 .complex-design-title {
 font-size: 2rem;
@@ -1227,6 +1176,18 @@ gap: 0.3rem;
 padding: 1.5rem;
 width: 95%;
 }
+.mobile-menu-grid {
+grid-template-columns: repeat(4, 1fr);
+gap: 6px;
+}
+.mobile-nav-icon {
+padding: 8px 4px;
+font-size: 0.65rem;
+min-height: 50px;
+}
+.mobile-nav-icon i {
+font-size: 1.1rem;
+}
 }
 @media (max-width: 480px) {
 .welcome-banner h1 {
@@ -1244,6 +1205,57 @@ padding: 1rem;
 .popup-content {
 padding: 1.2rem;
 }
+.mobile-menu-grid {
+grid-template-columns: repeat(4, 1fr);
+gap: 4px;
+}
+.mobile-nav-icon {
+padding: 6px 4px;
+font-size: 0.6rem;
+min-height: 44px;
+}
+.mobile-nav-icon i {
+font-size: 1rem;
+}
+.exam-btn {
+flex: 1 1 calc(50% - 6px);
+font-size: 0.7rem;
+padding: 0.4rem 0.4rem;
+min-width: 60px;
+}
+}
+/* Toast notification */
+.toast-container {
+position: fixed;
+top: 20px;
+right: 20px;
+z-index: 10000;
+display: flex;
+flex-direction: column;
+gap: 8px;
+max-width: 360px;
+}
+.toast {
+padding: 0.8rem 1.2rem;
+border-radius: 8px;
+color: white;
+font-weight: 500;
+font-size: 0.9rem;
+box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+background: var(--primary-blue);
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--error); }
+.toast.warning { background: var(--warning); }
+
+@keyframes slideInRight {
+from { transform: translateX(100%); opacity: 0; }
+to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeOut {
+from { opacity: 1; }
+to { opacity: 0; }
 }
 </style>
 </head>
@@ -1371,7 +1383,6 @@ Déjà un compte ? <span id="switch-to-login">Se connecter</span>
 <div class="nav-icon" data-view="search"><i class="fas fa-search"></i> Recherche</div>
 </div>
 <div class="header-right nav-icons">
-<div class="nav-icon" data-view="notifications" title="Notifications"><i class="fas fa-bell"></i></div>
 <div class="nav-icon" data-view="profile" title="Profil"><i class="fas fa-user"></i></div>
 <div class="nav-icon" id="admin-icon" data-view="admin" title="Admin" style="display: none;"><i class="fas fa-crown"></i></div>
 <div class="nav-icon" id="guest-login-btn" style="display: none;" title="Se connecter / S'inscrire"><i class="fas fa-sign-in-alt"></i></div>
@@ -1379,13 +1390,32 @@ Déjà un compte ? <span id="switch-to-login">Se connecter</span>
 </div>
 </header>
 <div class="mobile-menu" id="mobile-menu">
-<div class="mobile-nav-icon active" data-view="home"><i class="fas fa-home"></i><span>Accueil</span></div>
-<div class="mobile-nav-icon" data-view="exams"><i class="fas fa-file-alt"></i><span>Examens</span></div>
-<div class="mobile-nav-icon" data-view="search"><i class="fas fa-search"></i><span>Recherche</span></div>
-<div class="mobile-nav-icon" data-view="notifications"><i class="fas fa-bell"></i><span>Notifications</span></div>
-<div class="mobile-nav-icon" data-view="profile"><i class="fas fa-user"></i><span>Profil</span></div>
-<div class="mobile-nav-icon" id="mobile-admin-icon" data-view="admin" style="display: none;"><i class="fas fa-crown"></i><span>Admin</span></div>
-<div class="mobile-nav-icon" id="mobile-guest-login-btn" style="display: none;"><i class="fas fa-sign-in-alt"></i><span>Se connecter</span></div>
+<div class="mobile-menu-grid">
+<div class="mobile-nav-icon active" data-view="home">
+<i class="fas fa-home"></i>
+<span>Accueil</span>
+</div>
+<div class="mobile-nav-icon" data-view="exams">
+<i class="fas fa-file-alt"></i>
+<span>Examens</span>
+</div>
+<div class="mobile-nav-icon" data-view="search">
+<i class="fas fa-search"></i>
+<span>Recherche</span>
+</div>
+<div class="mobile-nav-icon" data-view="profile">
+<i class="fas fa-user"></i>
+<span>Profil</span>
+</div>
+<div class="mobile-nav-icon" id="mobile-admin-icon" data-view="admin" style="display: none;">
+<i class="fas fa-crown"></i>
+<span>Admin</span>
+</div>
+<div class="mobile-nav-icon" id="mobile-guest-login-btn" style="display: none;">
+<i class="fas fa-sign-in-alt"></i>
+<span>Se connecter</span>
+</div>
+</div>
 </div>
 <main>
 <div id="home-view" class="view active">
@@ -1405,11 +1435,6 @@ Déjà un compte ? <span id="switch-to-login">Se connecter</span>
 </div>
 <h2 class="view-title">Épreuves récentes</h2>
 <div class="card"><div id="recent-exams" class="exam-list"></div></div>
-</div>
-<div id="notifications-view" class="view">
-<h1 class="view-title">Notifications</h1>
-<button id="delete-all-notifications" class="notification-delete-all">Supprimer toutes les notifications</button>
-<div id="notifications-list"></div>
 </div>
 <div id="exams-view" class="view">
 <h1 class="view-title">Examens</h1>
@@ -1445,7 +1470,10 @@ Déjà un compte ? <span id="switch-to-login">Se connecter</span>
 <div id="search-view" class="view">
 <h1 class="view-title">Recherche</h1>
 <div class="card">
-<input type="text" id="global-search" class="search-bar" placeholder="Rechercher des épreuves, utilisateurs...">
+<div class="form-group" style="position:relative;">
+<input type="text" id="global-search" class="search-bar" placeholder="Rechercher des épreuves, utilisateurs..." style="width:100%;">
+<div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:var(--white); border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.1); z-index:50; max-height:300px; overflow-y:auto; display:none; border:1px solid #e2e8f0;"></div>
+</div>
 <div id="search-results" class="search-results"></div>
 </div>
 </div>
@@ -1663,7 +1691,6 @@ const uploadPreset = "hosbac_preset";
 let currentUser = null;
 let isAdmin = false;
 let userData = null;
-let notificationListener = null;
 let announcementsListener = null;
 let pendingExamsListener = null;
 let usersChartInstance = null;
@@ -1702,8 +1729,7 @@ const filterSeries = document.getElementById('filter-series');
 const searchExams = document.getElementById('search-exams');
 const globalSearch = document.getElementById('global-search');
 const searchResults = document.getElementById('search-results');
-const deleteAllNotificationsBtn = document.getElementById('delete-all-notifications');
-const notificationSound = document.getElementById('notification-sound');
+const searchSuggestions = document.getElementById('search-suggestions');
 const announcementForm = document.getElementById('announcement-form');
 const announcementsList = document.getElementById('announcements-list');
 const continueToWarningBtn = document.getElementById('continue-to-warning');
@@ -1728,25 +1754,35 @@ document.getElementById('switch-to-login').addEventListener('click', () => {
     loginForm.classList.add('active');
 });
 
-// ========== SECTION 1: REFONTE VISUELLE (déjà intégrée dans le CSS) ==========
+// Toast notification system
+function showToast(message, type = 'info') {
+    const container = document.querySelector('.toast-container') || (() => {
+        const c = document.createElement('div');
+        c.className = 'toast-container';
+        document.body.appendChild(c);
+        return c;
+    })();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
+}
 
-// ========== SECTION 2: LOGIQUE D'ACCÈS PUBLIC ==========
 function checkAuthRequired(action) {
     if (!currentUser) {
-        showNotification('Veuillez vous connecter pour effectuer cette action', 'warning');
+        showToast('Veuillez vous connecter pour effectuer cette action', 'warning');
         authScreen.style.display = 'flex';
         return false;
     }
     return true;
 }
 
-// Fonction pour vérifier si l'utilisateur est admin (utilisée pour le bouton supprimer)
 function isUserAdmin() {
     return currentUser && isAdmin;
 }
 
-// ========== SECTION 3: CORRECTIONS DE BUGS ==========
-// 1. Champ Série conditionnel
+// Champ Série conditionnel
 const examClasseSelect = document.getElementById('exam-classe');
 const examSerieContainer = document.getElementById('exam-serie-container');
 const examSerieSelect = document.getElementById('exam-serie');
@@ -1754,19 +1790,14 @@ const examSerieSelect = document.getElementById('exam-serie');
 function toggleSerieField() {
     const classe = examClasseSelect.value;
     const showSerie = ['2nd', '1ère', 'Terminale'].includes(classe);
-    if (showSerie) {
-        examSerieContainer.style.display = 'block';
-        examSerieSelect.required = true;
-    } else {
-        examSerieContainer.style.display = 'none';
-        examSerieSelect.required = false;
-        examSerieSelect.value = '';
-    }
+    examSerieContainer.style.display = showSerie ? 'block' : 'none';
+    examSerieSelect.required = showSerie;
+    if (!showSerie) examSerieSelect.value = '';
 }
 examClasseSelect.addEventListener('change', toggleSerieField);
 toggleSerieField();
 
-// 2. Upload avec barre de progression
+// Upload progress trackers
 function createProgressTracker(containerId, barId, textId) {
     const container = document.getElementById(containerId);
     const bar = document.getElementById(barId);
@@ -1781,7 +1812,7 @@ const sujetProgress = createProgressTracker('sujet-progress-container', 'sujet-p
 const corrigeProgress = createProgressTracker('corrige-progress-container', 'corrige-progress-bar', 'corrige-progress-text');
 const corrigeOnlyProgress = createProgressTracker('corrige-only-progress-container', 'corrige-only-progress-bar', 'corrige-only-progress-text');
 
-// 3. Validation mots de passe
+// Validation mots de passe
 const signupPassword = document.getElementById('signup-password');
 const signupConfirmPassword = document.getElementById('signup-confirm-password');
 const passwordMatchError = document.querySelector('.password-match-error');
@@ -1803,7 +1834,6 @@ signupConfirmPassword.addEventListener('input', validatePasswordMatch);
 signupPassword.addEventListener('input', function() { if (signupConfirmPassword.value.length > 0) validatePasswordMatch(); });
 
 function stopAllListeners() {
-    if (notificationListener) { notificationListener(); notificationListener = null; }
     if (announcementsListener) { announcementsListener(); announcementsListener = null; }
     if (pendingExamsListener) { pendingExamsListener(); pendingExamsListener = null; }
 }
@@ -1815,7 +1845,6 @@ auth.onAuthStateChanged(user => {
         app.style.display = 'block';
         authScreen.style.display = 'none';
         loadUserData();
-        startNotificationListener();
         startAnnouncementsListener();
         startPendingExamsListener();
         document.getElementById('guest-login-btn').style.display = 'none';
@@ -1834,7 +1863,6 @@ auth.onAuthStateChanged(user => {
         mobileAdminIcon.style.display = 'none';
         loadRecentExams();
         loadAnnouncements();
-        // Mettre à jour les cartes pour masquer les boutons admin et transfert
         updateExamCardsVisibility();
     }
 });
@@ -1878,17 +1906,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         auth.signInWithEmailAndPassword(email, password)
-        .then(() => showNotification('Connexion réussie', 'success'))
+        .then(() => showToast('Connexion réussie', 'success'))
         .catch(error => {
             console.error('Erreur de connexion:', error);
-            showNotification(error.code === 'auth/wrong-password' ? 'Mot de passe incorrect' : 'Erreur de connexion', 'error');
+            showToast(error.code === 'auth/wrong-password' ? 'Mot de passe incorrect' : 'Erreur de connexion', 'error');
         });
     });
 
     signupForm.addEventListener('submit', e => {
         e.preventDefault();
         if (!validatePasswordMatch()) {
-            showNotification('Les mots de passe ne correspondent pas', 'error');
+            showToast('Les mots de passe ne correspondent pas', 'error');
             return;
         }
         const nom = document.getElementById('signup-nom').value;
@@ -1906,19 +1934,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
         })
-        .then(() => showNotification('Inscription réussie', 'success'))
+        .then(() => showToast('Inscription réussie', 'success'))
         .catch(error => {
             console.error('Erreur d\'inscription:', error);
-            showNotification('Erreur d\'inscription', 'error');
+            showToast('Erreur d\'inscription', 'error');
         });
     });
 
     document.querySelector('.forgot-password').addEventListener('click', () => {
         const email = document.getElementById('login-email').value;
-        if (!email) { showNotification('Veuillez entrer votre email', 'warning'); return; }
+        if (!email) { showToast('Veuillez entrer votre email', 'warning'); return; }
         auth.sendPasswordResetEmail(email)
-        .then(() => showNotification('Lien de réinitialisation envoyé', 'success'))
-        .catch(error => { console.error('Erreur d\'envoi:', error); showNotification('Erreur d\'envoi du lien', 'error'); });
+        .then(() => showToast('Lien de réinitialisation envoyé', 'success'))
+        .catch(error => { console.error('Erreur d\'envoi:', error); showToast('Erreur d\'envoi du lien', 'error'); });
     });
 
     announcementForm.addEventListener('submit', e => { e.preventDefault(); submitAnnouncement(); });
@@ -1927,9 +1955,12 @@ document.addEventListener('DOMContentLoaded', function() {
         icon.addEventListener('click', () => {
             const viewName = icon.getAttribute('data-view');
             if (!viewName) return;
-            // Vérification pour les pages nécessitant une connexion
             if (viewName === 'profile') {
                 if (!checkAuthRequired('profil')) return;
+            }
+            if (viewName === 'admin' && (!currentUser || !isAdmin)) {
+                showToast('Accès non autorisé', 'error');
+                return;
             }
             navIcons.forEach(i => i.classList.remove('active'));
             document.querySelectorAll(`.nav-icon[data-view="${viewName}"]`).forEach(el => el.classList.add('active'));
@@ -1943,6 +1974,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!viewName) return;
             if (viewName === 'profile') {
                 if (!checkAuthRequired('profil')) return;
+            }
+            if (viewName === 'admin' && (!currentUser || !isAdmin)) {
+                showToast('Accès non autorisé', 'error');
+                return;
             }
             mobileNavIcons.forEach(i => i.classList.remove('active'));
             icon.classList.add('active');
@@ -1961,7 +1996,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function switchView(viewName) {
         if (viewName === 'admin') {
             if (!currentUser || !isAdmin) {
-                showNotification('Accès non autorisé', 'error');
+                showToast('Accès non autorisé', 'error');
                 viewName = 'home';
                 navIcons.forEach(i => { i.classList.remove('active'); if (i.getAttribute('data-view') === 'home') i.classList.add('active'); });
                 mobileNavIcons.forEach(i => { i.classList.remove('active'); if (i.getAttribute('data-view') === 'home') i.classList.add('active'); });
@@ -1973,12 +2008,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         switch(viewName) {
             case 'home': loadRecentExams(); break;
-            case 'notifications': if (checkAuthRequired('notifications')) loadNotifications(); break;
             case 'exams': loadAllExams(); break;
             case 'search': break;
             case 'profile': if (checkAuthRequired('profil')) loadProfileData(); break;
             case 'admin': loadAdminPanel(); break;
         }
+        // Close search suggestions when switching views
+        if (searchSuggestions) searchSuggestions.style.display = 'none';
     }
 
     document.querySelector('.logo').addEventListener('click', () => { switchView('home'); });
@@ -2000,7 +2036,7 @@ document.addEventListener('DOMContentLoaded', function() {
     logoutBtn.addEventListener('click', () => {
         stopAllListeners();
         auth.signOut()
-        .then(() => showNotification('Déconnexion réussie', 'success'))
+        .then(() => showToast('Déconnexion réussie', 'success'))
         .catch(error => console.error('Erreur de déconnexion:', error));
     });
 
@@ -2008,8 +2044,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     termsLink.addEventListener('click', () => { termsPopup.style.display = 'flex'; });
     privacyLink.addEventListener('click', () => { privacyPopup.style.display = 'flex'; });
-
-    deleteAllNotificationsBtn.addEventListener('click', () => { deleteAllNotifications(); });
 
     popupCloseButtons.forEach(button => {
         button.addEventListener('click', () => { button.closest('.popup-overlay').style.display = 'none'; });
@@ -2032,10 +2066,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('sujet-upload').innerHTML = `<p>Fichier sujet téléchargé: ${result.info.original_filename}</p>`;
                 sujetProgress.hide();
                 submitBtn.disabled = false;
-                showNotification('Fichier sujet uploadé avec succès', 'success');
+                showToast('Fichier sujet uploadé avec succès', 'success');
             } else if (error) {
                 sujetProgress.hide(); submitBtn.disabled = false;
-                showNotification('Erreur lors du téléchargement du fichier sujet', 'error');
+                showToast('Erreur lors du téléchargement du fichier sujet', 'error');
             } else if (result && result.event === 'progress') {
                 sujetProgress.update((result.bytesUploaded / result.totalBytes) * 100);
             } else if (result && result.event === 'queues-start') {
@@ -2052,10 +2086,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('corrige-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
                 corrigeProgress.hide();
                 submitBtn.disabled = false;
-                showNotification('Fichier corrigé uploadé avec succès', 'success');
+                showToast('Fichier corrigé uploadé avec succès', 'success');
             } else if (error) {
                 corrigeProgress.hide(); submitBtn.disabled = false;
-                showNotification('Erreur lors du téléchargement du fichier corrigé', 'error');
+                showToast('Erreur lors du téléchargement du fichier corrigé', 'error');
             } else if (result && result.event === 'progress') {
                 corrigeProgress.update((result.bytesUploaded / result.totalBytes) * 100);
             } else if (result && result.event === 'queues-start') {
@@ -2072,10 +2106,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('corrige-only-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
                 corrigeOnlyProgress.hide();
                 submitBtn.disabled = false;
-                showNotification('Fichier corrigé uploadé avec succès', 'success');
+                showToast('Fichier corrigé uploadé avec succès', 'success');
             } else if (error) {
                 corrigeOnlyProgress.hide(); submitBtn.disabled = false;
-                showNotification('Erreur lors du téléchargement du fichier corrigé', 'error');
+                showToast('Erreur lors du téléchargement du fichier corrigé', 'error');
             } else if (result && result.event === 'progress') {
                 corrigeOnlyProgress.update((result.bytesUploaded / result.totalBytes) * 100);
             } else if (result && result.event === 'queues-start') {
@@ -2083,7 +2117,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     } catch (error) {
-        showNotification('Erreur d\'initialisation du système de fichier', 'error');
+        showToast('Erreur d\'initialisation du système de fichier', 'error');
     }
 
     document.getElementById('sujet-upload').addEventListener('click', () => { if (sujetUploadWidget) sujetUploadWidget.open(); });
@@ -2094,25 +2128,27 @@ document.addEventListener('DOMContentLoaded', function() {
     filterSubject.addEventListener('change', applyFilters);
     filterSeries.addEventListener('change', applyFilters);
     searchExams.addEventListener('input', debounce(applyFilters, 300));
-    globalSearch.addEventListener('input', debounce(() => { performGlobalSearch(globalSearch.value); }, 300));
-});
 
-function startNotificationListener() {
-    if (!currentUser) return;
-    if (notificationListener) notificationListener();
-    notificationListener = db.collection('notifications')
-    .where('userId', '==', currentUser.uid)
-    .orderBy('createdAt', 'desc')
-    .onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-            if (change.type === 'added') {
-                playNotificationSound();
-                if (document.getElementById('notifications-view').classList.contains('active')) loadNotifications();
-                updateNotificationBadge();
-            }
-        });
-    }, error => console.error('Erreur écoute notifications:', error));
-}
+    // Recherche dynamique avec suggestions
+    let searchTimeout;
+    globalSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        if (query.length < 2) {
+            searchSuggestions.style.display = 'none';
+            searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
+            return;
+        }
+        searchTimeout = setTimeout(() => performDynamicSearch(query), 300);
+    });
+
+    // Close suggestions on click outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#search-view') && !e.target.closest('#global-search')) {
+            if (searchSuggestions) searchSuggestions.style.display = 'none';
+        }
+    });
+});
 
 function startAnnouncementsListener() {
     if (announcementsListener) announcementsListener();
@@ -2132,11 +2168,6 @@ function startPendingExamsListener() {
     }, error => console.error('Erreur écoute épreuves en attente:', error));
 }
 
-function playNotificationSound() {
-    try { notificationSound.currentTime = 0; notificationSound.play().catch(e => {}); }
-    catch (error) {}
-}
-
 function checkUserRole() {
     if (!currentUser) return;
     db.collection('users').doc(currentUser.uid).get()
@@ -2154,14 +2185,9 @@ function checkUserRole() {
 }
 
 function updateExamCardsVisibility() {
-    // Cette fonction est appelée après chaque rendu de cartes
     document.querySelectorAll('.exam-card').forEach(card => {
-        const transferBtn = card.querySelector('.transfer-btn');
-        if (transferBtn) transferBtn.style.display = 'none'; // Supprimer le bouton Transférer
-        
         const deleteBtn = card.querySelector('.delete-btn');
         if (deleteBtn) {
-            // Afficher le bouton supprimer uniquement si admin
             deleteBtn.style.display = (currentUser && isAdmin) ? 'flex' : 'none';
         }
     });
@@ -2170,10 +2196,8 @@ function updateExamCardsVisibility() {
 function loadUserData() {
     if (!currentUser) return;
     loadRecentExams();
-    loadNotifications();
     loadProfileData();
     loadAnnouncements();
-    updateNotificationBadge();
     if (isAdmin) updatePendingExamsCount();
 }
 
@@ -2235,7 +2259,7 @@ function toggleAnnouncementLike(announcementId, button) {
 
 function submitAnnouncement() {
     if (!checkAuthRequired('publier une annonce') || !isAdmin) {
-        showNotification('Action non autorisée', 'error');
+        showToast('Action non autorisée', 'error');
         return;
     }
     const title = document.getElementById('announcement-title').value;
@@ -2247,8 +2271,8 @@ function submitAnnouncement() {
         likes: 0,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     })
-    .then(() => { announcementForm.reset(); showNotification('Annonce publiée avec succès', 'success'); })
-    .catch(error => { console.error('Erreur publication annonce:', error); showNotification('Erreur lors de la publication', 'error'); });
+    .then(() => { announcementForm.reset(); showToast('Annonce publiée avec succès', 'success'); })
+    .catch(error => { console.error('Erreur publication annonce:', error); showToast('Erreur lors de la publication', 'error'); });
 }
 
 function loadRecentExams() {
@@ -2312,7 +2336,7 @@ function applyFilters() {
         filtered.forEach(exam => { container.appendChild(createExamCard(exam, exam.id)); });
         updateExamCardsVisibility();
     })
-    .catch(error => { console.error('Erreur filtrage:', error); container.innerHTML = '<p>Erreur lors du filtrage.</p>'; });
+    .catch(error => { console.error('Erreur filtrage:', error); container.innerHTML = '<p>Erreur lors du filtrage.</p>'); });
 }
 
 function createExamCard(exam, examId) {
@@ -2329,7 +2353,6 @@ function createExamCard(exam, examId) {
         <button class="exam-btn view-btn" data-exam-id="${examId}" data-type="sujet">Voir l'épreuve</button>
         <button class="exam-btn download-btn" data-exam-id="${examId}" data-type="sujet">Télécharger</button>
         ${exam.fichier_corrige ? `<button class="exam-btn download-btn" data-exam-id="${examId}" data-type="corrige">Corrigé (2 pts)</button>` : ''}
-        <button class="exam-btn transfer-btn" data-exam-id="${examId}" style="display:none;">Transférer</button>
         <button class="exam-btn favorite-btn ${isFavorite ? 'active' : ''}" data-exam-id="${examId}">
             <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i> Favori
         </button>
@@ -2341,9 +2364,11 @@ function createExamCard(exam, examId) {
         btn.addEventListener('click', () => downloadExam(btn.dataset.examId, btn.dataset.type));
     });
     const favBtn = card.querySelector('.favorite-btn');
-    favBtn.addEventListener('click', () => {
+    // Correction du bug du bouton favoris
+    favBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
         if (!checkAuthRequired('ajouter aux favoris')) return;
-        handleAddToFavorites(examId, exam.auteurId, favBtn);
+        handleAddToFavorites(examId, exam.auteurId, this);
     });
     if (isAdmin) {
         card.querySelector('.delete-btn').addEventListener('click', () => deleteExam(examId));
@@ -2357,8 +2382,6 @@ function createExamCard(exam, examId) {
 
 function updateExamCardsVisibility() {
     document.querySelectorAll('.exam-card').forEach(card => {
-        const transferBtn = card.querySelector('.transfer-btn');
-        if (transferBtn) transferBtn.style.display = 'none';
         const deleteBtn = card.querySelector('.delete-btn');
         if (deleteBtn) {
             deleteBtn.style.display = (currentUser && isAdmin) ? 'flex' : 'none';
@@ -2366,7 +2389,7 @@ function updateExamCardsVisibility() {
     });
 }
 
-async function handleAddToFavorites(epreuveId, auteurId, button) {
+function handleAddToFavorites(epreuveId, auteurId, button) {
     if (!currentUser || !userData) return;
     const isFav = userData.favorites && userData.favorites.includes(epreuveId);
     let newFavs = userData.favorites ? [...userData.favorites] : [];
@@ -2374,21 +2397,26 @@ async function handleAddToFavorites(epreuveId, auteurId, button) {
         newFavs = newFavs.filter(id => id !== epreuveId);
         button.classList.remove('active');
         button.innerHTML = '<i class="far fa-heart"></i> Favori';
+        showToast('Retiré des favoris', 'info');
     } else {
         newFavs.push(epreuveId);
         button.classList.add('active');
         button.innerHTML = '<i class="fas fa-heart"></i> Favori';
+        showToast('Ajouté aux favoris ❤️', 'success');
         if (auteurId && auteurId !== currentUser.uid) {
-            const examDoc = await db.collection('epreuves').doc(epreuveId).get();
-            if (examDoc.exists) {
-                const exam = examDoc.data();
-                db.collection('notifications').add({
-                    userId: auteurId, type: 'favorite',
-                    message: `${userData.prenom} ${userData.nom} a ajouté "${exam.nom_epreuve}" à ses favoris`,
-                    examId: epreuveId, read: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
+            db.collection('epreuves').doc(epreuveId).get()
+            .then(doc => {
+                if (doc.exists) {
+                    const exam = doc.data();
+                    db.collection('notifications').add({
+                        userId: auteurId, type: 'favorite',
+                        message: `${userData.prenom} ${userData.nom} a ajouté "${exam.nom_epreuve}" à ses favoris`,
+                        examId: epreuveId, read: false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            })
+            .catch(error => console.error('Erreur notification favori:', error));
         }
     }
     db.collection('users').doc(currentUser.uid).update({ favorites: newFavs })
@@ -2396,7 +2424,7 @@ async function handleAddToFavorites(epreuveId, auteurId, button) {
         userData.favorites = newFavs;
         if (document.getElementById('profile-view').classList.contains('active')) loadFavorites();
     })
-    .catch(error => console.error('Erreur favoris:', error));
+    .catch(error => { console.error('Erreur favoris:', error); showToast('Erreur lors de la mise à jour des favoris', 'error'); });
 }
 
 function viewExam(examId, type) {
@@ -2407,13 +2435,13 @@ function viewExam(examId, type) {
             if (type === 'sujet') {
                 if (exam.fichier_sujet && exam.fichier_sujet.includes('cloudinary.com')) {
                     window.open(exam.fichier_sujet, '_blank');
-                } else { showNotification('Fichier non disponible', 'error'); }
+                } else { showToast('Fichier non disponible', 'error'); }
             } else if (type === 'corrige') {
                 handleCorrigeAccess(examId, exam, 'view');
             }
         }
     })
-    .catch(error => { console.error('Erreur consultation:', error); showNotification('Erreur lors de la consultation', 'error'); });
+    .catch(error => { console.error('Erreur consultation:', error); showToast('Erreur lors de la consultation', 'error'); });
 }
 
 function downloadExam(examId, type) {
@@ -2432,13 +2460,13 @@ function downloadExam(examId, type) {
                     link.click();
                     document.body.removeChild(link);
                     db.collection('epreuves').doc(examId).update({ downloadCount: firebase.firestore.FieldValue.increment(1) });
-                } else { showNotification('Fichier non disponible', 'error'); }
+                } else { showToast('Fichier non disponible', 'error'); }
             } else if (type === 'corrige') {
                 handleCorrigeAccess(examId, exam, 'download');
             }
         }
     })
-    .catch(error => { console.error('Erreur téléchargement:', error); showNotification('Erreur lors du téléchargement', 'error'); });
+    .catch(error => { console.error('Erreur téléchargement:', error); showToast('Erreur lors du téléchargement', 'error'); });
 }
 
 function handleCorrigeAccess(examId, exam, action) {
@@ -2447,7 +2475,7 @@ function handleCorrigeAccess(examId, exam, action) {
     .then(userDoc => {
         const user = userDoc.data();
         if (user.points < 2) {
-            showNotification('Points insuffisants. 2 points requis.', 'error');
+            showToast('Points insuffisants. 2 points requis.', 'error');
             return;
         }
         return db.collection('users').doc(currentUser.uid).update({
@@ -2480,23 +2508,23 @@ function handleCorrigeAccess(examId, exam, action) {
                     link.click();
                     document.body.removeChild(link);
                 }
-                showNotification('Corrigé accessible (2 points déduits)', 'success');
-            } else { showNotification('Fichier corrigé non disponible', 'error'); }
+                showToast('Corrigé accessible (2 points déduits)', 'success');
+            } else { showToast('Fichier corrigé non disponible', 'error'); }
         });
     })
-    .catch(error => { console.error('Erreur accès corrigé:', error); showNotification('Erreur lors de l\'accès au corrigé', 'error'); });
+    .catch(error => { console.error('Erreur accès corrigé:', error); showToast('Erreur lors de l\'accès au corrigé', 'error'); });
 }
 
 function deleteExam(examId) {
-    if (!isAdmin) { showNotification('Action non autorisée', 'error'); return; }
+    if (!isAdmin) { showToast('Action non autorisée', 'error'); return; }
     if (confirm('Supprimer cette épreuve ?')) {
         db.collection('epreuves').doc(examId).delete()
         .then(() => {
-            showNotification('Épreuve supprimée', 'success');
+            showToast('Épreuve supprimée', 'success');
             if (document.getElementById('exams-view').classList.contains('active')) loadAllExams();
             if (document.getElementById('home-view').classList.contains('active')) loadRecentExams();
         })
-        .catch(error => { console.error('Erreur suppression:', error); showNotification('Erreur lors de la suppression', 'error'); });
+        .catch(error => { console.error('Erreur suppression:', error); showToast('Erreur lors de la suppression', 'error'); });
     }
 }
 
@@ -2526,88 +2554,7 @@ function loadUserProfile(userId) {
             document.getElementById('logout-btn').style.display = 'none';
         }
     })
-    .catch(error => { console.error('Erreur chargement profil:', error); showNotification('Erreur lors du chargement du profil', 'error'); });
-}
-
-function loadNotifications() {
-    if (!currentUser) return;
-    const container = document.getElementById('notifications-list');
-    container.innerHTML = '<p>Chargement des notifications...</p>';
-    db.collection('notifications').where('userId', '==', currentUser.uid)
-    .orderBy('createdAt', 'desc').limit(50).get()
-    .then(querySnapshot => {
-        container.innerHTML = '';
-        if (querySnapshot.empty) { container.innerHTML = '<p>Aucune notification.</p>'; return; }
-        querySnapshot.forEach(doc => {
-            const n = doc.data();
-            const el = document.createElement('div');
-            el.className = 'notification-item';
-            let icon = 'fas fa-bell';
-            if (n.type === 'points_received') icon = 'fas fa-coins';
-            else if (n.type === 'transfer') icon = 'fas fa-paper-plane';
-            else if (n.type === 'favorite') icon = 'fas fa-heart';
-            else if (n.type === 'approval') icon = 'fas fa-check-circle';
-            el.innerHTML = `
-            <div class="notification-icon"><i class="${icon}"></i></div>
-            <div class="notification-content">
-                <p>${n.message}</p>
-                <small>${new Date(n.createdAt?.toDate()).toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })}</small>
-            </div>
-            <div class="notification-actions">
-                <button class="notification-delete" data-id="${doc.id}">✕</button>
-            </div>
-            `;
-            el.querySelector('.notification-delete').addEventListener('click', e => {
-                e.stopPropagation();
-                deleteNotification(doc.id);
-            });
-            if (n.examId) {
-                el.addEventListener('click', () => { db.collection('notifications').doc(doc.id).update({ read: true }); switchView('exams'); });
-            } else {
-                el.addEventListener('click', () => { db.collection('notifications').doc(doc.id).update({ read: true }); });
-            }
-            container.appendChild(el);
-        });
-    })
-    .catch(error => { console.error('Erreur chargement notifications:', error); container.innerHTML = '<p>Erreur lors du chargement.</p>'; });
-}
-
-function deleteNotification(notificationId) {
-    db.collection('notifications').doc(notificationId).delete()
-    .then(() => { loadNotifications(); updateNotificationBadge(); })
-    .catch(error => console.error('Erreur suppression notification:', error));
-}
-
-function deleteAllNotifications() {
-    if (!confirm('Supprimer toutes les notifications ?')) return;
-    db.collection('notifications').where('userId', '==', currentUser.uid).get()
-    .then(querySnapshot => {
-        const promises = [];
-        querySnapshot.forEach(doc => promises.push(db.collection('notifications').doc(doc.id).delete()));
-        return Promise.all(promises);
-    })
-    .then(() => { loadNotifications(); updateNotificationBadge(); })
-    .catch(error => console.error('Erreur suppression notifications:', error));
-}
-
-function updateNotificationBadge() {
-    if (!currentUser) {
-        const icon = document.querySelector('.nav-icon[data-view="notifications"]');
-        const badge = icon.querySelector('.notification-badge');
-        if (badge) badge.remove();
-        return;
-    }
-    db.collection('notifications').where('userId', '==', currentUser.uid).where('read', '==', false).get()
-    .then(querySnapshot => {
-        const count = querySnapshot.size;
-        const icon = document.querySelector('.nav-icon[data-view="notifications"]');
-        let badge = icon.querySelector('.notification-badge');
-        if (count > 0) {
-            if (!badge) { badge = document.createElement('span'); badge.className = 'notification-badge'; icon.appendChild(badge); }
-            badge.textContent = count > 9 ? '9+' : count;
-        } else { if (badge) badge.remove(); }
-    })
-    .catch(error => console.error('Erreur comptage notifications:', error));
+    .catch(error => { console.error('Erreur chargement profil:', error); showToast('Erreur lors du chargement du profil', 'error'); });
 }
 
 function loadProfileData() {
@@ -2655,8 +2602,8 @@ function updateProfile() {
     const prenom = document.getElementById('edit-prenom').value;
     const classe = document.getElementById('edit-classe').value;
     db.collection('users').doc(currentUser.uid).update({ nom, prenom, classe })
-    .then(() => { showNotification('Profil mis à jour', 'success'); loadProfileData(); })
-    .catch(error => { console.error('Erreur mise à jour profil:', error); showNotification('Erreur lors de la mise à jour', 'error'); });
+    .then(() => { showToast('Profil mis à jour', 'success'); loadProfileData(); })
+    .catch(error => { console.error('Erreur mise à jour profil:', error); showToast('Erreur lors de la mise à jour', 'error'); });
 }
 
 function loadFavorites() {
@@ -2685,17 +2632,79 @@ function loadFavorites() {
     .catch(error => { console.error('Erreur chargement favoris:', error); container.innerHTML = '<p>Erreur lors du chargement.</p>'; });
 }
 
-function performGlobalSearch(query) {
-    if (!query || query.length < 2) { searchResults.innerHTML = '<p>Entrez au moins 2 caractères</p>'; return; }
+// Recherche dynamique avec suggestions
+function performDynamicSearch(query) {
+    if (!query || query.length < 2) {
+        if (searchSuggestions) searchSuggestions.style.display = 'none';
+        searchResults.innerHTML = '<p>Entrez au moins 2 caractères pour rechercher</p>';
+        return;
+    }
+    
     searchResults.innerHTML = '<p>Recherche en cours...</p>';
+    
     const examsPromise = db.collection('epreuves').where('status', '==', 'approved')
-    .where('nom_epreuve', '>=', query).where('nom_epreuve', '<=', query + '\uf8ff').limit(10).get()
+    .where('nom_epreuve', '>=', query).where('nom_epreuve', '<=', query + '\uf8ff').limit(8).get()
     .catch(() => { return { empty: true }; });
+    
     const usersPromise = db.collection('users')
-    .where('nom', '>=', query).where('nom', '<=', query + '\uf8ff').limit(10).get()
+    .where('nom', '>=', query).where('nom', '<=', query + '\uf8ff').limit(5).get()
     .catch(() => { return { empty: true }; });
+    
     Promise.all([examsPromise, usersPromise])
     .then(([examsSnapshot, usersSnapshot]) => {
+        // Afficher les suggestions dans la liste déroulante
+        if (searchSuggestions) {
+            searchSuggestions.innerHTML = '';
+            let hasSuggestions = false;
+            
+            if (examsSnapshot && !examsSnapshot.empty) {
+                examsSnapshot.forEach(doc => {
+                    const exam = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    item.style.padding = '0.6rem 1rem';
+                    item.innerHTML = `<i class="fas fa-file-alt" style="color:var(--accent-blue);margin-right:8px;"></i> <strong>${exam.nom_epreuve}</strong> - ${exam.matiere} (${exam.classe})`;
+                    item.addEventListener('click', () => {
+                        // Ouvrir l'épreuve directement
+                        viewExam(doc.id, 'sujet');
+                        searchSuggestions.style.display = 'none';
+                        globalSearch.value = '';
+                    });
+                    searchSuggestions.appendChild(item);
+                    hasSuggestions = true;
+                });
+            }
+            
+            if (usersSnapshot && !usersSnapshot.empty) {
+                usersSnapshot.forEach(doc => {
+                    const user = doc.data();
+                    if (doc.id !== currentUser?.uid) {
+                        const item = document.createElement('div');
+                        item.className = 'search-result-item';
+                        item.style.padding = '0.6rem 1rem';
+                        item.innerHTML = `<i class="fas fa-user" style="color:var(--secondary-blue);margin-right:8px;"></i> ${user.prenom} ${user.nom} - ${user.email}`;
+                        item.addEventListener('click', () => {
+                            if (checkAuthRequired('voir le profil')) {
+                                viewUserProfile(doc.id);
+                                searchSuggestions.style.display = 'none';
+                                globalSearch.value = '';
+                            }
+                        });
+                        searchSuggestions.appendChild(item);
+                        hasSuggestions = true;
+                    }
+                });
+            }
+            
+            if (hasSuggestions) {
+                searchSuggestions.style.display = 'block';
+            } else {
+                searchSuggestions.style.display = 'none';
+                searchResults.innerHTML = '<p>Aucun résultat trouvé.</p>';
+            }
+        }
+        
+        // Afficher aussi dans les résultats complets
         searchResults.innerHTML = '';
         let hasResults = false;
         if (examsSnapshot && !examsSnapshot.empty) {
@@ -2705,7 +2714,7 @@ function performGlobalSearch(query) {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
                 item.innerHTML = `<p><strong>${exam.nom_epreuve}</strong> - ${exam.matiere} - ${exam.classe}</p><small>${exam.auteurNom}</small>`;
-                item.addEventListener('click', () => switchView('exams'));
+                item.addEventListener('click', () => viewExam(doc.id, 'sujet'));
                 searchResults.appendChild(item);
                 hasResults = true;
             });
@@ -2726,11 +2735,16 @@ function performGlobalSearch(query) {
         }
         if (!hasResults) searchResults.innerHTML = '<p>Aucun résultat trouvé.</p>';
     })
-    .catch(error => { console.error('Erreur recherche globale:', error); searchResults.innerHTML = '<p>Erreur lors de la recherche.</p>'; });
+    .catch(error => { console.error('Erreur recherche:', error); searchResults.innerHTML = '<p>Erreur lors de la recherche.</p>'; });
+}
+
+// Garder la fonction globale pour compatibilité
+function performGlobalSearch(query) {
+    performDynamicSearch(query);
 }
 
 function loadAdminPanel() {
-    if (!currentUser || !isAdmin) { showNotification('Accès non autorisé', 'error'); switchView('home'); return; }
+    if (!currentUser || !isAdmin) { showToast('Accès non autorisé', 'error'); switchView('home'); return; }
     db.collection('users').get().then(q => { document.getElementById('total-users').textContent = q.size; });
     db.collection('epreuves').get().then(q => { document.getElementById('total-exams').textContent = q.size; });
     updatePendingExamsCount();
@@ -2837,8 +2851,8 @@ function approveExam(examId, authorId, points) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     })
-    .then(() => { showNotification('Épreuve approuvée', 'success'); loadAdminPanel(); })
-    .catch(error => { console.error('Erreur approbation:', error); showNotification('Erreur lors de l\'approbation', 'error'); });
+    .then(() => { showToast('Épreuve approuvée', 'success'); loadAdminPanel(); })
+    .catch(error => { console.error('Erreur approbation:', error); showToast('Erreur lors de l\'approbation', 'error'); });
 }
 
 function assignPointsAfterApproval(authorId, points) {
@@ -2859,8 +2873,8 @@ function rejectExam(examId, authorId) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     })
-    .then(() => { showNotification('Épreuve rejetée', 'success'); loadAdminPanel(); })
-    .catch(error => { console.error('Erreur rejet:', error); showNotification('Erreur lors du rejet', 'error'); });
+    .then(() => { showToast('Épreuve rejetée', 'success'); loadAdminPanel(); })
+    .catch(error => { console.error('Erreur rejet:', error); showToast('Erreur lors du rejet', 'error'); });
 }
 
 function submitExam() {
@@ -2871,9 +2885,9 @@ function submitExam() {
     const nom_epreuve = document.getElementById('exam-nom').value;
     const fichier_sujet = document.getElementById('exam-sujet-url').value;
     const fichier_corrige = document.getElementById('exam-corrige-url').value;
-    if (!fichier_sujet) { showNotification('Veuillez télécharger un fichier sujet', 'warning'); return; }
+    if (!fichier_sujet) { showToast('Veuillez télécharger un fichier sujet', 'warning'); return; }
     if (!fichier_sujet.includes('cloudinary.com') || !fichier_sujet.includes('.pdf')) {
-        showNotification('Fichier sujet invalide', 'error'); return;
+        showToast('Fichier sujet invalide', 'error'); return;
     }
     let serieToSave = serie;
     if (!['2nd', '1ère', 'Terminale'].includes(classe)) serieToSave = '';
@@ -2899,28 +2913,28 @@ function submitExam() {
         document.getElementById('add-exam-submit-btn').disabled = false;
         toggleSerieField();
         if (isAdmin) {
-            showNotification('Épreuve publiée', 'success');
+            showToast('Épreuve publiée', 'success');
             assignPointsAfterApproval(currentUser.uid, fichier_corrige ? 4 : 2);
         } else {
-            showNotification('Épreuve soumise, en attente d\'approbation', 'success');
+            showToast('Épreuve soumise, en attente d\'approbation', 'success');
             notifyAdminsAboutPendingExam();
         }
     })
-    .catch(error => { console.error('Erreur soumission:', error); showNotification('Erreur lors de la soumission', 'error'); });
+    .catch(error => { console.error('Erreur soumission:', error); showToast('Erreur lors de la soumission', 'error'); });
 }
 
 function submitCorrigeOnly() {
     if (!currentUser) return;
     const examId = document.getElementById('corrige-exam-select').value;
     const fichier_corrige = document.getElementById('corrige-only-url').value;
-    if (!examId) { showNotification('Sélectionnez une épreuve', 'warning'); return; }
-    if (!fichier_corrige) { showNotification('Téléchargez un corrigé', 'warning'); return; }
+    if (!examId) { showToast('Sélectionnez une épreuve', 'warning'); return; }
+    if (!fichier_corrige) { showToast('Téléchargez un corrigé', 'warning'); return; }
     db.collection('epreuves').doc(examId).get()
     .then(doc => {
         if (doc.exists) {
             const exam = doc.data();
             if (exam.auteurId !== currentUser.uid) {
-                showNotification('Vous ne pouvez ajouter un corrigé que pour vos épreuves', 'error');
+                showToast('Vous ne pouvez ajouter un corrigé que pour vos épreuves', 'error');
                 return;
             }
             return db.collection('epreuves').doc(examId).update({ fichier_corrige });
@@ -2932,10 +2946,10 @@ function submitCorrigeOnly() {
         document.getElementById('corrige-only-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
         corrigeOnlyProgress.hide();
         document.getElementById('add-corrige-only-submit-btn').disabled = false;
-        showNotification('Corrigé ajouté', 'success');
+        showToast('Corrigé ajouté', 'success');
         if (isAdmin) assignPointsAfterApproval(currentUser.uid, 2);
     })
-    .catch(error => { console.error('Erreur ajout corrigé:', error); showNotification('Erreur lors de l\'ajout', 'error'); });
+    .catch(error => { console.error('Erreur ajout corrigé:', error); showToast('Erreur lors de l\'ajout', 'error'); });
 }
 
 function loadExistingExamsForCorrige() {
@@ -2972,20 +2986,6 @@ function notifyAdminsAboutPendingExam() {
     .catch(error => console.error('Erreur notification admins:', error));
 }
 
-function showNotification(message, type) {
-    const el = document.createElement('div');
-    el.className = `notification ${type}`;
-    el.textContent = message;
-    el.style.cssText = `
-    position: fixed; top: 20px; right: 20px; padding: 0.8rem 1.5rem;
-    border-radius: 6px; color: white; font-weight: 500; z-index: 10000;
-    animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-    background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : type === 'warning' ? 'var(--warning)' : 'var(--primary-blue)'};
-    `;
-    document.body.appendChild(el);
-    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 3000);
-}
-
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -2994,19 +2994,29 @@ function debounce(func, wait) {
     };
 }
 
-// Ajout des animations CSS manquantes
-const styleEl = document.createElement('style');
-styleEl.textContent = `
-@keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+// Fonction switchView globale pour les appels depuis d'autres fonctions
+function switchView(viewName) {
+    if (viewName === 'admin') {
+        if (!currentUser || !isAdmin) {
+            showToast('Accès non autorisé', 'error');
+            viewName = 'home';
+            navIcons.forEach(i => { i.classList.remove('active'); if (i.getAttribute('data-view') === 'home') i.classList.add('active'); });
+            mobileNavIcons.forEach(i => { i.classList.remove('active'); if (i.getAttribute('data-view') === 'home') i.classList.add('active'); });
+        }
+    }
+    views.forEach(view => {
+        view.classList.remove('active');
+        if (view.id === `${viewName}-view`) view.classList.add('active');
+    });
+    switch(viewName) {
+        case 'home': loadRecentExams(); break;
+        case 'exams': loadAllExams(); break;
+        case 'search': break;
+        case 'profile': if (checkAuthRequired('profil')) loadProfileData(); break;
+        case 'admin': loadAdminPanel(); break;
+    }
+    if (searchSuggestions) searchSuggestions.style.display = 'none';
 }
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-`;
-document.head.appendChild(styleEl);
 </script>
 </body>
 </html>
