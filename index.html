@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -841,13 +842,33 @@ border: 2px dashed var(--light-blue);
 border-radius: 10px;
 padding: 2rem;
 text-align: center;
-margin-bottom: 1rem;
+margin-bottom: 0.5rem;
 cursor: pointer;
 transition: var(--transition);
 }
 .file-upload:hover {
 border-color: var(--secondary-blue);
 background: var(--light-blue);
+}
+.upload-progress {
+margin: 0.5rem 0 1rem 0;
+background: var(--light-gray);
+border-radius: 10px;
+height: 8px;
+overflow: hidden;
+}
+.upload-progress-bar {
+height: 100%;
+width: 0%;
+background: var(--secondary-blue);
+border-radius: 10px;
+transition: width 0.3s ease;
+}
+.upload-progress-text {
+font-size: 0.85rem;
+color: var(--text-light);
+margin-top: 0.25rem;
+display: block;
 }
 .submit-btn {
 background: var(--primary-blue);
@@ -859,7 +880,12 @@ font-size: 1rem;
 cursor: pointer;
 transition: var(--transition);
 }
-.submit-btn:hover {
+.submit-btn:disabled {
+opacity: 0.6;
+cursor: not-allowed;
+transform: none;
+}
+.submit-btn:hover:not(:disabled) {
 background: var(--secondary-blue);
 transform: translateY(-2px);
 }
@@ -1195,6 +1221,10 @@ transition: var(--transition);
 .user-result:hover, .user-result.selected {
 background: var(--light-blue);
 }
+/* Champ série masqué par défaut */
+#exam-serie-container {
+display: none;
+}
 </style>
 </head>
 <body>
@@ -1307,9 +1337,10 @@ background: var(--light-blue);
 <label for="signup-password">Mot de passe</label>
 <input type="password" id="signup-password" required>
 </div>
-<div class="form-group">
+<div class="form-group" id="confirm-password-group">
 <label for="signup-confirm-password">Confirmer le mot de passe</label>
 <input type="password" id="signup-confirm-password" required>
+<div class="password-match-error" style="color: var(--error); font-size: 0.85rem; margin-top: 0.3rem; display: none;">Les mots de passe ne correspondent pas</div>
 </div>
 <button type="submit" class="auth-btn">S'inscrire</button>
 </form>
@@ -1613,9 +1644,9 @@ background: var(--light-blue);
 <option value="Terminale">Terminale</option>
 </select>
 </div>
-<div class="form-group">
+<div class="form-group" id="exam-serie-container">
 <label for="exam-serie">Série</label>
-<select id="exam-serie" required>
+<select id="exam-serie">
 <option value="">Sélectionnez une série</option>
 <option value="A">A</option>
 <option value="B">B</option>
@@ -1633,6 +1664,11 @@ background: var(--light-blue);
 <div class="file-upload" id="sujet-upload">
 <p>Cliquez pour télécharger le fichier sujet</p>
 </div>
+<small style="color: var(--text-light); display: block; margin-bottom: 0.5rem;">Taille maximale autorisée : 5 Mo</small>
+<div class="upload-progress" id="sujet-progress-container" style="display: none;">
+<div class="upload-progress-bar" id="sujet-progress-bar"></div>
+<span class="upload-progress-text" id="sujet-progress-text">0%</span>
+</div>
 <input type="hidden" id="exam-sujet-url">
 </div>
 <div class="form-group">
@@ -1640,9 +1676,14 @@ background: var(--light-blue);
 <div class="file-upload" id="corrige-upload">
 <p>Cliquez pour télécharger le fichier corrigé</p>
 </div>
+<small style="color: var(--text-light); display: block; margin-bottom: 0.5rem;">Taille maximale autorisée : 5 Mo</small>
+<div class="upload-progress" id="corrige-progress-container" style="display: none;">
+<div class="upload-progress-bar" id="corrige-progress-bar"></div>
+<span class="upload-progress-text" id="corrige-progress-text">0%</span>
+</div>
 <input type="hidden" id="exam-corrige-url">
 </div>
-<button type="submit" class="submit-btn">Soumettre l'épreuve</button>
+<button type="submit" class="submit-btn" id="add-exam-submit-btn">Soumettre l'épreuve</button>
 </form>
 </div>
 </div>
@@ -1662,9 +1703,14 @@ background: var(--light-blue);
 <div class="file-upload" id="corrige-only-upload">
 <p>Cliquez pour télécharger le fichier corrigé</p>
 </div>
+<small style="color: var(--text-light); display: block; margin-bottom: 0.5rem;">Taille maximale autorisée : 5 Mo</small>
+<div class="upload-progress" id="corrige-only-progress-container" style="display: none;">
+<div class="upload-progress-bar" id="corrige-only-progress-bar"></div>
+<span class="upload-progress-text" id="corrige-only-progress-text">0%</span>
+</div>
 <input type="hidden" id="corrige-only-url">
 </div>
-<button type="submit" class="submit-btn">Soumettre le corrigé</button>
+<button type="submit" class="submit-btn" id="add-corrige-only-submit-btn">Soumettre le corrigé</button>
 </form>
 </div>
 </div>
@@ -1744,6 +1790,7 @@ let announcementsListener = null;
 let pendingExamsListener = null;
 let usersChartInstance = null;
 let examsChartInstance = null;
+let isSubmittingExam = false;
 
 const splashScreen = document.getElementById('splash-screen');
 const warningScreen = document.getElementById('warning-screen');
@@ -1794,6 +1841,87 @@ const welcomeMessage = document.getElementById('welcome-message');
 const welcomeSubtitle = document.getElementById('welcome-subtitle');
 const urlParams = new URLSearchParams(window.location.search);
 const sharedExamId = urlParams.get('exam');
+
+// ========== 1. LOGIQUE DES FORMULAIRES : Champ Série conditionnel ==========
+const examClasseSelect = document.getElementById('exam-classe');
+const examSerieContainer = document.getElementById('exam-serie-container');
+const examSerieSelect = document.getElementById('exam-serie');
+
+function toggleSerieField() {
+    const classe = examClasseSelect.value;
+    const showSerie = ['2nd', '1ère', 'Terminale'].includes(classe);
+    if (showSerie) {
+        examSerieContainer.style.display = 'block';
+        examSerieSelect.required = true;
+    } else {
+        examSerieContainer.style.display = 'none';
+        examSerieSelect.required = false;
+        examSerieSelect.value = '';
+    }
+}
+
+examClasseSelect.addEventListener('change', toggleSerieField);
+// Appel initial pour masquer par défaut
+toggleSerieField();
+
+// ========== 2. SÉCURITÉ : Panneau Admin protégé ==========
+// La vérification se fait dans la fonction switchView et loadAdminPanel
+// Le bouton admin est masqué par défaut et affiché uniquement si isAdmin === true
+
+// ========== 3. UPLOAD FICHIERS : Barre de progression et désactivation ==========
+function createProgressTracker(containerId, barId, textId) {
+    const container = document.getElementById(containerId);
+    const bar = document.getElementById(barId);
+    const text = document.getElementById(textId);
+    return {
+        show: function() {
+            container.style.display = 'block';
+            bar.style.width = '0%';
+            text.textContent = '0%';
+        },
+        update: function(percent) {
+            const p = Math.min(100, Math.max(0, percent));
+            bar.style.width = p + '%';
+            text.textContent = Math.round(p) + '%';
+        },
+        hide: function() {
+            container.style.display = 'none';
+            bar.style.width = '0%';
+            text.textContent = '0%';
+        }
+    };
+}
+
+const sujetProgress = createProgressTracker('sujet-progress-container', 'sujet-progress-bar', 'sujet-progress-text');
+const corrigeProgress = createProgressTracker('corrige-progress-container', 'corrige-progress-bar', 'corrige-progress-text');
+const corrigeOnlyProgress = createProgressTracker('corrige-only-progress-container', 'corrige-only-progress-bar', 'corrige-only-progress-text');
+
+// ========== 4. VALIDATION : Vérification stricte des mots de passe ==========
+const signupPassword = document.getElementById('signup-password');
+const signupConfirmPassword = document.getElementById('signup-confirm-password');
+const confirmPasswordGroup = document.getElementById('confirm-password-group');
+const passwordMatchError = document.querySelector('.password-match-error');
+
+function validatePasswordMatch() {
+    const password = signupPassword.value;
+    const confirm = signupConfirmPassword.value;
+    if (confirm.length > 0 && password !== confirm) {
+        signupConfirmPassword.style.borderColor = 'var(--error)';
+        passwordMatchError.style.display = 'block';
+        return false;
+    } else {
+        signupConfirmPassword.style.borderColor = '';
+        passwordMatchError.style.display = 'none';
+        return true;
+    }
+}
+
+signupConfirmPassword.addEventListener('input', validatePasswordMatch);
+signupPassword.addEventListener('input', function() {
+    if (signupConfirmPassword.value.length > 0) {
+        validatePasswordMatch();
+    }
+});
 
 function checkGuestAccess() {
     if (!currentUser) {
@@ -1943,16 +2071,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     signupForm.addEventListener('submit', e => {
         e.preventDefault();
+        // Validation stricte des mots de passe avant soumission
+        if (!validatePasswordMatch()) {
+            showNotification('Les mots de passe ne correspondent pas', 'error');
+            return;
+        }
         const nom = document.getElementById('signup-nom').value;
         const prenom = document.getElementById('signup-prenom').value;
         const ecole = document.getElementById('signup-ecole').value;
         const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-confirm-password').value;
-        if (password !== confirmPassword) {
-            showNotification('Les mots de passe ne correspondent pas', 'error');
-            return;
-        }
+        const password = signupPassword.value;
         auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
             currentUser = userCredential.user;
@@ -2041,7 +2169,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function switchView(viewName) {
-        if ((viewName === 'profile' || viewName === 'admin' || viewName === 'notifications') && !currentUser) {
+        // Sécurité Admin : Si la vue est 'admin' et l'utilisateur n'est pas admin, rediriger vers home
+        if (viewName === 'admin') {
+            if (!currentUser || !isAdmin) {
+                showNotification('Accès non autorisé', 'error');
+                // Redirection forcée vers l'accueil
+                viewName = 'home';
+                // Mettre à jour les icônes actives
+                navIcons.forEach(i => {
+                    i.classList.remove('active');
+                    if (i.getAttribute('data-view') === 'home') i.classList.add('active');
+                });
+                mobileNavIcons.forEach(i => {
+                    i.classList.remove('active');
+                    if (i.getAttribute('data-view') === 'home') i.classList.add('active');
+                });
+            }
+        }
+        if ((viewName === 'profile' || viewName === 'notifications' || viewName === 'admin') && !currentUser) {
             showNotification("Veuillez vous connecter ou vous inscrire pour effectuer cette action", "warning");
             authScreen.style.display = 'flex';
             return;
@@ -2129,37 +2274,70 @@ document.addEventListener('DOMContentLoaded', function() {
         sujetUploadWidget = cloudinary.createUploadWidget({
             cloudName: cloudName, uploadPreset: uploadPreset, sources: ['local'], multiple: false, resourceType: 'raw', clientAllowedFormats: ['pdf'], maxFileSize: 5000000
         }, (error, result) => {
+            const submitBtn = document.getElementById('add-exam-submit-btn');
             if (!error && result && result.event === 'success') {
                 const fileUrl = result.info.secure_url;
                 document.getElementById('exam-sujet-url').value = fileUrl;
                 document.getElementById('sujet-upload').innerHTML = `<p>Fichier sujet téléchargé: ${result.info.original_filename}</p>`;
+                sujetProgress.hide();
+                submitBtn.disabled = false;
                 showNotification('Fichier sujet uploadé avec succès', 'success');
             } else if (error) {
+                sujetProgress.hide();
+                submitBtn.disabled = false;
                 showNotification('Erreur lors du téléchargement du fichier sujet', 'error');
+            } else if (result && result.event === 'progress') {
+                const percent = Math.round((result.bytesUploaded / result.totalBytes) * 100);
+                sujetProgress.update(percent);
+            } else if (result && result.event === 'queues-start') {
+                sujetProgress.show();
+                submitBtn.disabled = true;
             }
         });
         corrigeUploadWidget = cloudinary.createUploadWidget({
             cloudName: cloudName, uploadPreset: uploadPreset, sources: ['local'], multiple: false, resourceType: 'raw', clientAllowedFormats: ['pdf'], maxFileSize: 5000000
         }, (error, result) => {
+            const submitBtn = document.getElementById('add-exam-submit-btn');
             if (!error && result && result.event === 'success') {
                 const fileUrl = result.info.secure_url;
                 document.getElementById('exam-corrige-url').value = fileUrl;
                 document.getElementById('corrige-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
+                corrigeProgress.hide();
+                submitBtn.disabled = false;
                 showNotification('Fichier corrigé uploadé avec succès', 'success');
             } else if (error) {
+                corrigeProgress.hide();
+                submitBtn.disabled = false;
                 showNotification('Erreur lors du téléchargement du fichier corrigé', 'error');
+            } else if (result && result.event === 'progress') {
+                const percent = Math.round((result.bytesUploaded / result.totalBytes) * 100);
+                corrigeProgress.update(percent);
+            } else if (result && result.event === 'queues-start') {
+                corrigeProgress.show();
+                submitBtn.disabled = true;
             }
         });
         corrigeOnlyUploadWidget = cloudinary.createUploadWidget({
             cloudName: cloudName, uploadPreset: uploadPreset, sources: ['local'], multiple: false, resourceType: 'raw', clientAllowedFormats: ['pdf'], maxFileSize: 5000000
         }, (error, result) => {
+            const submitBtn = document.getElementById('add-corrige-only-submit-btn');
             if (!error && result && result.event === 'success') {
                 const fileUrl = result.info.secure_url;
                 document.getElementById('corrige-only-url').value = fileUrl;
                 document.getElementById('corrige-only-upload').innerHTML = `<p>Fichier corrigé téléchargé: ${result.info.original_filename}</p>`;
+                corrigeOnlyProgress.hide();
+                submitBtn.disabled = false;
                 showNotification('Fichier corrigé uploadé avec succès', 'success');
             } else if (error) {
+                corrigeOnlyProgress.hide();
+                submitBtn.disabled = false;
                 showNotification('Erreur lors du téléchargement du fichier corrigé', 'error');
+            } else if (result && result.event === 'progress') {
+                const percent = Math.round((result.bytesUploaded / result.totalBytes) * 100);
+                corrigeOnlyProgress.update(percent);
+            } else if (result && result.event === 'queues-start') {
+                corrigeOnlyProgress.show();
+                submitBtn.disabled = true;
             }
         });
     } catch (error) {
@@ -2886,6 +3064,11 @@ function submitExam() {
         showNotification('Erreur: Le fichier corrigé n\'est pas valide', 'error');
         return;
     }
+    // Réinitialiser la série si la classe n'est pas 2nd, 1ère ou Terminale
+    let serieToSave = serie;
+    if (!['2nd', '1ère', 'Terminale'].includes(classe)) {
+        serieToSave = '';
+    }
     const status = isAdmin ? 'approved' : 'pending';
     db.collection('users').doc(currentUser.uid).get()
     .then(userDoc => {
@@ -2893,7 +3076,7 @@ function submitExam() {
         return db.collection('epreuves').add({
             matiere: matiere,
             classe: classe,
-            serie: serie,
+            serie: serieToSave,
             nom_epreuve: nom_epreuve,
             fichier_sujet: fichier_sujet,
             fichier_corrige: fichier_corrige || null,
@@ -2909,6 +3092,10 @@ function submitExam() {
         addExamForm.reset();
         document.getElementById('sujet-upload').innerHTML = '<p>Cliquez pour télécharger le fichier sujet</p>';
         document.getElementById('corrige-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
+        sujetProgress.hide();
+        corrigeProgress.hide();
+        document.getElementById('add-exam-submit-btn').disabled = false;
+        toggleSerieField(); // réinitialiser l'affichage du champ série
         if (isAdmin) {
             showNotification('Épreuve publiée avec succès', 'success');
             assignPointsAfterApproval(currentUser.uid, fichier_corrige ? 4 : 2);
@@ -2956,6 +3143,8 @@ function submitCorrigeOnly() {
         addCorrigeOnlyPopup.style.display = 'none';
         addCorrigeOnlyForm.reset();
         document.getElementById('corrige-only-upload').innerHTML = '<p>Cliquez pour télécharger le fichier corrigé</p>';
+        corrigeOnlyProgress.hide();
+        document.getElementById('add-corrige-only-submit-btn').disabled = false;
         showNotification('Corrigé ajouté avec succès', 'success');
         if (isAdmin) {
             assignPointsAfterApproval(currentUser.uid, 2);
@@ -3295,7 +3484,7 @@ function performGlobalSearch(query) {
 }
 
 function loadAdminPanel() {
-    if (!checkGuestAccess() || !isAdmin) {
+    if (!currentUser || !isAdmin) {
         showNotification('Accès non autorisé', 'error');
         switchView('home');
         return;
@@ -3551,4 +3740,3 @@ document.head.appendChild(style);
 </script>
 </body>
 </html>
-
