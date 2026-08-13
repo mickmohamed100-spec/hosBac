@@ -2002,6 +2002,29 @@ function loadGeminiApiKey() {
     });
 }
 
+// === NOUVELLE FONCTION getGeminiKey ===
+async function getGeminiKey() {
+    // Si la clé est déjà chargée en mémoire, la retourner
+    if (geminiApiKey) {
+        return geminiApiKey;
+    }
+    // Sinon, la charger depuis Firestore
+    try {
+        const key = await loadGeminiApiKey();
+        geminiApiKey = key; // stocker en mémoire
+        if (!key || key.trim() === '') {
+            // Afficher un message dans le chat (si disponible)
+            // Mais on ne peut pas afficher ici car on est dans une fonction asynchrone.
+            // On va retourner une chaîne vide, et l'appelant gérera l'affichage.
+        }
+        return key;
+    } catch (error) {
+        console.error('Erreur lors du chargement de la clé Gemini:', error);
+        return '';
+    }
+}
+// ============================================================
+
 function injectGAScript(measurementId) {
     const existingScript = document.querySelector('script[src*="googletagmanager.com/gtag/js?id="]');
     if (existingScript) existingScript.remove();
@@ -2048,6 +2071,12 @@ contactsForm?.addEventListener('submit', function(e) {
             if (script) script.remove();
             const inline = document.getElementById('ga-inline-script');
             if (inline) inline.remove();
+        }
+        // Mettre à jour la variable globale geminiApiKey
+        if (geminiKey) {
+            geminiApiKey = geminiKey;
+        } else {
+            geminiApiKey = '';
         }
     })
     .catch(err => {
@@ -2250,7 +2279,7 @@ function loadAdminLogs() {
 // ============================================================
 // CHATBOT IA (GEMINI) – AVEC HISTORIQUE, PERSISTANCE, ACTIONS & SUPPRESSION
 // ============================================================
-let geminiApiKey = '';
+let geminiApiKey = ''; // variable globale pour stocker la clé
 let chatHistory = []; // tableau d'objets { id, role, parts, timestamp }
 let messageIdCounter = 0;
 
@@ -2436,12 +2465,13 @@ function hideLoading() {
     if (loading) loading.remove();
 }
 
-// Envoyer à Gemini avec historique complet (corrigé)
+// === FONCTION sendMessageToGemini MODIFIÉE pour utiliser getGeminiKey() ===
 async function sendMessageToGemini(userMessage, fileData = null) {
     try {
+        // Récupérer la clé API
         const key = await getGeminiKey();
         if (!key || key.trim() === '') {
-            addChatMessage('Erreur : La clé API n\'est pas configurée dans l\'administration.', 'bot');
+            addChatMessage('Veuillez configurer la clé API Gemini dans l\'espace administrateur.', 'bot');
             return;
         }
 
@@ -2459,8 +2489,6 @@ async function sendMessageToGemini(userMessage, fileData = null) {
 
         // Ajouter le message utilisateur courant s'il y a du texte
         if (userMessage && userMessage.trim().length > 0) {
-            // Vérifier si le dernier message est déjà un user (dans le cas où on a déjà ajouté)
-            // Mais ici on ajoute toujours un nouveau message utilisateur
             contents.push({
                 role: 'user',
                 parts: [{ text: userMessage }]
@@ -2471,7 +2499,6 @@ async function sendMessageToGemini(userMessage, fileData = null) {
         if (fileData) {
             const mimeType = fileData.type;
             if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
-                // Ajouter au dernier élément (qui est le message utilisateur)
                 const last = contents[contents.length - 1];
                 if (last && last.role === 'user') {
                     last.parts.push({
@@ -2481,7 +2508,6 @@ async function sendMessageToGemini(userMessage, fileData = null) {
                         }
                     });
                 } else {
-                    // Cas improbable, on crée un nouvel élément user
                     contents.push({
                         role: 'user',
                         parts: [
@@ -2534,6 +2560,7 @@ async function sendMessageToGemini(userMessage, fileData = null) {
         hideLoading();
     }
 }
+// ============================================================
 
 // Gestion de l'envoi de message
 function handleSendMessage() {
@@ -2643,7 +2670,6 @@ function loadChatHistoryFromFirestore() {
                         const text = msg.parts[0].text;
                         const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
                         const isBot = sender === 'bot';
-                        // Utiliser l'ID du message s'il existe, sinon en générer un
                         const id = msg.id || generateMessageId();
                         addChatMessageToDOM(text, sender, time, isBot, id);
                     });
@@ -2975,6 +3001,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadContactsFromFirestore();
     loadLegalPages();
     loadAndInjectGA();
+    // Charger la clé en mémoire au démarrage
     loadGeminiApiKey().then(key => { geminiApiKey = key; });
 });
 
