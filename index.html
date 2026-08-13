@@ -1723,6 +1723,8 @@ const chatFilePreview = document.getElementById('chat-file-preview');
 const chatFileName = document.getElementById('chat-file-name');
 const chatRemoveFile = document.getElementById('chat-remove-file');
 let attachedFile = null; // { name, data, type }
+let isChatLoading = false; // flag pour empêcher les envois multiples
+let cachedExamsSummary = null; // cache en mémoire pour la liste des épreuves
 
 // ============================================================
 // AUTH SWITCH LINKS
@@ -2032,21 +2034,28 @@ async function getGeminiKey() {
 // ============================================================
 
 // ============================================================
-// NOUVELLE FONCTION : RÉCUPÉRATION DES ÉPREUVES POUR L'IA
+// NOUVELLE FONCTION : RÉCUPÉRATION DES ÉPREUVES POUR L'IA (avec cache)
 // ============================================================
 const EXAMS_CACHE_KEY = 'hosbac_exams_for_ai';
 const EXAMS_CACHE_EXPIRY = 3600000; // 1 heure
 
 async function fetchExamsForAI() {
-    // Vérifier le cache
+    // Vérifier le cache en mémoire
+    if (cachedExamsSummary !== null) {
+        console.log('[IA] Liste des épreuves chargée depuis le cache mémoire');
+        return cachedExamsSummary;
+    }
+
+    // Vérifier le cache sessionStorage
     try {
         const cached = sessionStorage.getItem(EXAMS_CACHE_KEY);
         if (cached) {
             const data = JSON.parse(cached);
             const now = Date.now();
             if (now - data.timestamp < EXAMS_CACHE_EXPIRY) {
-                console.log('[IA] Liste des épreuves chargée depuis le cache');
-                return data.examsSummary;
+                console.log('[IA] Liste des épreuves chargée depuis le sessionStorage');
+                cachedExamsSummary = data.examsSummary;
+                return cachedExamsSummary;
             }
         }
     } catch (e) { /* ignore */ }
@@ -2085,6 +2094,7 @@ async function fetchExamsForAI() {
         try {
             sessionStorage.setItem(EXAMS_CACHE_KEY, JSON.stringify(cacheData));
         } catch (e) { /* ignore */ }
+        cachedExamsSummary = summary;
         console.log('[IA] Liste des épreuves mise à jour dans le cache');
         return summary;
     } catch (error) {
@@ -2546,7 +2556,7 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             return;
         }
 
-        // Récupérer la liste des épreuves (depuis le cache ou firestore)
+        // Récupérer la liste des épreuves (depuis le cache mémoire ou firestore)
         const examsSummary = await fetchExamsForAI();
         console.log('[IA] Liste envoyée à l\'IA :', examsSummary); // LOG DE DÉBOGAGE
 
@@ -2622,7 +2632,7 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             body: JSON.stringify(payload)
         });
 
-        // Gestion des erreurs de quota (429)
+        // Gestion des erreurs de quota (429) – pas de retry automatique
         if (response.status === 429) {
             const errorData = await response.json().catch(() => ({}));
             console.warn('[IA] Erreur 429 (quota) détectée:', errorData);
@@ -2662,17 +2672,33 @@ async function sendMessageToGemini(userMessage, fileData = null) {
         }
     } finally {
         hideLoading();
+        // Réactiver les contrôles
+        chatInput.disabled = false;
+        chatSendBtn.disabled = false;
+        isChatLoading = false;
     }
 }
 // ============================================================
 
-// Gestion de l'envoi de message
+// Gestion de l'envoi de message (avec protection contre le spam)
 function handleSendMessage() {
+    // Vérifier si déjà en cours
+    if (isChatLoading) {
+        showToast('Un message est déjà en cours d\'envoi, veuillez patienter.', 'warning');
+        return;
+    }
+
     const text = chatInput.value.trim();
     if (!text && !attachedFile) {
         showToast('Veuillez écrire un message ou attacher un fichier.', 'warning');
         return;
     }
+
+    // Désactiver les contrôles
+    chatInput.disabled = true;
+    chatSendBtn.disabled = true;
+    isChatLoading = true;
+
     const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     // Ajouter le message utilisateur (il sera ajouté à l'historique via addChatMessage)
     addChatMessage(text || 'Fichier attaché', 'user', time);
@@ -2689,6 +2715,7 @@ function handleSendMessage() {
     chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
 
     showLoading();
+    // Appel asynchrone, la réactivation se fait dans le finally de sendMessageToGemini
     sendMessageToGemini(text, fileData);
 }
 
