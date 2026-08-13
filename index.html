@@ -863,7 +863,6 @@ footer {
 /* ============================================================
    CHATBOT IA (FAB + FENÊTRE)
    ============================================================ */
-/* Bouton flottant */
 .chat-fab {
     position: fixed;
     bottom: 90px;
@@ -879,7 +878,7 @@ footer {
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     cursor: pointer;
     transition: var(--transition);
-    display: none; /* caché par défaut, visible seulement connecté */
+    display: none;
     align-items: center;
     justify-content: center;
 }
@@ -887,8 +886,6 @@ footer {
     transform: scale(1.05);
     background: var(--secondary-blue);
 }
-
-/* Fenêtre de chat */
 .chat-window {
     position: fixed;
     bottom: 160px;
@@ -1429,7 +1426,6 @@ footer {
         <button class="chat-header-close" id="chat-close"><i class="fas fa-times"></i></button>
     </div>
     <div class="chat-messages" id="chat-messages">
-        <!-- Les messages seront injectés ici -->
         <div class="chat-message bot">
             Bonjour ! Je suis l'assistant HosBac. Posez-moi une question sur les épreuves, les cours, ou tout autre sujet éducatif.
             <div class="message-time">--:--</div>
@@ -1997,7 +1993,6 @@ contactsForm?.addEventListener('submit', function(e) {
             const inline = document.getElementById('ga-inline-script');
             if (inline) inline.remove();
         }
-        // La clé Gemini est sauvegardée, elle sera chargée au besoin
     })
     .catch(err => {
         console.error('[FIRESTORE] Erreur sauvegarde paramètres:', err);
@@ -2197,7 +2192,7 @@ function loadAdminLogs() {
 }
 
 // ============================================================
-// CHATBOT IA (GEMINI)
+// CHATBOT IA (GEMINI) – CORRECTION DE L'AUTHENTIFICATION
 // ============================================================
 let geminiApiKey = ''; // stockée en mémoire après chargement
 
@@ -2224,7 +2219,7 @@ function addChatMessage(text, sender, time = null) {
     let htmlText = text;
     // Gras: **texte** -> <b>texte</b>
     htmlText = htmlText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-    // Italique: *texte* -> <i>texte</i> (mais attention aux listes)
+    // Italique: *texte* -> <i>texte</i>
     htmlText = htmlText.replace(/\*(.*?)\*/g, '<i>$1</i>');
     // Sauts de ligne
     htmlText = htmlText.replace(/\n/g, '<br>');
@@ -2247,16 +2242,19 @@ function hideLoading() {
     if (loading) loading.remove();
 }
 
-// Envoyer un message à Gemini
+// Envoyer un message à Gemini – VERSION CORRIGÉE
 async function sendMessageToGemini(userMessage, fileData = null) {
     try {
         const key = await getGeminiKey();
+        // Vérification stricte de la clé
         if (!key || key.trim() === '') {
-            addChatMessage('La clé API Gemini n\'est pas configurée. Veuillez contacter l\'administrateur.', 'bot');
+            addChatMessage('Erreur : La clé API n\'est pas configurée dans l\'administration.', 'bot');
             return;
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+        // L'URL doit inclure la clé en paramètre query (authentification par API Key)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key.trim()}`;
+        
         const payload = {
             contents: [
                 {
@@ -2272,13 +2270,13 @@ async function sendMessageToGemini(userMessage, fileData = null) {
 
         // Partie fichier (si présent)
         if (fileData) {
-            const mimeType = fileData.type; // ex: image/jpeg, application/pdf
+            const mimeType = fileData.type;
             // Vérifier si le type est supporté
             if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
                 payload.contents[0].parts.push({
                     inline_data: {
                         mime_type: mimeType,
-                        data: fileData.data // déjà en base64 sans préfixe
+                        data: fileData.data
                     }
                 });
             } else {
@@ -2287,6 +2285,7 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             }
         }
 
+        // Envoi de la requête – AUCUN HEADER D'AUTHENTIFICATION, uniquement Content-Type
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -2298,7 +2297,13 @@ async function sendMessageToGemini(userMessage, fileData = null) {
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Erreur Gemini:', errorData);
-            addChatMessage(`Erreur de l'IA : ${errorData.error?.message || 'Erreur inconnue'}`, 'bot');
+            let errorMsg = 'Erreur de l\'IA : ';
+            if (errorData.error && errorData.error.message) {
+                errorMsg += errorData.error.message;
+            } else {
+                errorMsg += 'Erreur inconnue';
+            }
+            addChatMessage(errorMsg, 'bot');
             return;
         }
 
@@ -2370,17 +2375,15 @@ chatAttachBtn?.addEventListener('click', () => {
 chatFileInput?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    // Vérifier l'extension
     const allowed = ['image/jpeg', 'image/png', 'application/pdf'];
     if (!allowed.includes(file.type)) {
         showToast('Seuls les fichiers JPG, PNG et PDF sont acceptés.', 'error');
         chatFileInput.value = '';
         return;
     }
-    // Lire le fichier en base64
     const reader = new FileReader();
     reader.onload = function(ev) {
-        const base64 = ev.target.result.split(',')[1]; // enlever le préfixe
+        const base64 = ev.target.result.split(',')[1];
         attachedFile = {
             name: file.name,
             data: base64,
@@ -2388,7 +2391,7 @@ chatFileInput?.addEventListener('change', (e) => {
         };
         chatFileName.textContent = file.name;
         chatFilePreview.style.display = 'flex';
-        chatFileInput.value = ''; // réinitialiser
+        chatFileInput.value = '';
     };
     reader.readAsDataURL(file);
 });
@@ -2439,7 +2442,6 @@ auth.onAuthStateChanged(user => {
             loadContactsFromFirestore();
             loadLegalPages();
             loadAndInjectGA();
-            // Cacher le FAB pour les non-connectés
             chatFab.style.display = 'none';
             chatWindow.classList.remove('open');
         }
@@ -2465,7 +2467,6 @@ function hideSplashScreen() {
 // DOM CONTENT LOADED
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-    // Délai d'affichage du splash
     setTimeout(() => {
         if (splashScreen) {
             splashScreen.style.opacity = '0';
@@ -2699,7 +2700,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loadContactsFromFirestore();
     loadLegalPages();
     loadAndInjectGA();
-    // Charger la clé Gemini en arrière-plan
     loadGeminiApiKey().then(key => { geminiApiKey = key; });
 });
 
