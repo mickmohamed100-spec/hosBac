@@ -2035,6 +2035,7 @@ async function fetchExamsForAI() {
             const data = JSON.parse(cached);
             const now = Date.now();
             if (now - data.timestamp < EXAMS_CACHE_EXPIRY) {
+                console.log('[IA] Liste des épreuves chargée depuis le cache');
                 return data.examsSummary;
             }
         }
@@ -2042,6 +2043,7 @@ async function fetchExamsForAI() {
 
     // Requête Firestore
     try {
+        console.log('[IA] Récupération des épreuves depuis Firestore...');
         const snapshot = await db.collection('epreuves')
             .where('status', '==', 'approved')
             .select('nom_epreuve', 'matiere', 'classe', 'serie')
@@ -2073,7 +2075,7 @@ async function fetchExamsForAI() {
         try {
             sessionStorage.setItem(EXAMS_CACHE_KEY, JSON.stringify(cacheData));
         } catch (e) { /* ignore */ }
-
+        console.log('[IA] Liste des épreuves mise à jour dans le cache');
         return summary;
     } catch (error) {
         console.error('Erreur lors de la récupération des épreuves pour l\'IA:', error);
@@ -2521,7 +2523,7 @@ function hideLoading() {
     if (loading) loading.remove();
 }
 
-// === FONCTION sendMessageToGemini MODIFIÉE avec système_instruction ===
+// === FONCTION sendMessageToGemini CORRIGÉE AVEC SYSTEM_INSTRUCTION ET GESTION 429 ===
 async function sendMessageToGemini(userMessage, fileData = null) {
     try {
         // Récupérer la clé API
@@ -2533,6 +2535,7 @@ async function sendMessageToGemini(userMessage, fileData = null) {
 
         // Récupérer la liste des épreuves (depuis le cache ou firestore)
         const examsSummary = await fetchExamsForAI();
+        console.log('[IA] Liste envoyée à l\'IA :', examsSummary); // LOG DE DÉBOGAGE
 
         // Construire le système d'instruction
         const systemInstruction = `Tu es l'assistant virtuel de la plateforme HosBac (au Bénin). Ton rôle est d'aider les élèves. ${examsSummary}
@@ -2586,7 +2589,7 @@ Si un utilisateur cherche une épreuve, vérifie dans cette liste si elle existe
             }
         }
 
-        // Construire le payload final avec system_instruction
+        // Construire le payload final avec system_instruction à la racine
         const payload = {
             system_instruction: {
                 parts: [{ text: systemInstruction }]
@@ -2594,7 +2597,7 @@ Si un utilisateur cherche une épreuve, vérifie dans cette liste si elle existe
             contents: contents
         };
 
-        console.log('Payload envoyé à Gemini (avec système):', JSON.stringify(payload, null, 2));
+        console.log('[IA] Payload envoyé à Gemini (avec système):', JSON.stringify(payload, null, 2));
 
         const response = await fetch(url, {
             method: 'POST',
@@ -2604,11 +2607,24 @@ Si un utilisateur cherche une épreuve, vérifie dans cette liste si elle existe
             body: JSON.stringify(payload)
         });
 
+        // Gestion des erreurs de quota (429)
+        if (response.status === 429) {
+            const errorData = await response.json().catch(() => ({}));
+            console.warn('[IA] Erreur 429 (quota) détectée:', errorData);
+            addChatMessage('Oups, je reçois trop de questions en même temps ! 😅 Laisse-moi respirer une petite minute et repose ta question.', 'bot');
+            return;
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('Erreur Gemini (réponse non OK):', errorData);
+            console.error('[IA] Erreur Gemini (réponse non OK):', errorData);
             let errorMsg = 'Erreur de l\'IA : ';
             if (errorData.error && errorData.error.message) {
+                // Vérifier si c'est une erreur de quota
+                if (errorData.error.message.toLowerCase().includes('quota')) {
+                    addChatMessage('Oups, je reçois trop de questions en même temps ! 😅 Laisse-moi respirer une petite minute et repose ta question.', 'bot');
+                    return;
+                }
                 errorMsg += errorData.error.message;
             } else {
                 errorMsg += 'Erreur inconnue';
@@ -2622,8 +2638,13 @@ Si un utilisateur cherche une épreuve, vérifie dans cette liste si elle existe
         addChatMessage(textResponse, 'bot');
 
     } catch (error) {
-        console.error('Erreur lors de l\'appel à Gemini:', error);
-        addChatMessage('Erreur de communication avec l\'IA. Détails dans la console.', 'bot');
+        console.error('[IA] Erreur lors de l\'appel à Gemini:', error);
+        // Vérifier si l'erreur contient "quota"
+        if (error.message && error.message.toLowerCase().includes('quota')) {
+            addChatMessage('Oups, je reçois trop de questions en même temps ! 😅 Laisse-moi respirer une petite minute et repose ta question.', 'bot');
+        } else {
+            addChatMessage('Erreur de communication avec l\'IA. Détails dans la console.', 'bot');
+        }
     } finally {
         hideLoading();
     }
