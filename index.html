@@ -2004,23 +2004,80 @@ function loadGeminiApiKey() {
 
 // === NOUVELLE FONCTION getGeminiKey ===
 async function getGeminiKey() {
-    // Si la clé est déjà chargée en mémoire, la retourner
     if (geminiApiKey) {
         return geminiApiKey;
     }
-    // Sinon, la charger depuis Firestore
     try {
         const key = await loadGeminiApiKey();
-        geminiApiKey = key; // stocker en mémoire
+        geminiApiKey = key;
         if (!key || key.trim() === '') {
-            // Afficher un message dans le chat (si disponible)
-            // Mais on ne peut pas afficher ici car on est dans une fonction asynchrone.
-            // On va retourner une chaîne vide, et l'appelant gérera l'affichage.
+            // Aucune clé, retourne une chaîne vide
         }
         return key;
     } catch (error) {
         console.error('Erreur lors du chargement de la clé Gemini:', error);
         return '';
+    }
+}
+// ============================================================
+
+// ============================================================
+// NOUVELLE FONCTION : RÉCUPÉRATION DES ÉPREUVES POUR L'IA
+// ============================================================
+const EXAMS_CACHE_KEY = 'hosbac_exams_for_ai';
+const EXAMS_CACHE_EXPIRY = 3600000; // 1 heure
+
+async function fetchExamsForAI() {
+    // Vérifier le cache
+    try {
+        const cached = sessionStorage.getItem(EXAMS_CACHE_KEY);
+        if (cached) {
+            const data = JSON.parse(cached);
+            const now = Date.now();
+            if (now - data.timestamp < EXAMS_CACHE_EXPIRY) {
+                return data.examsSummary;
+            }
+        }
+    } catch (e) { /* ignore */ }
+
+    // Requête Firestore
+    try {
+        const snapshot = await db.collection('epreuves')
+            .where('status', '==', 'approved')
+            .select('nom_epreuve', 'matiere', 'classe', 'serie')
+            .get();
+
+        let examsList = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const name = data.nom_epreuve || 'Sans titre';
+            const subject = data.matiere || '';
+            const classLevel = data.classe || '';
+            const series = data.serie || '';
+            let line = `- ${name}`;
+            if (subject) line += ` (Matière: ${subject})`;
+            if (classLevel) line += `, Classe: ${classLevel}`;
+            if (series) line += `, Série: ${series}`;
+            examsList.push(line);
+        });
+
+        const summary = examsList.length > 0 
+            ? `Voici la liste actuelle des épreuves disponibles sur le site (${examsList.length} épreuves) :\n\n${examsList.join('\n')}`
+            : 'Aucune épreuve n\'est actuellement disponible sur le site.';
+
+        // Mettre en cache
+        const cacheData = {
+            examsSummary: summary,
+            timestamp: Date.now()
+        };
+        try {
+            sessionStorage.setItem(EXAMS_CACHE_KEY, JSON.stringify(cacheData));
+        } catch (e) { /* ignore */ }
+
+        return summary;
+    } catch (error) {
+        console.error('Erreur lors de la récupération des épreuves pour l\'IA:', error);
+        return 'Impossible de récupérer la liste des épreuves actuellement.';
     }
 }
 // ============================================================
@@ -2072,7 +2129,6 @@ contactsForm?.addEventListener('submit', function(e) {
             const inline = document.getElementById('ga-inline-script');
             if (inline) inline.remove();
         }
-        // Mettre à jour la variable globale geminiApiKey
         if (geminiKey) {
             geminiApiKey = geminiKey;
         } else {
@@ -2465,7 +2521,7 @@ function hideLoading() {
     if (loading) loading.remove();
 }
 
-// === FONCTION sendMessageToGemini MODIFIÉE pour utiliser getGeminiKey() ===
+// === FONCTION sendMessageToGemini MODIFIÉE avec système_instruction ===
 async function sendMessageToGemini(userMessage, fileData = null) {
     try {
         // Récupérer la clé API
@@ -2475,11 +2531,19 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             return;
         }
 
+        // Récupérer la liste des épreuves (depuis le cache ou firestore)
+        const examsSummary = await fetchExamsForAI();
+
+        // Construire le système d'instruction
+        const systemInstruction = `Tu es l'assistant virtuel de la plateforme HosBac (au Bénin). Ton rôle est d'aider les élèves. ${examsSummary}
+
+Si un utilisateur cherche une épreuve, vérifie dans cette liste si elle existe et dis-lui de la chercher via la barre de recherche du site. Si elle n'y est pas, dis-lui poliment qu'elle n'est pas encore disponible.`;
+
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key.trim()}`;
         
         // Construire le payload avec l'historique complet
         let contents = [];
-        // Copier l'historique existant (sauf le message d'accueil qui n'est pas dans chatHistory)
+        // Copier l'historique existant
         chatHistory.forEach(entry => {
             contents.push({
                 role: entry.role,
@@ -2522,11 +2586,15 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             }
         }
 
+        // Construire le payload final avec system_instruction
         const payload = {
+            system_instruction: {
+                parts: [{ text: systemInstruction }]
+            },
             contents: contents
         };
 
-        console.log('Payload envoyé à Gemini:', JSON.stringify(payload, null, 2));
+        console.log('Payload envoyé à Gemini (avec système):', JSON.stringify(payload, null, 2));
 
         const response = await fetch(url, {
             method: 'POST',
@@ -2765,7 +2833,7 @@ function hideSplashScreen() {
 }
 
 // ============================================================
-// DOM CONTENT LOADED
+// DOM CONTENT LOADED – Appel à fetchExamsForAI() en arrière-plan
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
@@ -3001,8 +3069,11 @@ document.addEventListener('DOMContentLoaded', function() {
     loadContactsFromFirestore();
     loadLegalPages();
     loadAndInjectGA();
-    // Charger la clé en mémoire au démarrage
     loadGeminiApiKey().then(key => { geminiApiKey = key; });
+
+    // === NOUVEAU : Préchargement des épreuves pour l'IA en arrière-plan ===
+    fetchExamsForAI().catch(err => console.error('Erreur préchargement épreuves IA:', err));
+    // ==========================================================
 });
 
 // ============================================================
