@@ -115,6 +115,7 @@ body {
     color: var(--text-color);
 }
 .warning-title { color: var(--primary-blue); margin-bottom: 1rem; font-size: 1.5rem; }
+.warning-title i { margin-right: 0.5rem; }
 .warning-text { margin-bottom: 2rem; line-height: 1.6; }
 .accept-btn {
     background: var(--primary-blue);
@@ -555,6 +556,7 @@ main {
     color: var(--text-color);
     font-weight: 600;
 }
+.view-title i { margin-right: 0.5rem; color: var(--primary-blue); }
 .welcome-banner {
     padding: 1.5rem 2rem;
     background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
@@ -582,6 +584,7 @@ main {
     color: var(--text-color);
     font-weight: 600;
 }
+.card-title i { margin-right: 0.5rem; color: var(--primary-blue); }
 .exam-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -858,6 +861,192 @@ footer {
 }
 
 /* ============================================================
+   CHATBOT IA (FAB + FENÊTRE)
+   ============================================================ */
+/* Bouton flottant */
+.chat-fab {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    z-index: 9999;
+    background: var(--primary-blue);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: var(--transition);
+    display: none; /* caché par défaut, visible seulement connecté */
+    align-items: center;
+    justify-content: center;
+}
+.chat-fab:hover {
+    transform: scale(1.05);
+    background: var(--secondary-blue);
+}
+
+/* Fenêtre de chat */
+.chat-window {
+    position: fixed;
+    bottom: 160px;
+    right: 20px;
+    width: 380px;
+    max-width: calc(100vw - 40px);
+    max-height: 550px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    display: none;
+    flex-direction: column;
+    z-index: 9998;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+.chat-window.open {
+    display: flex;
+}
+.chat-header {
+    background: var(--primary-blue);
+    color: #fff;
+    padding: 0.8rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+.chat-header-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+.chat-messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    max-height: 350px;
+}
+.chat-message {
+    max-width: 80%;
+    padding: 0.6rem 0.8rem;
+    border-radius: 12px;
+    word-wrap: break-word;
+    position: relative;
+}
+.chat-message.user {
+    align-self: flex-end;
+    background: var(--primary-blue);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+.chat-message.bot {
+    align-self: flex-start;
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 4px;
+}
+.chat-message .message-time {
+    font-size: 0.6rem;
+    color: var(--text-light);
+    margin-top: 0.2rem;
+    text-align: right;
+    opacity: 0.7;
+}
+.chat-message.user .message-time { color: rgba(255,255,255,0.7); }
+.chat-message.bot .message-time { color: var(--text-light); }
+.chat-input-area {
+    padding: 0.8rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.chat-input-area input[type="text"] {
+    flex: 1;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    outline: none;
+    font-size: 0.9rem;
+    min-width: 100px;
+}
+.chat-input-area input[type="text"]:focus {
+    border-color: var(--accent-blue);
+}
+.chat-input-area .chat-attach-btn,
+.chat-input-area .chat-send-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.4rem;
+    transition: var(--transition);
+}
+.chat-input-area .chat-attach-btn:hover,
+.chat-input-area .chat-send-btn:hover {
+    color: var(--primary-blue);
+}
+.chat-input-area .chat-send-btn {
+    color: var(--primary-blue);
+}
+.chat-file-preview {
+    width: 100%;
+    padding: 0.2rem 0.8rem;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    display: none;
+    gap: 0.5rem;
+    align-items: center;
+}
+.chat-file-preview .remove-file {
+    cursor: pointer;
+    color: var(--error);
+}
+.chat-loading {
+    align-self: flex-start;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+    background: var(--bg-color);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    animation: pulse 1.5s infinite;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .chat-window {
+        width: calc(100vw - 20px);
+        max-height: 70vh;
+        bottom: 80px;
+        right: 10px;
+    }
+    .chat-fab {
+        width: 50px;
+        height: 50px;
+        font-size: 1.4rem;
+        bottom: 80px;
+        right: 10px;
+    }
+}
+
+/* ============================================================
    ANIMATIONS
    ============================================================ */
 @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -948,7 +1137,7 @@ footer {
 <!-- WARNING SCREEN -->
 <div id="warning-screen">
     <div class="warning-container">
-        <h2 class="warning-title">🔒 Avertissement – Utilisation responsable</h2>
+        <h2 class="warning-title"><i class="fas fa-shield-alt"></i> Avertissement – Utilisation responsable</h2>
         <div class="warning-text">
             <p>La plateforme hosBac est un espace éducatif collaboratif dédié au partage d'épreuves et de ressources pédagogiques. Nous encourageons l'entraide et la collaboration entre étudiants.</p>
             <p>Nous rappelons à tous les utilisateurs que ces ressources doivent être utilisées de manière éthique et responsable, dans le respect du travail des enseignants et des établissements scolaires. Toute tentative de fraude ou de tricherie est strictement interdite.</p>
@@ -1007,7 +1196,7 @@ footer {
     </div>
 </div>
 
-<!-- MENU BURGER PLEIN ÉCRAN (sans thème toggle) -->
+<!-- MENU BURGER PLEIN ÉCRAN -->
 <div class="fullscreen-menu" id="fullscreen-menu">
     <div class="fullscreen-menu-header">
         <div class="menu-title">HosBac</div>
@@ -1021,7 +1210,6 @@ footer {
         <div class="fullscreen-menu-item" id="menu-admin-item" data-view="admin" style="display:none;"><i class="fas fa-crown"></i> Admin</div>
         <div class="fullscreen-menu-item" id="menu-guest-item" style="display:none;"><i class="fas fa-sign-in-alt"></i> Se connecter</div>
         <div class="fullscreen-menu-divider"></div>
-        <!-- Le toggle de thème a été supprimé -->
     </div>
 </div>
 
@@ -1043,23 +1231,23 @@ footer {
                 <h1 id="welcome-message">Bienvenue sur HosBac !</h1>
                 <p id="welcome-subtitle">Trouvez et partagez des épreuves pour réussir ensemble.</p>
             </div>
-            <h2 class="view-title">Vos Statistiques</h2>
+            <h2 class="view-title"><i class="fas fa-chart-pie"></i> Vos Statistiques</h2>
             <div class="profile-stats home-stats">
                 <div class="stat-card"><div class="stat-value" id="home-points-balance">0</div><div class="stat-label">Points</div></div>
                 <div class="stat-card"><div class="stat-value" id="home-exams-uploaded">0</div><div class="stat-label">Épreuves partagées</div></div>
                 <div class="stat-card"><div class="stat-value" id="home-exams-downloaded">0</div><div class="stat-label">Épreuves téléchargées</div></div>
             </div>
             <div class="announcements-section">
-                <h2 class="view-title">Annonces</h2>
+                <h2 class="view-title"><i class="fas fa-bullhorn"></i> Annonces</h2>
                 <div id="announcements-list"></div>
             </div>
-            <h2 class="view-title">Épreuves récentes</h2>
+            <h2 class="view-title"><i class="fas fa-clock"></i> Épreuves récentes</h2>
             <div class="card"><div id="recent-exams" class="exam-list"></div></div>
         </div>
 
         <!-- EXAMS VIEW -->
         <div id="exams-view" class="view">
-            <h1 class="view-title">Examens</h1>
+            <h1 class="view-title"><i class="fas fa-file-alt"></i> Examens</h1>
             <div class="exam-filters" style="display:flex;gap:0.8rem;margin-bottom:1.2rem;flex-wrap:wrap;">
                 <select id="filter-class" class="filter-select" style="padding:0.4rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.9rem;color:var(--text-color);">
                     <option value="">Toutes les classes</option>
@@ -1092,7 +1280,7 @@ footer {
 
         <!-- SEARCH VIEW -->
         <div id="search-view" class="view">
-            <h1 class="view-title">Recherche</h1>
+            <h1 class="view-title"><i class="fas fa-search"></i> Recherche</h1>
             <div class="card">
                 <div class="form-group" style="position:relative;">
                     <input type="text" id="global-search" class="search-bar" placeholder="Rechercher des épreuves, utilisateurs..." style="width:100%;">
@@ -1104,7 +1292,7 @@ footer {
 
         <!-- PROFILE VIEW -->
         <div id="profile-view" class="view">
-            <h1 class="view-title">Profil</h1>
+            <h1 class="view-title"><i class="fas fa-user-circle"></i> Profil</h1>
             <div class="profile-header" style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem;">
                 <div class="profile-avatar" id="profile-avatar" style="width:64px;height:64px;border-radius:50%;background:var(--primary-blue);color:#fff;display:flex;justify-content:center;align-items:center;font-size:1.6rem;font-weight:bold;">U</div>
                 <div class="profile-info">
@@ -1119,7 +1307,7 @@ footer {
                 <div class="stat-card"><div class="stat-value" id="exams-downloaded">0</div><div class="stat-label">Épreuves téléchargées</div></div>
             </div>
             <div class="card">
-                <h2 class="card-title">Modifier le profil</h2>
+                <h2 class="card-title"><i class="fas fa-edit"></i> Modifier le profil</h2>
                 <form id="profile-form">
                     <div class="form-row" style="display:flex;gap:1rem;margin-bottom:1rem;">
                         <div class="form-group" style="flex:1;"><label for="edit-nom" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">Nom</label><input type="text" id="edit-nom" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.95rem;color:var(--text-color);"></div>
@@ -1130,7 +1318,7 @@ footer {
                 </form>
             </div>
             <div class="card">
-                <h2 class="card-title">Épreuves favorites</h2>
+                <h2 class="card-title"><i class="fas fa-heart"></i> Épreuves favorites</h2>
                 <div id="favorites-list" class="favorites-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.2rem;"></div>
             </div>
             <button id="logout-btn" class="auth-btn" style="width:100%;background:var(--primary-blue);color:#fff;border:none;padding:0.7rem;border-radius:6px;font-size:0.95rem;cursor:pointer;transition:var(--transition);margin-top:0.5rem;font-weight:500;">Se Déconnecter</button>
@@ -1138,42 +1326,45 @@ footer {
 
         <!-- ADMIN VIEW -->
         <div id="admin-view" class="view">
-            <h1 class="view-title">Panneau d'Administration</h1>
+            <h1 class="view-title"><i class="fas fa-crown"></i> Panneau d'Administration</h1>
             <div class="admin-stats">
                 <div class="stat-card"><div class="stat-value" id="total-users">0</div><div class="stat-label">Utilisateurs</div></div>
                 <div class="stat-card"><div class="stat-value" id="total-exams">0</div><div class="stat-label">Épreuves</div></div>
                 <div class="stat-card"><div class="stat-value" id="pending-exams-count">0</div><div class="stat-label">En attente</div></div>
             </div>
-            <!-- SECTION STATISTIQUES SUPPRIMÉE -->
 
-            <!-- SECTION 3 : CONTACTS ADMIN + GA4 -->
+            <!-- SECTION CONTACTS + GA4 + CONFIG IA -->
             <div class="card">
-                <h2 class="card-title">📱 Paramètres de Contact & Analytics</h2>
+                <h2 class="card-title"><i class="fas fa-sliders-h"></i> Paramètres</h2>
                 <form id="contacts-admin-form" class="contacts-admin-form">
                     <div class="form-group">
-                        <label for="contact-whatsapp" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">Lien WhatsApp</label>
+                        <label for="contact-whatsapp" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);"><i class="fab fa-whatsapp"></i> Lien WhatsApp</label>
                         <input type="url" id="contact-whatsapp" placeholder="https://wa.me/..." style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.95rem;color:var(--text-color);">
                     </div>
                     <div class="form-group">
-                        <label for="contact-facebook" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">Lien Profil Facebook</label>
+                        <label for="contact-facebook" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);"><i class="fab fa-facebook-f"></i> Lien Profil Facebook</label>
                         <input type="url" id="contact-facebook" placeholder="https://facebook.com/..." style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.95rem;color:var(--text-color);">
                     </div>
                     <div class="form-group">
-                        <label for="contact-email" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">Adresse Email (Gmail)</label>
+                        <label for="contact-email" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);"><i class="fas fa-envelope"></i> Adresse Email (Gmail)</label>
                         <input type="email" id="contact-email" placeholder="admin@email.com" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.95rem;color:var(--text-color);">
                     </div>
-                    <!-- Nouveau champ pour l'ID GA4 -->
                     <div class="form-group">
-                        <label for="ga-measurement-id" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">ID de mesure Google Analytics (ex: G-XXXXXXX)</label>
+                        <label for="ga-measurement-id" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);"><i class="fas fa-chart-line"></i> ID de mesure Google Analytics (ex: G-XXXXXXX)</label>
                         <input type="text" id="ga-measurement-id" placeholder="G-XXXXXXXX" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.95rem;color:var(--text-color);">
                     </div>
-                    <button type="submit" class="submit-btn" id="update-contacts-btn">Mettre à jour les contacts</button>
+                    <!-- Configuration IA -->
+                    <div class="form-group">
+                        <label for="gemini-api-key" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);"><i class="fas fa-robot"></i> Clé API Gemini (sécurisée)</label>
+                        <input type="password" id="gemini-api-key" placeholder="Votre clé API" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border-color);border-radius:6px;background:var(--bg-color);transition:var(--transition);font-size:0.95rem;color:var(--text-color);">
+                    </div>
+                    <button type="submit" class="submit-btn" id="update-contacts-btn">Mettre à jour les paramètres</button>
                 </form>
             </div>
 
-            <!-- NOUVEAU : GESTION DES PAGES LÉGALES (CGU & CONFIDENTIALITÉ) -->
+            <!-- GESTION DES PAGES LÉGALES -->
             <div class="card">
-                <h2 class="card-title">📄 Pages Légales</h2>
+                <h2 class="card-title"><i class="fas fa-file-contract"></i> Pages Légales</h2>
                 <form id="legal-pages-form">
                     <div class="form-group">
                         <label for="legal-cgu" style="display:block;margin-bottom:0.4rem;font-weight:500;font-size:0.85rem;color:var(--text-color);">Conditions Générales d'Utilisation (CGU)</label>
@@ -1187,18 +1378,18 @@ footer {
                 </form>
             </div>
 
-            <!-- NOUVEAU : Suivi comportemental (Logs) -->
+            <!-- SUIVI COMPORTEMENTAL (LOGS) -->
             <div class="card">
-                <h2 class="card-title">📊 Comportement Utilisateurs</h2>
+                <h2 class="card-title"><i class="fas fa-chart-bar"></i> Comportement Utilisateurs</h2>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                     <div>
-                        <h3 style="font-size:1rem; margin-bottom:0.5rem;">🔍 Mots-clés les plus recherchés</h3>
+                        <h3 style="font-size:1rem; margin-bottom:0.5rem;"><i class="fas fa-search"></i> Mots-clés les plus recherchés</h3>
                         <div id="top-search-keywords" style="background:var(--bg-color); padding:0.8rem; border-radius:6px; max-height:200px; overflow-y:auto;">
                             <p style="color:var(--text-light);">Chargement...</p>
                         </div>
                     </div>
                     <div>
-                        <h3 style="font-size:1rem; margin-bottom:0.5rem;">🔄 Dernières interactions</h3>
+                        <h3 style="font-size:1rem; margin-bottom:0.5rem;"><i class="fas fa-history"></i> Dernières interactions</h3>
                         <div id="recent-interactions" style="background:var(--bg-color); padding:0.8rem; border-radius:6px; max-height:200px; overflow-y:auto;">
                             <p style="color:var(--text-light);">Chargement...</p>
                         </div>
@@ -1207,13 +1398,13 @@ footer {
             </div>
 
             <div class="pending-exams card">
-                <h3 class="card-title">Épreuves en attente d'approbation</h3>
+                <h3 class="card-title"><i class="fas fa-clock"></i> Épreuves en attente d'approbation</h3>
                 <div id="pending-exams-list"></div>
             </div>
         </div>
     </main>
 
-    <!-- FOOTER AVEC CONTACTS DYNAMIQUES et LIENS LÉGAUX -->
+    <!-- FOOTER -->
     <footer id="main-footer">
         <div class="footer-content">
             <div class="footer-brand">HosBac</div>
@@ -1228,6 +1419,32 @@ footer {
             </div>
         </div>
     </footer>
+</div>
+
+<!-- CHATBOT IA : FAB + FENÊTRE -->
+<button class="chat-fab" id="chat-fab" title="Assistant IA"><i class="fas fa-robot"></i></button>
+<div class="chat-window" id="chat-window">
+    <div class="chat-header">
+        <span class="chat-header-title"><i class="fas fa-robot" style="margin-right:0.5rem;"></i> Assistant HosBac</span>
+        <button class="chat-header-close" id="chat-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+        <!-- Les messages seront injectés ici -->
+        <div class="chat-message bot">
+            Bonjour ! Je suis l'assistant HosBac. Posez-moi une question sur les épreuves, les cours, ou tout autre sujet éducatif.
+            <div class="message-time">--:--</div>
+        </div>
+    </div>
+    <div class="chat-file-preview" id="chat-file-preview">
+        <span id="chat-file-name"></span>
+        <span class="remove-file" id="chat-remove-file"><i class="fas fa-times-circle"></i></span>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Tapez votre question..." />
+        <button class="chat-attach-btn" id="chat-attach-btn"><i class="fas fa-paperclip"></i></button>
+        <button class="chat-send-btn" id="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
+        <input type="file" id="chat-file-input" accept=".jpg,.jpeg,.png,.pdf" style="display:none;">
+    </div>
 </div>
 
 <!-- POPUPS -->
@@ -1407,12 +1624,13 @@ const welcomeSubtitle = document.getElementById('welcome-subtitle');
 const urlParams = new URLSearchParams(window.location.search);
 const sharedExamId = urlParams.get('exam');
 
-// Contacts & GA
+// Contacts & GA & IA
 const contactsForm = document.getElementById('contacts-admin-form');
 const contactWhatsapp = document.getElementById('contact-whatsapp');
 const contactFacebook = document.getElementById('contact-facebook');
 const contactEmail = document.getElementById('contact-email');
 const gaMeasurementId = document.getElementById('ga-measurement-id');
+const geminiApiKeyInput = document.getElementById('gemini-api-key');
 const footerWhatsapp = document.getElementById('footer-whatsapp');
 const footerFacebook = document.getElementById('footer-facebook');
 const footerEmail = document.getElementById('footer-email');
@@ -1429,6 +1647,20 @@ const privacyPopup = document.getElementById('privacy-popup');
 // Logs admin
 const topKeywordsContainer = document.getElementById('top-search-keywords');
 const recentInteractionsContainer = document.getElementById('recent-interactions');
+
+// Chatbot
+const chatFab = document.getElementById('chat-fab');
+const chatWindow = document.getElementById('chat-window');
+const chatClose = document.getElementById('chat-close');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const chatSendBtn = document.getElementById('chat-send-btn');
+const chatAttachBtn = document.getElementById('chat-attach-btn');
+const chatFileInput = document.getElementById('chat-file-input');
+const chatFilePreview = document.getElementById('chat-file-preview');
+const chatFileName = document.getElementById('chat-file-name');
+const chatRemoveFile = document.getElementById('chat-remove-file');
+let attachedFile = null; // { name, data, type }
 
 // ============================================================
 // AUTH SWITCH LINKS
@@ -1616,10 +1848,11 @@ function updateMenuItems() {
 }
 
 // ============================================================
-// SECTION 3 : CONTACTS ADMIN + GA4 (FIRESTORE)
+// SECTION 3 : CONTACTS ADMIN + GA4 + IA (FIRESTORE)
 // ============================================================
 const CONTACTS_DOC_PATH = 'settings/contacts';
 const ANALYTICS_DOC_PATH = 'settings/analytics';
+const API_KEYS_DOC_PATH = 'settings/api_keys';
 
 function loadContactsFromFirestore() {
     db.doc(CONTACTS_DOC_PATH).get()
@@ -1638,12 +1871,14 @@ function loadContactsFromFirestore() {
     .catch(err => console.error('[FIRESTORE] Erreur chargement contacts:', err));
 }
 
-function saveContactsToFirestore(whatsapp, facebook, email, gaId) {
-    // Sauvegarde des contacts et de l'ID GA dans deux documents distincts
+function saveContactsToFirestore(whatsapp, facebook, email, gaId, geminiKey) {
     const promises = [];
     promises.push(db.doc(CONTACTS_DOC_PATH).set({ whatsapp, facebook, email }, { merge: true }));
     if (gaId !== undefined) {
         promises.push(db.doc(ANALYTICS_DOC_PATH).set({ ga_measurement_id: gaId }, { merge: true }));
+    }
+    if (geminiKey !== undefined) {
+        promises.push(db.doc(API_KEYS_DOC_PATH).set({ gemini_api_key: geminiKey }, { merge: true }));
     }
     return Promise.all(promises);
 }
@@ -1678,7 +1913,7 @@ function updateFooterContacts(data) {
     }
 }
 
-// Chargement de l'ID GA et injection du script
+// Chargement de l'ID GA et de la clé Gemini
 function loadAndInjectGA() {
     db.doc(ANALYTICS_DOC_PATH).get()
     .then(doc => {
@@ -1689,7 +1924,6 @@ function loadAndInjectGA() {
                 injectGAScript(gaId.trim());
             }
         } else {
-            // Créer le document s'il n'existe pas
             db.doc(ANALYTICS_DOC_PATH).set({ ga_measurement_id: '' })
             .catch(err => console.error('[FIRESTORE] Erreur création analytics:', err));
         }
@@ -1697,20 +1931,36 @@ function loadAndInjectGA() {
     .catch(err => console.error('[FIRESTORE] Erreur chargement GA:', err));
 }
 
+function loadGeminiApiKey() {
+    return db.doc(API_KEYS_DOC_PATH).get()
+    .then(doc => {
+        if (doc.exists) {
+            const key = doc.data().gemini_api_key || '';
+            if (geminiApiKeyInput) geminiApiKeyInput.value = key;
+            return key;
+        } else {
+            db.doc(API_KEYS_DOC_PATH).set({ gemini_api_key: '' })
+            .catch(err => console.error('[FIRESTORE] Erreur création api_keys:', err));
+            return '';
+        }
+    })
+    .catch(err => {
+        console.error('[FIRESTORE] Erreur chargement clé Gemini:', err);
+        return '';
+    });
+}
+
 function injectGAScript(measurementId) {
-    // Supprime tout script GA existant pour éviter les doublons
     const existingScript = document.querySelector('script[src*="googletagmanager.com/gtag/js?id="]');
     if (existingScript) existingScript.remove();
     const existingInline = document.getElementById('ga-inline-script');
     if (existingInline) existingInline.remove();
 
-    // Créer le script gtag.js
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
     document.head.appendChild(script);
 
-    // Créer le script d'initialisation
     const inlineScript = document.createElement('script');
     inlineScript.id = 'ga-inline-script';
     inlineScript.innerHTML = `
@@ -1722,7 +1972,7 @@ function injectGAScript(measurementId) {
     document.head.appendChild(inlineScript);
 }
 
-// Soumission du formulaire contacts + GA
+// Soumission du formulaire contacts + GA + IA
 contactsForm?.addEventListener('submit', function(e) {
     e.preventDefault();
     if (!checkAuthRequired('mettre à jour les paramètres')) return;
@@ -1734,20 +1984,20 @@ contactsForm?.addEventListener('submit', function(e) {
     const facebook = contactFacebook?.value || '';
     const email = contactEmail?.value || '';
     const gaId = gaMeasurementId?.value || '';
-    saveContactsToFirestore(whatsapp, facebook, email, gaId)
+    const geminiKey = geminiApiKeyInput?.value || '';
+    saveContactsToFirestore(whatsapp, facebook, email, gaId, geminiKey)
     .then(() => {
         showToast('Paramètres mis à jour avec succès', 'success');
         updateFooterContacts({ whatsapp, facebook, email });
-        // Si l'ID GA a changé, on le réinjecte
         if (gaId && gaId.trim().length > 0) {
             injectGAScript(gaId.trim());
         } else {
-            // Supprimer les scripts GA si l'ID est vide
             const script = document.querySelector('script[src*="googletagmanager.com/gtag/js?id="]');
             if (script) script.remove();
             const inline = document.getElementById('ga-inline-script');
             if (inline) inline.remove();
         }
+        // La clé Gemini est sauvegardée, elle sera chargée au besoin
     })
     .catch(err => {
         console.error('[FIRESTORE] Erreur sauvegarde paramètres:', err);
@@ -1875,7 +2125,7 @@ function logInteraction(action, epreuveId) {
     if (!epreuveId) return;
     const userType = currentUser ? 'connecté' : 'anonyme';
     db.collection('interaction_logs').add({
-        action: action, // "voir" ou "telecharger"
+        action: action,
         epreuveId: epreuveId,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         userType: userType
@@ -1888,7 +2138,6 @@ function logInteraction(action, epreuveId) {
 function loadAdminLogs() {
     if (!currentUser || !isAdmin) return;
 
-    // Récupérer les 10 mots-clés les plus recherchés (groupés)
     db.collection('search_logs')
         .orderBy('timestamp', 'desc')
         .limit(50)
@@ -1902,7 +2151,6 @@ function loadAdminLogs() {
                     keywords[kw] = (keywords[kw] || 0) + 1;
                 }
             });
-            // Trier par fréquence
             const sorted = Object.entries(keywords).sort((a,b) => b[1] - a[1]).slice(0,10);
             if (topKeywordsContainer) {
                 if (sorted.length === 0) {
@@ -1919,7 +2167,6 @@ function loadAdminLogs() {
         })
         .catch(err => console.error('[FIRESTORE] Erreur chargement search_logs:', err));
 
-    // Récupérer les 10 dernières interactions
     db.collection('interaction_logs')
         .orderBy('timestamp', 'desc')
         .limit(10)
@@ -1950,6 +2197,209 @@ function loadAdminLogs() {
 }
 
 // ============================================================
+// CHATBOT IA (GEMINI)
+// ============================================================
+let geminiApiKey = ''; // stockée en mémoire après chargement
+
+// Fonction pour obtenir la clé (avec cache)
+function getGeminiKey() {
+    return new Promise((resolve) => {
+        if (geminiApiKey) {
+            resolve(geminiApiKey);
+        } else {
+            loadGeminiApiKey().then(key => {
+                geminiApiKey = key;
+                resolve(key);
+            });
+        }
+    });
+}
+
+// Fonction pour ajouter un message dans la fenêtre de chat
+function addChatMessage(text, sender, time = null) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-message ${sender}`;
+    const timeStr = time || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    // Convertir le markdown basique en HTML
+    let htmlText = text;
+    // Gras: **texte** -> <b>texte</b>
+    htmlText = htmlText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+    // Italique: *texte* -> <i>texte</i> (mais attention aux listes)
+    htmlText = htmlText.replace(/\*(.*?)\*/g, '<i>$1</i>');
+    // Sauts de ligne
+    htmlText = htmlText.replace(/\n/g, '<br>');
+    msgDiv.innerHTML = `${htmlText}<div class="message-time">${timeStr}</div>`;
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Fonction pour afficher un indicateur de chargement
+function showLoading() {
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'chat-loading';
+    loadingDiv.id = 'chat-loading';
+    loadingDiv.textContent = 'L\'IA réfléchit...';
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function hideLoading() {
+    const loading = document.getElementById('chat-loading');
+    if (loading) loading.remove();
+}
+
+// Envoyer un message à Gemini
+async function sendMessageToGemini(userMessage, fileData = null) {
+    try {
+        const key = await getGeminiKey();
+        if (!key || key.trim() === '') {
+            addChatMessage('La clé API Gemini n\'est pas configurée. Veuillez contacter l\'administrateur.', 'bot');
+            return;
+        }
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+        const payload = {
+            contents: [
+                {
+                    parts: []
+                }
+            ]
+        };
+
+        // Partie texte
+        if (userMessage && userMessage.trim().length > 0) {
+            payload.contents[0].parts.push({ text: userMessage });
+        }
+
+        // Partie fichier (si présent)
+        if (fileData) {
+            const mimeType = fileData.type; // ex: image/jpeg, application/pdf
+            // Vérifier si le type est supporté
+            if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
+                payload.contents[0].parts.push({
+                    inline_data: {
+                        mime_type: mimeType,
+                        data: fileData.data // déjà en base64 sans préfixe
+                    }
+                });
+            } else {
+                addChatMessage('Format de fichier non supporté par l\'IA.', 'bot');
+                return;
+            }
+        }
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Erreur Gemini:', errorData);
+            addChatMessage(`Erreur de l'IA : ${errorData.error?.message || 'Erreur inconnue'}`, 'bot');
+            return;
+        }
+
+        const data = await response.json();
+        const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Je n\'ai pas de réponse à cela.';
+        addChatMessage(textResponse, 'bot');
+
+    } catch (error) {
+        console.error('Erreur lors de l\'appel à Gemini:', error);
+        addChatMessage('Erreur de communication avec l\'IA.', 'bot');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Gestion de l'envoi de message
+function handleSendMessage() {
+    const text = chatInput.value.trim();
+    if (!text && !attachedFile) {
+        showToast('Veuillez écrire un message ou attacher un fichier.', 'warning');
+        return;
+    }
+    // Ajouter le message utilisateur avec l'heure
+    const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    addChatMessage(text || 'Fichier attaché', 'user', time);
+
+    // Préparer les données pour l'envoi
+    const fileData = attachedFile ? { data: attachedFile.data, type: attachedFile.type } : null;
+
+    // Effacer l'input et le fichier attaché
+    chatInput.value = '';
+    attachedFile = null;
+    chatFilePreview.style.display = 'none';
+    chatFileInput.value = '';
+
+    // Afficher le chargement
+    showLoading();
+
+    // Appeler Gemini
+    sendMessageToGemini(text, fileData);
+}
+
+// Écouteurs du chat
+chatSendBtn?.addEventListener('click', handleSendMessage);
+chatInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage();
+    }
+});
+
+chatFab?.addEventListener('click', () => {
+    if (!currentUser) {
+        showToast('Connectez-vous pour utiliser l\'assistant IA.', 'warning');
+        return;
+    }
+    chatWindow.classList.toggle('open');
+});
+
+chatClose?.addEventListener('click', () => {
+    chatWindow.classList.remove('open');
+});
+
+// Gestion de l'attachement
+chatAttachBtn?.addEventListener('click', () => {
+    chatFileInput.click();
+});
+
+chatFileInput?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    // Vérifier l'extension
+    const allowed = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!allowed.includes(file.type)) {
+        showToast('Seuls les fichiers JPG, PNG et PDF sont acceptés.', 'error');
+        chatFileInput.value = '';
+        return;
+    }
+    // Lire le fichier en base64
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const base64 = ev.target.result.split(',')[1]; // enlever le préfixe
+        attachedFile = {
+            name: file.name,
+            data: base64,
+            type: file.type
+        };
+        chatFileName.textContent = file.name;
+        chatFilePreview.style.display = 'flex';
+        chatFileInput.value = ''; // réinitialiser
+    };
+    reader.readAsDataURL(file);
+});
+
+chatRemoveFile?.addEventListener('click', () => {
+    attachedFile = null;
+    chatFilePreview.style.display = 'none';
+    chatFileInput.value = '';
+});
+
+// ============================================================
 // AUTH STATE CHANGED
 // ============================================================
 auth.onAuthStateChanged(user => {
@@ -1971,6 +2421,8 @@ auth.onAuthStateChanged(user => {
             loadLegalPages();
             loadAndInjectGA();
             if (isAdmin) loadAdminLogs();
+            // Afficher le FAB pour les connectés
+            chatFab.style.display = 'flex';
         } else {
             currentUser = null;
             userData = null;
@@ -1986,7 +2438,10 @@ auth.onAuthStateChanged(user => {
             hideSplashScreen();
             loadContactsFromFirestore();
             loadLegalPages();
-            loadAndInjectGA(); // Charger GA même si non connecté (anonyme)
+            loadAndInjectGA();
+            // Cacher le FAB pour les non-connectés
+            chatFab.style.display = 'none';
+            chatWindow.classList.remove('open');
         }
         updateMenuItems();
     } catch (error) {
@@ -2231,7 +2686,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         searchTimeout = setTimeout(() => {
             performDynamicSearch(query);
-            // Log de recherche
             logSearch(query);
         }, 300);
     });
@@ -2245,6 +2699,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadContactsFromFirestore();
     loadLegalPages();
     loadAndInjectGA();
+    // Charger la clé Gemini en arrière-plan
+    loadGeminiApiKey().then(key => { geminiApiKey = key; });
 });
 
 // ============================================================
@@ -2948,7 +3404,6 @@ function loadAdminPanel() {
         db.collection('epreuves').get().then(q => { const el = document.getElementById('total-exams'); if (el) el.textContent = q.size; });
         updatePendingExamsCount();
         loadPendingExams();
-        // Charger les logs
         loadAdminLogs();
     } catch (error) { console.error('[FIRESTORE] Erreur loadAdminPanel:', error); showToast('Erreur lors du chargement du panneau admin', 'error'); }
 }
