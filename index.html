@@ -861,7 +861,7 @@ footer {
 }
 
 /* ============================================================
-   CHATBOT IA (FAB + FENÊTRE) – AGRANDIE
+   CHATBOT IA – AGRANDI, AVEC ACTIONS
    ============================================================ */
 .chat-fab {
     position: fixed;
@@ -887,14 +887,13 @@ footer {
     background: var(--secondary-blue);
 }
 
-/* Fenêtre de chat agrandie */
 .chat-window {
     position: fixed;
     bottom: 160px;
     right: 20px;
-    width: 90%;              /* largeur sur mobile */
-    max-width: 500px;        /* max sur PC */
-    height: 75vh;            /* hauteur */
+    width: 90%;
+    max-width: 500px;
+    height: 75vh;
     max-height: 80vh;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -921,6 +920,22 @@ footer {
 .chat-header-title {
     font-weight: 600;
     font-size: 1rem;
+}
+.chat-header-actions {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+.chat-header-actions button {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+.chat-header-actions button:hover {
+    color: #fff;
 }
 .chat-header-close {
     background: none;
@@ -968,7 +983,7 @@ footer {
 .chat-message.user .message-time { color: rgba(255,255,255,0.7); }
 .chat-message.bot .message-time { color: var(--text-light); }
 
-/* Barre d'actions sous les messages de l'IA */
+/* Actions sous les messages */
 .message-actions {
     display: flex;
     gap: 0.6rem;
@@ -994,6 +1009,12 @@ footer {
 }
 .message-actions .thumbs-up.active { color: var(--success); }
 .message-actions .thumbs-down.active { color: var(--error); }
+.message-actions .delete-msg {
+    color: var(--error);
+}
+.message-actions .delete-msg:hover {
+    color: #ff4444;
+}
 
 .chat-input-area {
     padding: 0.8rem;
@@ -1457,14 +1478,13 @@ footer {
 <div class="chat-window" id="chat-window">
     <div class="chat-header">
         <span class="chat-header-title"><i class="fas fa-robot" style="margin-right:0.5rem;"></i> Assistant HosBac</span>
-        <button class="chat-header-close" id="chat-close"><i class="fas fa-times"></i></button>
+        <div class="chat-header-actions">
+            <button id="clear-chat-btn" title="Effacer l'historique"><i class="fas fa-trash-alt"></i></button>
+            <button class="chat-header-close" id="chat-close"><i class="fas fa-times"></i></button>
+        </div>
     </div>
     <div class="chat-messages" id="chat-messages">
         <!-- Les messages seront injectés ici -->
-        <div class="chat-message bot">
-            Bonjour ! Je suis l'assistant HosBac. Posez-moi une question sur les épreuves, les cours, ou tout autre sujet éducatif.
-            <div class="message-time">--:--</div>
-        </div>
     </div>
     <div class="chat-file-preview" id="chat-file-preview">
         <span id="chat-file-name"></span>
@@ -1683,6 +1703,7 @@ const recentInteractionsContainer = document.getElementById('recent-interactions
 const chatFab = document.getElementById('chat-fab');
 const chatWindow = document.getElementById('chat-window');
 const chatClose = document.getElementById('chat-close');
+const clearChatBtn = document.getElementById('clear-chat-btn');
 const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
 const chatSendBtn = document.getElementById('chat-send-btn');
@@ -2227,85 +2248,48 @@ function loadAdminLogs() {
 }
 
 // ============================================================
-// CHATBOT IA (GEMINI) – AVEC HISTORIQUE, PERSISTANCE ET ACTIONS
+// CHATBOT IA (GEMINI) – AVEC HISTORIQUE, PERSISTANCE, ACTIONS & SUPPRESSION
 // ============================================================
 let geminiApiKey = '';
-let chatHistory = []; // tableau d'objets { role: 'user'|'model', parts: [{ text: ... }] }
-let chatSessionId = null; // pour Firestore
+let chatHistory = []; // tableau d'objets { id, role, parts, timestamp }
+let messageIdCounter = 0;
 
-// Charger l'historique depuis Firestore
-function loadChatHistoryFromFirestore() {
-    if (!currentUser) return Promise.resolve();
-    const docRef = db.collection('users').doc(currentUser.uid).collection('chats').doc('current');
-    return docRef.get().then(doc => {
-        if (doc.exists) {
-            const data = doc.data();
-            if (data && data.messages && Array.isArray(data.messages)) {
-                chatHistory = data.messages;
-                // Reconstruire l'affichage
-                chatMessages.innerHTML = '';
-                chatHistory.forEach(msg => {
-                    const sender = msg.role === 'user' ? 'user' : 'bot';
-                    const text = msg.parts[0].text;
-                    const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
-                    addChatMessageToDOM(text, sender, time, msg.role === 'bot' ? true : false);
-                });
-                // Si pas de messages, ajouter le message de bienvenue
-                if (chatHistory.length === 0) {
-                    addChatMessageToDOM('Bonjour ! Je suis l\'assistant HosBac. Posez-moi une question sur les épreuves, les cours, ou tout autre sujet éducatif.', 'bot', '--:--', true);
-                }
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                return;
-            }
-        }
-        // Pas d'historique, initialiser avec message de bienvenue
-        chatHistory = [];
-        chatMessages.innerHTML = '';
-        addChatMessageToDOM('Bonjour ! Je suis l\'assistant HosBac. Posez-moi une question sur les épreuves, les cours, ou tout autre sujet éducatif.', 'bot', '--:--', true);
-        // Sauvegarder ce message dans Firestore
-        saveChatToFirestore();
-    }).catch(err => console.error('Erreur chargement historique chat:', err));
+const WELCOME_MESSAGE = "Bonjour ! Je suis l'assistant HosBac. Je suis à votre disposition pour vous accompagner dans vos révisions, répondre à vos questions sur les épreuves, les cours ou tout autre sujet éducatif. Comment puis-je vous aider aujourd'hui ?";
+
+// Générer un ID unique pour chaque message
+function generateMessageId() {
+    return ++messageIdCounter + '-' + Date.now();
 }
 
-// Sauvegarder l'historique dans Firestore
-function saveChatToFirestore() {
-    if (!currentUser) return;
-    const docRef = db.collection('users').doc(currentUser.uid).collection('chats').doc('current');
-    const data = {
-        messages: chatHistory,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    docRef.set(data, { merge: true }).catch(err => console.error('Erreur sauvegarde chat:', err));
-}
-
-// Ajouter un message au DOM (avec ou sans actions)
-function addChatMessageToDOM(text, sender, time, isBot = false) {
+// Ajouter un message au DOM avec ses actions
+function addChatMessageToDOM(text, sender, time, isBot = false, messageId = null) {
+    if (!messageId) messageId = generateMessageId();
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${sender}`;
+    msgDiv.dataset.messageId = messageId;
     let htmlText = text;
     htmlText = htmlText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
     htmlText = htmlText.replace(/\*(.*?)\*/g, '<i>$1</i>');
     htmlText = htmlText.replace(/\n/g, '<br>');
     msgDiv.innerHTML = `${htmlText}<div class="message-time">${time}</div>`;
 
-    if (isBot) {
-        // Barre d'actions
+    // Actions pour les messages de l'IA (sauf le message d'accueil qui n'a pas d'ID)
+    if (isBot && messageId) {
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'message-actions';
 
-        // Bouton Répondre (taguer)
+        // Répondre (citer)
         const replyBtn = document.createElement('button');
         replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
         replyBtn.title = 'Répondre en citant';
         replyBtn.addEventListener('click', () => {
-            // Préremplir le champ avec une citation
             const citation = text.split('\n').map(line => `> ${line}`).join('\n');
             chatInput.value = `En réponse à :\n${citation}\n\n`;
             chatInput.focus();
         });
         actionsDiv.appendChild(replyBtn);
 
-        // Bouton Copier
+        // Copier
         const copyBtn = document.createElement('button');
         copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
         copyBtn.title = 'Copier le texte';
@@ -2313,7 +2297,6 @@ function addChatMessageToDOM(text, sender, time, isBot = false) {
             navigator.clipboard.writeText(text).then(() => {
                 showToast('Copié !', 'success');
             }).catch(() => {
-                // Fallback
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 document.body.appendChild(textarea);
@@ -2333,12 +2316,8 @@ function addChatMessageToDOM(text, sender, time, isBot = false) {
         thumbsUp.addEventListener('click', () => {
             thumbsUp.classList.toggle('active');
             thumbsDown.classList.remove('active');
-            // Stocker la note dans Firestore (on peut stocker l'évaluation)
             if (thumbsUp.classList.contains('active')) {
                 showToast('Merci pour votre retour !', 'success');
-                // Sauvegarder la note (on peut ajouter un champ rating)
-                // Pour simplifier, on sauvegarde dans un document séparé ou on met à jour le message.
-                // Ici on ne fait que l'UI, mais on pourrait enregistrer.
             }
         });
         actionsDiv.appendChild(thumbsUp);
@@ -2357,6 +2336,18 @@ function addChatMessageToDOM(text, sender, time, isBot = false) {
         });
         actionsDiv.appendChild(thumbsDown);
 
+        // Supprimer ce message (corbeille)
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        deleteBtn.title = 'Supprimer ce message';
+        deleteBtn.className = 'delete-msg';
+        deleteBtn.addEventListener('click', () => {
+            if (confirm('Supprimer ce message ?')) {
+                deleteMessageById(messageId);
+            }
+        });
+        actionsDiv.appendChild(deleteBtn);
+
         msgDiv.appendChild(actionsDiv);
     }
 
@@ -2364,17 +2355,72 @@ function addChatMessageToDOM(text, sender, time, isBot = false) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Supprimer un message par son ID
+function deleteMessageById(id) {
+    // Supprimer du DOM
+    const el = chatMessages.querySelector(`.chat-message[data-message-id="${id}"]`);
+    if (el) el.remove();
+
+    // Supprimer de chatHistory
+    const index = chatHistory.findIndex(m => m.id === id);
+    if (index !== -1) {
+        chatHistory.splice(index, 1);
+        // Sauvegarder dans Firestore
+        saveChatToFirestore();
+    }
+
+    // Si après suppression il n'y a plus de messages, afficher le message d'accueil
+    if (chatHistory.length === 0) {
+        displayWelcomeMessage();
+    }
+}
+
+// Effacer tout l'historique
+function clearChatHistory() {
+    if (!currentUser) return;
+    if (confirm('Effacer tout l\'historique de conversation ?')) {
+        chatHistory = [];
+        // Supprimer tous les messages du DOM sauf le message d'accueil
+        chatMessages.innerHTML = '';
+        displayWelcomeMessage();
+        saveChatToFirestore();
+        showToast('Historique effacé', 'success');
+    }
+}
+
+// Afficher le message d'accueil (s'il n'y a pas d'historique)
+function displayWelcomeMessage() {
+    // Vérifier si le message d'accueil est déjà présent
+    const existingWelcome = chatMessages.querySelector('.chat-message.welcome');
+    if (!existingWelcome) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-message bot welcome';
+        msgDiv.dataset.messageId = 'welcome';
+        msgDiv.innerHTML = `${WELCOME_MESSAGE}<div class="message-time">--:--</div>`;
+        // Pas d'actions pour le message d'accueil (il n'est pas stocké)
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+}
+
 // Fonction publique pour ajouter un message (utilisée par le chatbot)
 function addChatMessage(text, sender, time = null) {
     const timeStr = time || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const isBot = sender === 'bot';
-    addChatMessageToDOM(text, sender, timeStr, isBot);
-    // Ajouter à l'historique
-    const role = sender === 'user' ? 'user' : 'model';
-    const parts = [{ text: text }];
-    chatHistory.push({ role, parts, timestamp: new Date().toISOString() });
-    // Sauvegarder dans Firestore (à chaque message)
-    saveChatToFirestore();
+    const id = generateMessageId();
+    addChatMessageToDOM(text, sender, timeStr, isBot, id);
+
+    // Si c'est un message utilisateur ou bot, on l'ajoute à l'historique (sauf le message d'accueil)
+    if (isBot || sender === 'user') {
+        // Supprimer le message d'accueil s'il existe
+        const welcomeEl = chatMessages.querySelector('.chat-message.welcome');
+        if (welcomeEl) welcomeEl.remove();
+
+        const role = sender === 'user' ? 'user' : 'model';
+        const parts = [{ text: text }];
+        chatHistory.push({ id, role, parts, timestamp: new Date().toISOString() });
+        saveChatToFirestore();
+    }
 }
 
 function showLoading() {
@@ -2390,7 +2436,7 @@ function hideLoading() {
     if (loading) loading.remove();
 }
 
-// Envoyer à Gemini avec historique complet
+// Envoyer à Gemini avec historique complet (corrigé)
 async function sendMessageToGemini(userMessage, fileData = null) {
     try {
         const key = await getGeminiKey();
@@ -2402,10 +2448,8 @@ async function sendMessageToGemini(userMessage, fileData = null) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key.trim()}`;
         
         // Construire le payload avec l'historique complet
-        // Gemini attend un tableau "contents" avec des objets { role: "user"|"model", parts: [{ text: ... }] }
-        // Notre chatHistory a déjà ce format, on va l'utiliser
         let contents = [];
-        // On copie l'historique existant (sans le timestamp)
+        // Copier l'historique existant (sauf le message d'accueil qui n'est pas dans chatHistory)
         chatHistory.forEach(entry => {
             contents.push({
                 role: entry.role,
@@ -2413,21 +2457,21 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             });
         });
 
-        // Si on a un nouveau message utilisateur, on l'ajoute au payload (mais il n'est pas encore dans chatHistory)
-        // On ajoute le message utilisateur courant
+        // Ajouter le message utilisateur courant s'il y a du texte
         if (userMessage && userMessage.trim().length > 0) {
+            // Vérifier si le dernier message est déjà un user (dans le cas où on a déjà ajouté)
+            // Mais ici on ajoute toujours un nouveau message utilisateur
             contents.push({
                 role: 'user',
                 parts: [{ text: userMessage }]
             });
         }
 
-        // Si on a un fichier, on ajoute une partie avec inline_data
+        // Si on a un fichier, on l'ajoute au dernier message (qui est le user)
         if (fileData) {
             const mimeType = fileData.type;
             if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
-                // On ajoute au dernier élément (le message utilisateur) ou on crée un nouveau part
-                // Ici on ajoute au dernier élément (qui est le message utilisateur)
+                // Ajouter au dernier élément (qui est le message utilisateur)
                 const last = contents[contents.length - 1];
                 if (last && last.role === 'user') {
                     last.parts.push({
@@ -2456,7 +2500,8 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             contents: contents
         };
 
-        // Envoyer la requête
+        console.log('Payload envoyé à Gemini:', JSON.stringify(payload, null, 2));
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -2467,7 +2512,7 @@ async function sendMessageToGemini(userMessage, fileData = null) {
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('Erreur Gemini:', errorData);
+            console.error('Erreur Gemini (réponse non OK):', errorData);
             let errorMsg = 'Erreur de l\'IA : ';
             if (errorData.error && errorData.error.message) {
                 errorMsg += errorData.error.message;
@@ -2480,19 +2525,11 @@ async function sendMessageToGemini(userMessage, fileData = null) {
 
         const data = await response.json();
         const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Je n\'ai pas de réponse à cela.';
-
-        // Ajouter la réponse de l'IA à l'historique (le message utilisateur a déjà été ajouté via addChatMessage)
-        // On ajoute maintenant la réponse
-        const modelRole = 'model';
-        const modelParts = [{ text: textResponse }];
-        chatHistory.push({ role: modelRole, parts: modelParts, timestamp: new Date().toISOString() });
         addChatMessage(textResponse, 'bot');
-        // Sauvegarder après l'ajout de la réponse
-        saveChatToFirestore();
 
     } catch (error) {
         console.error('Erreur lors de l\'appel à Gemini:', error);
-        addChatMessage('Erreur de communication avec l\'IA.', 'bot');
+        addChatMessage('Erreur de communication avec l\'IA. Détails dans la console.', 'bot');
     } finally {
         hideLoading();
     }
@@ -2506,7 +2543,7 @@ function handleSendMessage() {
         return;
     }
     const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    // Ajouter le message utilisateur au DOM et à l'historique
+    // Ajouter le message utilisateur (il sera ajouté à l'historique via addChatMessage)
     addChatMessage(text || 'Fichier attaché', 'user', time);
 
     const fileData = attachedFile ? { data: attachedFile.data, type: attachedFile.type } : null;
@@ -2529,6 +2566,10 @@ chatInput?.addEventListener('keydown', (e) => {
     }
 });
 
+// Effacer l'historique
+clearChatBtn?.addEventListener('click', clearChatHistory);
+
+// Ouvrir/fermer le chat
 chatFab?.addEventListener('click', () => {
     if (!currentUser) {
         showToast('Connectez-vous pour utiliser l\'assistant IA.', 'warning');
@@ -2582,6 +2623,58 @@ chatRemoveFile?.addEventListener('click', () => {
     chatFileInput.value = '';
 });
 
+// Charger l'historique depuis Firestore
+function loadChatHistoryFromFirestore() {
+    if (!currentUser) return Promise.resolve();
+    const docRef = db.collection('users').doc(currentUser.uid).collection('chats').doc('current');
+    return docRef.get().then(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            if (data && data.messages && Array.isArray(data.messages)) {
+                chatHistory = data.messages;
+                // Reconstruire l'affichage
+                chatMessages.innerHTML = '';
+                // Si l'historique est vide, afficher le message d'accueil
+                if (chatHistory.length === 0) {
+                    displayWelcomeMessage();
+                } else {
+                    chatHistory.forEach(msg => {
+                        const sender = msg.role === 'user' ? 'user' : 'bot';
+                        const text = msg.parts[0].text;
+                        const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                        const isBot = sender === 'bot';
+                        // Utiliser l'ID du message s'il existe, sinon en générer un
+                        const id = msg.id || generateMessageId();
+                        addChatMessageToDOM(text, sender, time, isBot, id);
+                    });
+                    // Supprimer le message d'accueil s'il existe
+                    const welcomeEl = chatMessages.querySelector('.chat-message.welcome');
+                    if (welcomeEl) welcomeEl.remove();
+                }
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return;
+            }
+        }
+        // Pas d'historique, afficher le message d'accueil
+        chatHistory = [];
+        chatMessages.innerHTML = '';
+        displayWelcomeMessage();
+        // Sauvegarder pour créer le document
+        saveChatToFirestore();
+    }).catch(err => console.error('Erreur chargement historique chat:', err));
+}
+
+// Sauvegarder l'historique dans Firestore
+function saveChatToFirestore() {
+    if (!currentUser) return;
+    const docRef = db.collection('users').doc(currentUser.uid).collection('chats').doc('current');
+    const data = {
+        messages: chatHistory,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    docRef.set(data, { merge: true }).catch(err => console.error('Erreur sauvegarde chat:', err));
+}
+
 // ============================================================
 // AUTH STATE CHANGED
 // ============================================================
@@ -2605,7 +2698,6 @@ auth.onAuthStateChanged(user => {
             loadAndInjectGA();
             if (isAdmin) loadAdminLogs();
             chatFab.style.display = 'flex';
-            // Charger l'historique du chat (mais pas automatiquement, on le fait à l'ouverture)
         } else {
             currentUser = null;
             userData = null;
@@ -2914,7 +3006,7 @@ function navigateTo(viewName) {
 }
 
 // ============================================================
-// FONCTIONS MÉTIER
+// FONCTIONS MÉTIER (inchangées)
 // ============================================================
 
 function startAnnouncementsListener() {
