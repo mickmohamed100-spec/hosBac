@@ -861,7 +861,7 @@ footer {
 }
 
 /* ============================================================
-   CHATBOT IA – AGRANDI, AVEC ACTIONS
+   CHATBOT IA – AGRANDI, AVEC ACTIONS, TEXTAREA ET BOUTON D'ENVOI
    ============================================================ */
 .chat-fab {
     position: fixed;
@@ -1016,16 +1016,17 @@ footer {
     color: #ff4444;
 }
 
+/* Zone de saisie avec textarea et bouton d'envoi */
 .chat-input-area {
     padding: 0.8rem;
     border-top: 1px solid var(--border-color);
     display: flex;
     gap: 0.5rem;
-    align-items: center;
+    align-items: flex-end;
     flex-wrap: wrap;
     flex-shrink: 0;
 }
-.chat-input-area input[type="text"] {
+.chat-input-area textarea {
     flex: 1;
     padding: 0.5rem 0.8rem;
     border: 1px solid var(--border-color);
@@ -1034,9 +1035,13 @@ footer {
     color: var(--text-color);
     outline: none;
     font-size: 0.9rem;
-    min-width: 100px;
+    resize: none;
+    min-height: 40px;
+    max-height: 120px; /* 4-5 lignes */
+    font-family: inherit;
+    line-height: 1.4;
 }
-.chat-input-area input[type="text"]:focus {
+.chat-input-area textarea:focus {
     border-color: var(--accent-blue);
 }
 .chat-input-area .chat-attach-btn,
@@ -1048,6 +1053,11 @@ footer {
     cursor: pointer;
     padding: 0.4rem;
     transition: var(--transition);
+    flex-shrink: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .chat-input-area .chat-attach-btn:hover,
 .chat-input-area .chat-send-btn:hover {
@@ -1491,7 +1501,7 @@ footer {
         <span class="remove-file" id="chat-remove-file"><i class="fas fa-times-circle"></i></span>
     </div>
     <div class="chat-input-area">
-        <input type="text" id="chat-input" placeholder="Tapez votre question..." />
+        <textarea id="chat-input" rows="1" placeholder="Tapez votre question..."></textarea>
         <button class="chat-attach-btn" id="chat-attach-btn"><i class="fas fa-paperclip"></i></button>
         <button class="chat-send-btn" id="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
         <input type="file" id="chat-file-input" accept=".jpg,.jpeg,.png,.pdf" style="display:none;">
@@ -1705,7 +1715,7 @@ const chatWindow = document.getElementById('chat-window');
 const chatClose = document.getElementById('chat-close');
 const clearChatBtn = document.getElementById('clear-chat-btn');
 const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
+const chatInput = document.getElementById('chat-input'); // maintenant un textarea
 const chatSendBtn = document.getElementById('chat-send-btn');
 const chatAttachBtn = document.getElementById('chat-attach-btn');
 const chatFileInput = document.getElementById('chat-file-input');
@@ -2373,6 +2383,9 @@ function addChatMessageToDOM(text, sender, time, isBot = false, messageId = null
             const citation = text.split('\n').map(line => `> ${line}`).join('\n');
             chatInput.value = `En réponse à :\n${citation}\n\n`;
             chatInput.focus();
+            // Auto-resize après insertion
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
         });
         actionsDiv.appendChild(replyBtn);
 
@@ -2523,7 +2536,7 @@ function hideLoading() {
     if (loading) loading.remove();
 }
 
-// === FONCTION sendMessageToGemini CORRIGÉE AVEC SYSTEM_INSTRUCTION ET GESTION 429 ===
+// === FONCTION sendMessageToGemini CORRIGÉE AVEC SYSTEM_INSTRUCTION (CADRAGE STRICT) ET GESTION 429 ===
 async function sendMessageToGemini(userMessage, fileData = null) {
     try {
         // Récupérer la clé API
@@ -2537,10 +2550,12 @@ async function sendMessageToGemini(userMessage, fileData = null) {
         const examsSummary = await fetchExamsForAI();
         console.log('[IA] Liste envoyée à l\'IA :', examsSummary); // LOG DE DÉBOGAGE
 
-        // Construire le système d'instruction
-        const systemInstruction = `Tu es l'assistant virtuel de la plateforme HosBac (au Bénin). Ton rôle est d'aider les élèves. ${examsSummary}
-
-Si un utilisateur cherche une épreuve, vérifie dans cette liste si elle existe et dis-lui de la chercher via la barre de recherche du site. Si elle n'y est pas, dis-lui poliment qu'elle n'est pas encore disponible.`;
+        // Construire le système d'instruction avec cadrage strict
+        const systemInstruction = 
+            "Tu es l'assistant pédagogique exclusif de la plateforme HosBac. Ton rôle est STRICTEMENT limité à l'aide aux devoirs, l'explication d'exercices scolaires, la correction d'épreuves et l'orientation des élèves sur le site. " +
+            "Tu NE DOIS EN AUCUN CAS répondre à des requêtes hors de ce cadre éducatif (par exemple : tu ne dois pas coder des applications, créer des sites web, ni répondre à des questions de la vie quotidienne hors éducation). " +
+            "Si un utilisateur te demande de faire quelque chose qui n'est pas lié à ses études ou aux épreuves, refuse fermement mais poliment en disant : 'Désolé, je suis l'assistant HosBac et je suis uniquement conçu pour t'accompagner dans tes révisions et exercices scolaires.'\n\n" +
+            examsSummary;
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key.trim()}`;
         
@@ -2664,10 +2679,14 @@ function handleSendMessage() {
 
     const fileData = attachedFile ? { data: attachedFile.data, type: attachedFile.type } : null;
 
+    // Réinitialiser le textarea et le fichier
     chatInput.value = '';
     attachedFile = null;
     chatFilePreview.style.display = 'none';
     chatFileInput.value = '';
+    // Réinitialiser la hauteur
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
 
     showLoading();
     sendMessageToGemini(text, fileData);
@@ -2675,11 +2694,19 @@ function handleSendMessage() {
 
 // Écouteurs du chat
 chatSendBtn?.addEventListener('click', handleSendMessage);
+
+// Gestion de la touche Entrée sur le textarea
 chatInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         handleSendMessage();
     }
+});
+
+// Auto-resize du textarea
+chatInput?.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
 });
 
 // Effacer l'historique
