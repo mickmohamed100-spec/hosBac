@@ -861,7 +861,7 @@ footer {
 }
 
 /* ============================================================
-   CHATBOT IA (FAB + FENÊTRE)
+   CHATBOT IA – TAILLE AGRANDIE
    ============================================================ */
 .chat-fab {
     position: fixed;
@@ -886,13 +886,15 @@ footer {
     transform: scale(1.05);
     background: var(--secondary-blue);
 }
+
 .chat-window {
     position: fixed;
     bottom: 160px;
     right: 20px;
-    width: 380px;
-    max-width: calc(100vw - 40px);
-    max-height: 550px;
+    width: 90vw;
+    max-width: 500px;
+    height: 75vh;
+    max-height: 80vh;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -913,6 +915,7 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 .chat-header-title {
     font-weight: 600;
@@ -932,10 +935,9 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
-    max-height: 350px;
 }
 .chat-message {
-    max-width: 80%;
+    max-width: 85%;
     padding: 0.6rem 0.8rem;
     border-radius: 12px;
     word-wrap: break-word;
@@ -963,6 +965,37 @@ footer {
 }
 .chat-message.user .message-time { color: rgba(255,255,255,0.7); }
 .chat-message.bot .message-time { color: var(--text-light); }
+
+/* Actions sous les messages de l'IA */
+.message-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 0.3rem;
+    justify-content: flex-start;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.message-actions:hover {
+    opacity: 1;
+}
+.message-actions button {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.1rem 0.2rem;
+    transition: var(--transition);
+}
+.message-actions button:hover {
+    color: var(--primary-blue);
+}
+.message-actions .thumbs-up:hover { color: var(--success); }
+.message-actions .thumbs-down:hover { color: var(--error); }
+.message-actions .rated {
+    color: var(--accent-blue);
+}
+
 .chat-input-area {
     padding: 0.8rem;
     border-top: 1px solid var(--border-color);
@@ -970,6 +1003,7 @@ footer {
     gap: 0.5rem;
     align-items: center;
     flex-wrap: wrap;
+    flex-shrink: 0;
 }
 .chat-input-area input[type="text"] {
     flex: 1;
@@ -1030,7 +1064,7 @@ footer {
 @media (max-width: 480px) {
     .chat-window {
         width: calc(100vw - 20px);
-        max-height: 70vh;
+        height: 70vh;
         bottom: 80px;
         right: 10px;
     }
@@ -1426,10 +1460,7 @@ footer {
         <button class="chat-header-close" id="chat-close"><i class="fas fa-times"></i></button>
     </div>
     <div class="chat-messages" id="chat-messages">
-        <div class="chat-message bot">
-            Bonjour ! Je suis l'assistant HosBac. Posez-moi une question sur les épreuves, les cours, ou tout autre sujet éducatif.
-            <div class="message-time">--:--</div>
-        </div>
+        <!-- Les messages seront injectés ici -->
     </div>
     <div class="chat-file-preview" id="chat-file-preview">
         <span id="chat-file-name"></span>
@@ -2192,36 +2223,191 @@ function loadAdminLogs() {
 }
 
 // ============================================================
-// CHATBOT IA (GEMINI) – MODÈLE CORRIGÉ : gemini-flash-latest
+// CHATBOT IA – AMÉLIORATIONS (historique, persistance, actions)
 // ============================================================
 let geminiApiKey = '';
+let chatHistory = []; // tableau d'objets { role: "user"|"model", parts: [{ text: ... }] }
+let currentChatId = null; // ID du document Firestore pour cette conversation
 
-function getGeminiKey() {
-    return new Promise((resolve) => {
-        if (geminiApiKey) {
-            resolve(geminiApiKey);
-        } else {
-            loadGeminiApiKey().then(key => {
-                geminiApiKey = key;
-                resolve(key);
-            });
-        }
-    });
+// Charger l'historique depuis Firestore
+function loadChatHistoryFromFirestore() {
+    if (!currentUser) return Promise.resolve();
+    return db.collection('users').doc(currentUser.uid).collection('chats')
+        .orderBy('timestamp', 'desc')
+        .limit(1)
+        .get()
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                const doc = snapshot.docs[0];
+                currentChatId = doc.id;
+                const data = doc.data();
+                if (data.history && Array.isArray(data.history)) {
+                    chatHistory = data.history;
+                    // Réafficher les messages
+                    chatMessages.innerHTML = '';
+                    chatHistory.forEach(entry => {
+                        const sender = entry.role === 'user' ? 'user' : 'bot';
+                        const text = entry.parts[0].text;
+                        const time = entry.timestamp ? new Date(entry.timestamp.toDate()).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                        addChatMessageToUI(text, sender, time, entry.rating);
+                    });
+                    // Scroll en bas
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            } else {
+                // Pas d'historique, créer un nouveau chat
+                currentChatId = null;
+                chatHistory = [];
+                chatMessages.innerHTML = '';
+                // Ajouter un message de bienvenue
+                const welcomeMsg = "Bonjour ! Je suis l'assistant HosBac. Posez-moi une question sur les épreuves, les cours, ou tout autre sujet éducatif.";
+                addChatMessageToUI(welcomeMsg, 'bot', '--:--', null);
+                // Sauvegarder ce message en base
+                if (currentUser) {
+                    chatHistory.push({ role: 'model', parts: [{ text: welcomeMsg }], timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                    saveChatToFirestore();
+                }
+            }
+        })
+        .catch(err => console.error('[FIRESTORE] Erreur chargement historique chat:', err));
 }
 
-function addChatMessage(text, sender, time = null) {
+// Sauvegarder la conversation en Firestore
+function saveChatToFirestore() {
+    if (!currentUser) return;
+    const chatData = {
+        history: chatHistory,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if (currentChatId) {
+        db.collection('users').doc(currentUser.uid).collection('chats').doc(currentChatId).set(chatData, { merge: true })
+            .catch(err => console.error('[FIRESTORE] Erreur mise à jour chat:', err));
+    } else {
+        db.collection('users').doc(currentUser.uid).collection('chats').add(chatData)
+            .then(docRef => { currentChatId = docRef.id; })
+            .catch(err => console.error('[FIRESTORE] Erreur création chat:', err));
+    }
+}
+
+// Ajouter un message à l'UI (avec actions si bot)
+function addChatMessageToUI(text, sender, time, rating = null) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${sender}`;
-    const timeStr = time || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     let htmlText = text;
     htmlText = htmlText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
     htmlText = htmlText.replace(/\*(.*?)\*/g, '<i>$1</i>');
     htmlText = htmlText.replace(/\n/g, '<br>');
-    msgDiv.innerHTML = `${htmlText}<div class="message-time">${timeStr}</div>`;
+    msgDiv.innerHTML = `${htmlText}<div class="message-time">${time}</div>`;
+
+    // Ajouter des actions pour les messages du bot
+    if (sender === 'bot') {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'message-actions';
+
+        // Bouton Répondre (taguer)
+        const replyBtn = document.createElement('button');
+        replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
+        replyBtn.title = 'Répondre en citant';
+        replyBtn.addEventListener('click', () => {
+            const quoted = text.length > 100 ? text.substring(0, 100) + '...' : text;
+            chatInput.value = `@IA: "${quoted}"\n`;
+            chatInput.focus();
+        });
+        actionsDiv.appendChild(replyBtn);
+
+        // Bouton Copier
+        const copyBtn = document.createElement('button');
+        copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+        copyBtn.title = 'Copier le texte';
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copié !', 'success');
+            }).catch(() => {
+                // Fallback
+                const area = document.createElement('textarea');
+                area.value = text;
+                document.body.appendChild(area);
+                area.select();
+                document.execCommand('copy');
+                document.body.removeChild(area);
+                showToast('Copié !', 'success');
+            });
+        });
+        actionsDiv.appendChild(copyBtn);
+
+        // Bouton Pouce levé
+        const thumbsUp = document.createElement('button');
+        thumbsUp.className = 'thumbs-up';
+        thumbsUp.innerHTML = '<i class="fas fa-thumbs-up"></i>';
+        thumbsUp.title = 'Utile';
+        thumbsUp.addEventListener('click', () => {
+            rateMessage('up');
+        });
+        actionsDiv.appendChild(thumbsUp);
+
+        // Bouton Pouce baissé
+        const thumbsDown = document.createElement('button');
+        thumbsDown.className = 'thumbs-down';
+        thumbsDown.innerHTML = '<i class="fas fa-thumbs-down"></i>';
+        thumbsDown.title = 'Pas utile';
+        thumbsDown.addEventListener('click', () => {
+            rateMessage('down');
+        });
+        actionsDiv.appendChild(thumbsDown);
+
+        // Si une note est déjà présente, on l'affiche
+        if (rating) {
+            const ratingSpan = document.createElement('span');
+            ratingSpan.style.fontSize = '0.7rem';
+            ratingSpan.style.color = 'var(--text-light)';
+            ratingSpan.textContent = rating === 'up' ? '👍' : '👎';
+            actionsDiv.appendChild(ratingSpan);
+        }
+
+        msgDiv.appendChild(actionsDiv);
+
+        // Fonction de notation locale (à étendre pour Firestore)
+        function rateMessage(value) {
+            // Envoyer la note dans Firestore (on stocke dans un sous-champ du message)
+            if (!currentUser) {
+                showToast('Connectez-vous pour noter.', 'warning');
+                return;
+            }
+            // Trouver l'index du message dans chatHistory
+            const index = chatHistory.findIndex((entry, idx) => {
+                return entry.role === 'model' && entry.parts[0].text === text;
+            });
+            if (index !== -1) {
+                // Mettre à jour la note dans l'historique
+                chatHistory[index].rating = value;
+                saveChatToFirestore();
+                // Mettre à jour l'affichage
+                const actions = msgDiv.querySelector('.message-actions');
+                // Supprimer les anciens boutons et ajouter un indicateur
+                actions.innerHTML = `<span style="font-size:0.8rem;color:var(--text-light);">${value === 'up' ? '👍 Utile' : '👎 Pas utile'}</span>`;
+                showToast('Merci pour votre retour !', 'success');
+            }
+        }
+    }
+
     chatMessages.appendChild(msgDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Fonction pour ajouter un message et le stocker dans l'historique
+function addChatMessage(text, sender, time = null) {
+    const timeStr = time || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const role = sender === 'user' ? 'user' : 'model';
+    // Ajouter à l'historique
+    const entry = { role: role, parts: [{ text: text }], timestamp: firebase.firestore.FieldValue.serverTimestamp() };
+    chatHistory.push(entry);
+    // Sauvegarder en Firestore
+    saveChatToFirestore();
+    // Afficher dans l'UI
+    addChatMessageToUI(text, sender, timeStr);
+}
+
+// Indicateur de chargement
 function showLoading() {
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'chat-loading';
@@ -2235,7 +2421,7 @@ function hideLoading() {
     if (loading) loading.remove();
 }
 
-// Envoi à Gemini – URL avec le modèle gemini-flash-latest
+// Appel à Gemini avec historique complet
 async function sendMessageToGemini(userMessage, fileData = null) {
     try {
         const key = await getGeminiKey();
@@ -2244,25 +2430,27 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             return;
         }
 
-        // Utilisation du modèle gemini-flash-latest
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key.trim()}`;
         
-        const payload = {
-            contents: [
-                {
-                    parts: []
-                }
-            ]
-        };
-
-        if (userMessage && userMessage.trim().length > 0) {
-            payload.contents[0].parts.push({ text: userMessage });
+        // Construire le payload avec tout l'historique
+        const contents = [];
+        // Ajouter l'historique existant (sauf le dernier message qui est en cours)
+        for (let i = 0; i < chatHistory.length - 1; i++) {
+            const entry = chatHistory[i];
+            contents.push({
+                role: entry.role,
+                parts: entry.parts
+            });
         }
-
+        // Ajouter le nouveau message
+        const newParts = [];
+        if (userMessage && userMessage.trim().length > 0) {
+            newParts.push({ text: userMessage });
+        }
         if (fileData) {
             const mimeType = fileData.type;
             if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
-                payload.contents[0].parts.push({
+                newParts.push({
                     inline_data: {
                         mime_type: mimeType,
                         data: fileData.data
@@ -2273,6 +2461,14 @@ async function sendMessageToGemini(userMessage, fileData = null) {
                 return;
             }
         }
+        contents.push({
+            role: 'user',
+            parts: newParts
+        });
+
+        const payload = {
+            contents: contents
+        };
 
         const response = await fetch(url, {
             method: 'POST',
@@ -2307,6 +2503,7 @@ async function sendMessageToGemini(userMessage, fileData = null) {
     }
 }
 
+// Gestion de l'envoi de message
 function handleSendMessage() {
     const text = chatInput.value.trim();
     if (!text && !attachedFile) {
@@ -2314,6 +2511,7 @@ function handleSendMessage() {
         return;
     }
     const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    // Ajouter le message utilisateur
     addChatMessage(text || 'Fichier attaché', 'user', time);
 
     const fileData = attachedFile ? { data: attachedFile.data, type: attachedFile.type } : null;
@@ -2327,6 +2525,7 @@ function handleSendMessage() {
     sendMessageToGemini(text, fileData);
 }
 
+// Écouteurs du chat
 chatSendBtn?.addEventListener('click', handleSendMessage);
 chatInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -2340,13 +2539,21 @@ chatFab?.addEventListener('click', () => {
         showToast('Connectez-vous pour utiliser l\'assistant IA.', 'warning');
         return;
     }
-    chatWindow.classList.toggle('open');
+    if (!chatWindow.classList.contains('open')) {
+        // Charger l'historique avant d'ouvrir
+        loadChatHistoryFromFirestore().then(() => {
+            chatWindow.classList.add('open');
+        });
+    } else {
+        chatWindow.classList.remove('open');
+    }
 });
 
 chatClose?.addEventListener('click', () => {
     chatWindow.classList.remove('open');
 });
 
+// Gestion de l'attachement
 chatAttachBtn?.addEventListener('click', () => {
     chatFileInput.click();
 });
@@ -2381,6 +2588,20 @@ chatRemoveFile?.addEventListener('click', () => {
     chatFileInput.value = '';
 });
 
+// Fonction pour obtenir la clé Gemini (avec cache)
+function getGeminiKey() {
+    return new Promise((resolve) => {
+        if (geminiApiKey) {
+            resolve(geminiApiKey);
+        } else {
+            loadGeminiApiKey().then(key => {
+                geminiApiKey = key;
+                resolve(key);
+            });
+        }
+    });
+}
+
 // ============================================================
 // AUTH STATE CHANGED
 // ============================================================
@@ -2404,6 +2625,8 @@ auth.onAuthStateChanged(user => {
             loadAndInjectGA();
             if (isAdmin) loadAdminLogs();
             chatFab.style.display = 'flex';
+            // Charger l'historique du chat en arrière-plan
+            loadChatHistoryFromFirestore();
         } else {
             currentUser = null;
             userData = null;
@@ -2422,6 +2645,8 @@ auth.onAuthStateChanged(user => {
             loadAndInjectGA();
             chatFab.style.display = 'none';
             chatWindow.classList.remove('open');
+            chatHistory = [];
+            chatMessages.innerHTML = '';
         }
         updateMenuItems();
     } catch (error) {
