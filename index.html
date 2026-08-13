@@ -2192,11 +2192,10 @@ function loadAdminLogs() {
 }
 
 // ============================================================
-// CHATBOT IA (GEMINI) – CORRECTION DE L'AUTHENTIFICATION
+// CHATBOT IA (GEMINI) – MODÈLE CORRIGÉ : gemini-flash-latest
 // ============================================================
-let geminiApiKey = ''; // stockée en mémoire après chargement
+let geminiApiKey = '';
 
-// Fonction pour obtenir la clé (avec cache)
 function getGeminiKey() {
     return new Promise((resolve) => {
         if (geminiApiKey) {
@@ -2210,25 +2209,19 @@ function getGeminiKey() {
     });
 }
 
-// Fonction pour ajouter un message dans la fenêtre de chat
 function addChatMessage(text, sender, time = null) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${sender}`;
     const timeStr = time || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    // Convertir le markdown basique en HTML
     let htmlText = text;
-    // Gras: **texte** -> <b>texte</b>
     htmlText = htmlText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-    // Italique: *texte* -> <i>texte</i>
     htmlText = htmlText.replace(/\*(.*?)\*/g, '<i>$1</i>');
-    // Sauts de ligne
     htmlText = htmlText.replace(/\n/g, '<br>');
     msgDiv.innerHTML = `${htmlText}<div class="message-time">${timeStr}</div>`;
     chatMessages.appendChild(msgDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Fonction pour afficher un indicateur de chargement
 function showLoading() {
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'chat-loading';
@@ -2242,18 +2235,17 @@ function hideLoading() {
     if (loading) loading.remove();
 }
 
-// Envoyer un message à Gemini – VERSION CORRIGÉE
+// Envoi à Gemini – URL avec le modèle gemini-flash-latest
 async function sendMessageToGemini(userMessage, fileData = null) {
     try {
         const key = await getGeminiKey();
-        // Vérification stricte de la clé
         if (!key || key.trim() === '') {
             addChatMessage('Erreur : La clé API n\'est pas configurée dans l\'administration.', 'bot');
             return;
         }
 
-        // L'URL doit inclure la clé en paramètre query (authentification par API Key)
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key.trim()}`;
+        // Utilisation du modèle gemini-flash-latest
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key.trim()}`;
         
         const payload = {
             contents: [
@@ -2263,15 +2255,12 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             ]
         };
 
-        // Partie texte
         if (userMessage && userMessage.trim().length > 0) {
             payload.contents[0].parts.push({ text: userMessage });
         }
 
-        // Partie fichier (si présent)
         if (fileData) {
             const mimeType = fileData.type;
-            // Vérifier si le type est supporté
             if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
                 payload.contents[0].parts.push({
                     inline_data: {
@@ -2285,7 +2274,6 @@ async function sendMessageToGemini(userMessage, fileData = null) {
             }
         }
 
-        // Envoi de la requête – AUCUN HEADER D'AUTHENTIFICATION, uniquement Content-Type
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -2319,34 +2307,26 @@ async function sendMessageToGemini(userMessage, fileData = null) {
     }
 }
 
-// Gestion de l'envoi de message
 function handleSendMessage() {
     const text = chatInput.value.trim();
     if (!text && !attachedFile) {
         showToast('Veuillez écrire un message ou attacher un fichier.', 'warning');
         return;
     }
-    // Ajouter le message utilisateur avec l'heure
     const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     addChatMessage(text || 'Fichier attaché', 'user', time);
 
-    // Préparer les données pour l'envoi
     const fileData = attachedFile ? { data: attachedFile.data, type: attachedFile.type } : null;
 
-    // Effacer l'input et le fichier attaché
     chatInput.value = '';
     attachedFile = null;
     chatFilePreview.style.display = 'none';
     chatFileInput.value = '';
 
-    // Afficher le chargement
     showLoading();
-
-    // Appeler Gemini
     sendMessageToGemini(text, fileData);
 }
 
-// Écouteurs du chat
 chatSendBtn?.addEventListener('click', handleSendMessage);
 chatInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -2367,7 +2347,6 @@ chatClose?.addEventListener('click', () => {
     chatWindow.classList.remove('open');
 });
 
-// Gestion de l'attachement
 chatAttachBtn?.addEventListener('click', () => {
     chatFileInput.click();
 });
@@ -2424,7 +2403,6 @@ auth.onAuthStateChanged(user => {
             loadLegalPages();
             loadAndInjectGA();
             if (isAdmin) loadAdminLogs();
-            // Afficher le FAB pour les connectés
             chatFab.style.display = 'flex';
         } else {
             currentUser = null;
